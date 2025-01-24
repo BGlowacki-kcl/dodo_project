@@ -3,35 +3,33 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } f
 
 export const authService = {
     async signUp(email, password){
+        if(!email || !password){
+            throw new Error('Email and password are required');
+        }
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const idToken = await userCredential.user.getIdToken();
         localStorage.setItem('token', idToken);
-        return await authService.sendTokenToBackend(idToken, 'signup');
     },
 
     async signIn(email, password){
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const idToken = await userCredential.user.getIdToken();
-        localStorage.setItem('token', idToken);
-        return await authService.sendTokenToBackend(idToken, 'signin');
+        try {
+            if(!email || !password){
+                throw new Error('Email and password are required');
+            }
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const idToken = await userCredential.user.getIdToken();
+            console.log('idToken', idToken);
+            localStorage.setItem('token', idToken);
+        } catch (error){
+            throw new Error('Invalid email or password');
+        }
     },
 
     async signOut(){
+        if(!auth.currentUser){
+            throw new Error('No user signed in');
+        }
         await signOut(auth);
         localStorage.removeItem('token');
     },
-
-    async sendTokenToBackend(token, endpoint){
-        const response = await fetch(`/api/auth/${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        if(!response.ok){
-            throw new Error('Failed to authenticate');
-        }
-        return response.json();
-    }
 };

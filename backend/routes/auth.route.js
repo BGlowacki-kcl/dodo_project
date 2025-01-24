@@ -8,5 +8,6 @@ router.post('/signin', authController.signIn);
 router.get('verifyToken', verifyToken, (req, res) => {
     res.json({ message: 'Authorized' });
 });
+// TODO: Implement request password change and reset password routes
 
 export default router;
