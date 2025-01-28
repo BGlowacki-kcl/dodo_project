@@ -3,7 +3,9 @@ import Box from '@mui/material/Box';
 
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
+import LandingPage from './pages/LandingPage';
 import { Routes, Route } from 'react-router-dom';
+import EmployeePosts from './pages/EmployerPostsPage';
 
 function App() {
 
@@ -11,7 +13,9 @@ function App() {
     <Box className="bg-gray-100 min-h-screen">
 			<Navbar />
 			<Routes>
-				<Route path='/' element={<HomePage />} />
+				<Route path="/" element={<LandingPage />} />
+				<Route path="/home" element={<HomePage />} />
+				<Route path="/Posts" element={<EmployeePosts />} />
 			</Routes>
 		</Box>
   )
