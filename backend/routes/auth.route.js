@@ -1,13 +1,12 @@
 import express from 'express';
 import { authController } from '../controllers/auth.controller.js';
-import verifyToken from '../middleware/authToken.js';
 
 const router = express.Router();
+
+// e.g. @Roles(['Admin'])
 router.post('/signup', authController.signUp);
 router.post('/signin', authController.signIn);
-router.get('verifyToken', verifyToken, (req, res) => {
-    res.json({ message: 'Authorized' });
-});
+
 // TODO: Implement request password change and reset password routes
 
 export default router;
