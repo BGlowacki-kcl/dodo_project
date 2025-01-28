@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
+    // example of the user schema, can add a field for code assesments completed
     email: {
         type: String,
         required: true,
@@ -69,6 +70,14 @@ const userSchema = new Schema({
     resume: {
         type: String // or could store file references, or a Buffer
     },
+
+    //shows its been completed, can link this straight to a code submission instead or remove this bit?? code submission does link to a user though so can find what a user has done through that
+    completedAssessments: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'CodeAssessment'
+        }
+      ],
 
 
     //employer fields - not sure if we want to split this off into a different model
