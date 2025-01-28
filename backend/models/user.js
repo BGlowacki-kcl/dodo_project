@@ -71,13 +71,13 @@ const userSchema = new Schema({
         type: String // or could store file references, or a Buffer
     },
 
-    //shows its been completed, can link this straight to a code submission instead or remove this bit?? code submission does link to a user though so can find what a user has done through that
-    completedAssessments: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: 'CodeAssessment'
-        }
-      ],
+    //shows its been completed, can link this straight to a code submission instead or remove this bit (kind of makes a many-many relationship)?? code submission does link to a user though so can find what a user has done through that
+    // completedAssessments: [
+    //     {
+    //       type: Schema.Types.ObjectId,
+    //       ref: 'CodeAssessment'
+    //     }
+    //   ],
 
 
     //employer fields - not sure if we want to split this off into a different model
