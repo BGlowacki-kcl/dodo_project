@@ -3,15 +3,14 @@ import Box from '@mui/material/Box';
 import SignInUp from './pages/SignInUp';
 
 import Navbar from './components/Navbar';
-import HomePage from './pages/HomePage';
 
-import LandingPage from './pages/LandingPage';
-import ApplicantDashboard from "./dashboards/ApplicantDashboard.jsx";
-import EmployerDashboard from "./dashboards/EmployerDashboard.jsx";
+import LandingPage from './pages/applicant/Landing.jsx';
+import ApplicantDashboard from "./pages/applicant/ApplicantDashboard.jsx";
+import EmployerDashboard from "./pages/employer/EmployerDashboard.jsx";
 import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import AuthGuard from './guards/auth.guard';
-import EmployeePosts from './pages/EmployerPostsPage';
+import EmployerPosts from './pages/employer/EmployerPosts.jsx';
 
 function App() {
 
@@ -23,10 +22,9 @@ function App() {
 				<Route path='/SignUp' element={<SignInUp mode="SignUp" />} />
 				<Route path="/dashboard" element={<AuthGuard> <Dashboard /> </AuthGuard>} /> {/* TODO: Fix the problem about back arrow  */}
 				<Route path="/" element={<LandingPage />} />
-				<Route path="/applicantdashboard" element={<ApplicantDashboard />} />
-				<Route path="/employerdashboard" element={<EmployerDashboard />} />
-				<Route path="/home" element={<HomePage />} />
-				<Route path="/Posts" element={<EmployeePosts />} />
+				<Route path="applicant-dashboard/" element={<ApplicantDashboard />} /> 
+				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
+				<Route path="/posts" element={<EmployerPosts />} />
 			</Routes>
 		</Box>
   )
