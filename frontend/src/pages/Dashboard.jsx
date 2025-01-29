@@ -6,7 +6,7 @@ function Dashboard() {
     const navigate = useNavigate();
 
     const handleSignOut = () => {
-        authService.signOut;
+        authService.signOut();
         navigate('/');
     }
   return (
