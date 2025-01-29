@@ -1,3 +1,5 @@
+// File only for testing
+
 import React from 'react'
 import { authService } from '../services/auth.service';
 import { useNavigate } from 'react-router-dom';
@@ -5,8 +7,8 @@ import { useNavigate } from 'react-router-dom';
 function Dashboard() {
     const navigate = useNavigate();
 
-    const handleSignOut = () => {
-        authService.signOut;
+    const handleSignOut = async () => {
+        await authService.signOut();
         navigate('/');
     }
   return (
