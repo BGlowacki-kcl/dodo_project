@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import SignInUp from './pages/SignInUp';
 
 import Navbar from './components/Navbar';
-import HomePage from './pages/HomePage';
 
 import LandingPage from './pages/applicant/Landing.jsx';
 import ApplicantDashboard from "./pages/applicant/ApplicantDashboard.jsx";
@@ -25,7 +24,6 @@ function App() {
 				<Route path="/" element={<LandingPage />} />
 				<Route path="/applicantdashboard" element={<ApplicantDashboard />} /> {/* call it browser?? */}
 				<Route path="/employerdashboard" element={<EmployerDashboard />} />
-				<Route path="/home" element={<HomePage />} />
 				<Route path="/posts" element={<EmployerPosts />} />
 			</Routes>
 		</Box>
