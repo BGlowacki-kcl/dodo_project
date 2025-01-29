@@ -18,26 +18,26 @@ const Navbar = () => {
         {/* Navigation Links */}
         <ul className="flex space-x-12 mr-60">
           <li>
-            <Link to="/" className="text-gray-800 text-lg font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 px-3 py-2 rounded-md">
+            <Link to="/" className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300">
               Home
             </Link>
           </li>
           <li>
-            <Link to="/about" className="text-gray-800 text-lg font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 px-3 py-2 rounded-md">
+            <Link to="/about" className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300">
               About Us
             </Link>
           </li>
           <li className="relative group">
-            <Link to="#" className="text-gray-800 text-lg font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 px-3 py-2 rounded-md"> 
+            <Link to="#" className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"> 
               For Employers
             </Link>
             {/* Dropdown Menu */}
-            <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <ul className="py-2">
                 <li>
                   <Link
                     to="/employer-login"
-                    className="block px-4 py-2 text-gray-800 font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 rounded-md"
+                    className="block px-4 py-2 text-gray-800 font-medium hover:font-semibold hover:bg-gray-200 rounded-md transition duration-300"
                   >
                     Employer Login
                   </Link>
@@ -45,7 +45,7 @@ const Navbar = () => {
                 <li>
                   <Link
                     to="/employer-register"
-                    className="block px-4 py-2 text-gray-800 font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 rounded-md"
+                    className="block px-4 py-2 text-gray-800 font-medium hover:font-semibold hover:bg-gray-200 rounded-md transition duration-300"
                   >
                     How to join us
                   </Link>
@@ -54,7 +54,7 @@ const Navbar = () => {
             </div>
           </li>
           <li>
-            <Link to="/contact" className="text-gray-800 text-lg font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 px-3 py-2 rounded-md">
+            <Link to="/contact" className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300">
               Contact Us
             </Link>
           </li>
