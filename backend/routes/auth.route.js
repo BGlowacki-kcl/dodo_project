@@ -3,7 +3,7 @@ import { authController } from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
-// e.g. @Roles(['Admin'])
+//@Roles(['Admin'])
 router.post('/signup', authController.signUp);
 router.post('/signin', authController.signIn);
 
