@@ -16,8 +16,8 @@ const jobApplicationSchema = new Schema({
 
   status: {
     type: String,
-    enum: ['applied', 'in review', 'shortlisted', 'rejected', 'hired'],
-    default: 'applied'
+    enum: ['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'hired'],
+    default: 'applying'
   },
 
   // if we want a coverletter or anything else linked to the job application
