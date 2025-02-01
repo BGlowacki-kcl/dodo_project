@@ -11,6 +11,7 @@ import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import AuthGuard from './guards/auth.guard';
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
+import Swiping from './pages/applicant/Swiping.jsx';
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
 				<Route path="applicant-dashboard/" element={<ApplicantDashboard />} /> 
 				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
 				<Route path="/posts" element={<EmployerPosts />} />
+				<Route path="/swipe" element={<Swiping />} />
 			</Routes>
 		</Box>
   )
