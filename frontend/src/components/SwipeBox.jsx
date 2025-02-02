@@ -20,7 +20,7 @@ const SwipeBox = ({ companyLogo, companyName, role, jobDescription, jobType, loc
     return (
 
         <div
-        className={`w-[340px] h-[455px] flex flex-col bg-white rounded-lg shadow-lg border-gray-200 
+        className={`w-[340px] h-[455px] flex flex-col bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200 
                     transition-transform duration-500 ease-in-out
                     ${action === "skip" ? "-translate-x-48 scale-75 blur-md opacity-50" : ""}
                     ${action === "shortlist" ? "translate-x-48 scale-75 blur-md opacity-50" : ""}
