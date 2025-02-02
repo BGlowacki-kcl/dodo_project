@@ -1,35 +1,58 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-const SwipeBox = ({ companyLogo, companyName, role, jobDescription, jobType, location, salary, duration }) => {
-  return (
-    <div className="relative w-[300px] h-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+const SwipeBox = ({ companyLogo, companyName, role, jobDescription, jobType, location, salary, duration, onSwipe }) => {
+    const [action, setAction] = useState(null);
 
-      <div className="relative">
-        <img src={companyLogo} alt={companyName} className="w-full h-32 object-cover" />
-        <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 text-xs font-semibold rounded-full">
-          {jobType}
+    const handleAction = (actionType) => {
+        setAction(actionType);
+        setTimeout(onSwipe, 500);
+    };
+
+    useEffect(() => {
+        const handleKeyPress = (event) => {
+        if (event.key === "ArrowLeft") handleAction("skip");
+        if (event.key === "ArrowRight") handleAction("shortlist");
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);}, []);
+
+    return (
+
+        <div
+        className={`w-[340px] h-[455px] flex flex-col bg-white rounded-lg shadow-lg border-gray-200 
+                    transition-transform duration-500 ease-in-out
+                    ${action === "skip" ? "-translate-x-48 scale-75 blur-md opacity-50" : ""}
+                    ${action === "shortlist" ? "translate-x-48 scale-75 blur-md opacity-50" : ""}
+        `}
+        >
+
+            <div className="relative">
+                <div className="absolute top-2 left-2 bg-green-500 text-white px-3 py-1 text-xs font-semibold rounded-full">
+                {jobType}
+                </div>
+            </div>
+            <img src={companyLogo} alt={companyName} className="w-full h-36 object-cover" />
+
+            <div className="p-4 flex-grow">
+                <h3 className="text-2xl font-bold text-gray-900">{role}</h3>
+                <p className="text-xl text-gray-800">{companyName}</p>
+                <p className="text-md text-gray-700 mt-2">{location} • {duration}</p>
+                <p className="text-md text-gray-600 mt-2 line-clamp-3">{jobDescription}</p>
+                <p className="text-md text-gray-500 mt-2">{salary}</p>
+            </div>
+
+            <div className="flex justify-between px-4 bg-gray-100 mt-auto">
+                <button onClick={() => handleAction("skip")} className="px-4 py-2 text-red-500 rounded-lg transition w-32 h-16 hover:scale-125">
+                    ❌ Skip
+                </button>
+                <button onClick={() => handleAction("shortlist")} className="px-4 py-2 text-green-500 rounded-lg transition w-32 h-16 hover:scale-125">
+                    ✅ Shortlist
+                </button>
+            </div>
+            
         </div>
-      </div>
-
-      {/* Job Details */}
-      <div className="p-4">
-        <h3 className="text-lg font-bold text-gray-900">{role}</h3>
-        <p className="text-sm text-gray-800">{companyName}</p>
-        <p className="text-xs text-gray-700 mt-2">{location} • {duration}</p>
-        <p className="text-xs text-gray-600 mt-2 line-clamp-3">{jobDescription}</p>
-        <p className="text-sm text-gray-500 mt-2">{salary}</p>
-      </div>
-
-      <div className="flex justify-between px-4 py-3 bg-gray-100 border-t">
-        <button className="px-4 py-2 text-red-500 rounded-lg transition w-35 hover:scale-105">
-          ❌ Skip
-        </button>
-        <button className="px-4 py-2 text-green-500 rounded-lg transition w-35 hover:scale-105">
-          ✅ Shortlist
-        </button>
-      </div>
-    </div>
-  );
-};
+        );
+    };
 
 export default SwipeBox;
