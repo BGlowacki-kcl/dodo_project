@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import SwipeBox from "../../components/SwipeBox";
+import SwipeFilters from "../../components/SwipeFilters";
 import amazon from "../../assets/amazon.jpg";
+import apple from "../../assets/apple.jpg";
+import google from "../../assets/google.jpg";
 
-
-//TO DO: filler data, change this to read from the models
 const jobListings = [
   {
     companyLogo: amazon,
@@ -16,8 +17,8 @@ const jobListings = [
     duration: "8 Weeks",
   },
   {
-    companyLogo: amazon,
-    companyName: "Amazon",
+    companyLogo: google,
+    companyName: "Google",
     role: "Backend Engineer",
     jobDescription: "Build backend APIs and services for the big bald rich man. Requires knowledge of Node.js and databases.",
     jobType: "Full-Time",
@@ -26,8 +27,8 @@ const jobListings = [
     duration: "Permanent",
   },
   {
-    companyLogo: amazon,
-    companyName: "Amazon",
+    companyLogo: apple,
+    companyName: "Apple",
     role: "Data Analyst",
     jobDescription: "Analyze customer data for Amazon. Requires SQL and Python skills.",
     jobType: "Internship",
@@ -39,27 +40,25 @@ const jobListings = [
 
 const Swiping = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [swiping, setSwiping] = useState(false);
 
-  const handleSwipe = (direction) => {
-    setSwiping(true);
-
-    setTimeout(() => {
-      setSwiping(false);
-      setCurrentIndex((prev) => (prev + 1 < jobListings.length ? prev + 1 : 0)); // Loop back to first job
-    }, 500);
+  const handleSwipe = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1 < jobListings.length ? prevIndex + 1 : 0));
   };
 
   return (
-    <div className="pt-10 bg-cover bg-center h-screen w-full flex flex-col items-center">
-      {currentIndex < jobListings.length && (
-        <SwipeBox
-          {...jobListings[currentIndex]}
-          onSkip={() => handleSwipe("left")}
-          onShortlist={() => handleSwipe("right")}
-          swiping={swiping}
-        />
-      )}
+    <div className="pt-10 bg-cover bg-center h-screen w-full grid grid-cols-8">
+      <div className="col-start-1">
+        <SwipeFilters />
+      </div>
+      <div className="col-start-4">
+        {currentIndex < jobListings.length && (
+          <SwipeBox 
+            key={currentIndex}
+            {...jobListings[currentIndex]}
+            onSwipe={handleSwipe}
+          />
+        )}
+      </div>
     </div>
   );
 };
