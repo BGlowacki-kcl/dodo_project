@@ -8,7 +8,7 @@ import placement from "../../assets/placement.jpg"
 
 const Landing = () => {
     const handleSearch = (searchTerm) => {
-        console.log("Search term:", searchTerm); // Handle search logic here
+        console.log("Search term:", searchTerm);
     };
 
     return (
@@ -25,8 +25,8 @@ const Landing = () => {
                     options={["Graduate", "Full-Time", "Part-Time", "Internship", "Apprenticeship", "Placement"]}
                 />
                 <ComboBox
-                    label="Option 2"
-                    options={["Option 1", "Option 2", "Option 3", "Option 4"]}
+                    label="Role"
+                    options={["Software Engineer", "Frontend Developer", "Backend Developer", "Fullstack Developer"]}
                 />
                 <ComboBox
                     label="Region"
@@ -34,22 +34,12 @@ const Landing = () => {
                 />
                
             </div>
+            {/*TODO: change couunter to make it out how many from the actual db
+                     add onclick to the 3 buttons so it takes you to the respective pages*/}
             <div className="p-10 flex flex-row gap-10">
-                <Box
-                    image={internship}
-                    text={"Internships"}
-                    //onClick={}
-                />
-                <Box
-                    image={placement}
-                    text={"Placements"}
-                    //onClick={}
-                />
-                <Box
-                    image={job}
-                    text={"Jobs"}
-                    //onClick={}
-                />
+                <Box image={internship} text={"Internships"} counter={256}/>
+                <Box image={placement} text={"Placements"} counter={256}/>
+                <Box image={job} text={"Jobs"} counter={256}/>
             </div>
 
         </div>
