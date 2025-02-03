@@ -53,7 +53,7 @@ return (
         <button onClick={() => handleViewModeChange("list")} className={`px-4 py-2 rounded-md border ${viewMode === "list" ? "bg-blue-600 text-white" : "bg-white text-gray-800"} transition duration-300 `}> List View </button>
       </div>
 
-      {/* Jobs Container */}
+      {/* JOB CONTAINER */}
       <div
         className={
           viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-4 pb-10" : "flex flex-col space-y-4 px-4 pb-10"
