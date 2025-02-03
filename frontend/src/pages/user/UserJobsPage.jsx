@@ -3,7 +3,7 @@ import { getAllJobs, applyToJob } from "../../services/applicationService";
 
 function UserJobsPage() {
     const [jobs, setJobs] = useState([]);
-    const userId = "user1"; 
+    const userId = "user1"; ///replace with acc user HERE!!!
 
     useEffect(() => {
         async function fetchJobs() {
@@ -14,7 +14,7 @@ function UserJobsPage() {
     }, []);
 
     const handleApply = async (jobId) => {
-        const coverLetter = "HELLO I AM THE COVER LETTER COVER LETTER COVER LETTER";
+        const coverLetter = "HELLO I AM THE COVER LETTER COVER LETTER COVER LETTER"; /// add cover letter here
         try {
             const newApp = await applyToJob({ jobId, userId, coverLetter });
             console.log("Application successful!", newApp);
@@ -36,12 +36,7 @@ function UserJobsPage() {
                     <p>{job.description}</p>
                     <p>Location: {job.location}</p>
                     <p>Requirements: {job.requirements?.join(", ")}</p>
-                    <button
-                    onClick={() => handleApply(job._id)}
-                    className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                    Apply
-                    </button>
+                    <button onClick={() => handleApply(job._id)} className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"> Apply </button>
                 </div>
                 ))}
             </div>

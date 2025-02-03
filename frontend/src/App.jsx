@@ -12,6 +12,10 @@ import Dashboard from './pages/Dashboard';
 import AuthGuard from './guards/auth.guard';
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
 
+import UserJobsPage from './pages/user/UserJobsPage.jsx';
+import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
+import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
+
 function App() {
 
   return (
@@ -25,6 +29,9 @@ function App() {
 				<Route path="applicant-dashboard/" element={<ApplicantDashboard />} /> 
 				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
 				<Route path="/posts" element={<EmployerPosts />} />
+				<Route path="/user/jobs" element={<UserJobsPage />} />
+				<Route path="/user/applications" element={<UserApplicationsPage />} />
+				<Route path="/user/applications/:appId" element={<SingleApplicationPage />} />
 			</Routes>
 		</Box>
   )
