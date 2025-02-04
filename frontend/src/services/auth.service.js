@@ -1,7 +1,7 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth } from "firebase/auth";
 
 export const authService = {
-    async signUp(email, password){
+    async signUp(email, password, role){
         if(!email || !password){
             throw new Error('Email and password are required');
         }
@@ -9,14 +9,19 @@ export const authService = {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const idToken = await userCredential.user.getIdToken();
         sessionStorage.setItem('token', idToken);
-        const role = await fetch('/api/user/role', {
-            method: 'GET',
+        const saveToDb = await fetch('/api/user/basic', {
+            method: 'POST',
             headers: {
                 "Content-Type": "application/json",
                 'Authorization': `Bearer ${idToken}`,
             },
+            body: JSON.stringify({
+                "email": email,
+                "role": role,
+            })
         });
-        sessionStorage.setItem('role', role);
+        // Delete if user not signed in after signup
+        sessionStorage.setItem('role', role.json());
     },
 
     async signIn(email, password){
@@ -37,6 +42,7 @@ export const authService = {
                 },
             });
             sessionStorage.setItem('role', role);
+
         } catch (error){
             throw new Error('Invalid email or password');
         }
@@ -57,9 +63,13 @@ export const authService = {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
-                'Authorization': `Bearer ${sessionStorage.getItem('idToken')}`,
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
             },
         });
+        const data = await res.json();
+        if (data.redirect) {
+            navigate(data.redirect);
+        }
         return response;
     }
 };
