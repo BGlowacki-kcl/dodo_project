@@ -1,12 +1,13 @@
-const express = require('express');
-const {
+import express from 'express';
+
+import {
     createJob,
     getJobs,
     getJobById,
     updateJob,
     deleteJob,
     applyToJob
-} = require('../controllers/jobController');
+} from '../controllers/job.controller.js';
 
 const router = express.Router();
 
@@ -28,4 +29,4 @@ router.delete('/:id', deleteJob);
 // Apply to a job post
 router.post('/:id/apply', applyToJob);
 
-module.exports = router;
+export default router;
