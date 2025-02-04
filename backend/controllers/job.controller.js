@@ -1,7 +1,6 @@
-const Job = require('../models/job');
-const User = require('../models/user');
+import Job from '../models/job.js';
 
-const createJob = async (req, res) => {
+export const createJob = async (req, res) => {
     try {
         const {
             title,
@@ -39,7 +38,7 @@ const createJob = async (req, res) => {
     }
 };
 
-const getJobs = async (req, res) => {
+export const getJobs = async (req, res) => {
     try {
         const jobs = await Job.find().populate('postedBy', 'name email').populate('applicants', 'name email');
         res.status(200).json(jobs);
@@ -48,7 +47,7 @@ const getJobs = async (req, res) => {
     }
 };
 
-const getJobById = async (req, res) => {
+export const getJobById = async (req, res) => {
     try {
         const job = await Job.findById(req.params.id)
             .populate('postedBy', 'name email')
@@ -64,7 +63,7 @@ const getJobById = async (req, res) => {
     }
 };
 
-const updateJob = async (req, res) => {
+export const updateJob = async (req, res) => {
     try {
         const updatedData = {
             ...req.body,
@@ -83,7 +82,7 @@ const updateJob = async (req, res) => {
     }
 };
 
-const deleteJob = async (req, res) => {
+export const deleteJob = async (req, res) => {
     try {
         const job = await Job.findById(req.params.id);
 
@@ -98,7 +97,7 @@ const deleteJob = async (req, res) => {
     }
 };
 
-const applyToJob = async (req, res) => {
+export const applyToJob = async (req, res) => {
     try {
         const { userId } = req.body;
         const job = await Job.findById(req.params.id);
@@ -121,4 +120,3 @@ const applyToJob = async (req, res) => {
     }
 };
 
-module.exports = { createJob, getJobs, getJobById, updateJob, deleteJob, applyToJob };
