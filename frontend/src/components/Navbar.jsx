@@ -58,6 +58,23 @@ const Navbar = () => {
               Contact Us
             </Link>
           </li>
+          {/* NEW LINKS FOR USER --- MAY NEED TO MOVE SOMEWHERE MORE APPROPRIATE */}
+          <li>
+            <Link
+              to="/user/jobs"
+              className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"
+            >
+              Jobs
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/user/applications"
+              className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"
+            >
+              My Applications
+            </Link>
+          </li>
         </ul>
 
         {/* TODO: use code below in an if statment if user is logged in */}
