@@ -1,8 +1,8 @@
 import React from "react";
-import ComboBox from "../components/ComboBox";
-import Dropdown from "../components/Dropdown";
+import ComboBox from "../../components/ComboBox";
+import Dropdown from "../../components/Dropdown";
 
-const LandingPage = () => {
+const Landing = () => {
     const handleSearch = (searchTerm) => {
         console.log("Search term:", searchTerm); // Handle search logic here
     };
@@ -34,7 +34,7 @@ const LandingPage = () => {
     );
 };
 
-export default LandingPage;
+export default Landing;
 
 
 

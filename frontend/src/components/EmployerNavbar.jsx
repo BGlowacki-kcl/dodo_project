@@ -7,6 +7,8 @@ const EmployerNavbar = () => {
   return (
     <nav className="bg-white shadow-md w-full">
       <div className="container mx-auto px-4 py-2 flex items-center justify-between">
+        
+        {/* Employer Dashboard Link */}
         <Link to="/Employer-dashboard" className="flex items-center ml-4">
           <span className="text-xl font-bold ml-2">Employer Dashboard</span>
         </Link>
@@ -14,18 +16,24 @@ const EmployerNavbar = () => {
         {/* Navigation Links */}
         <ul className="flex space-x-12 mr-60">
           <li>
-            <Link to="/employer-posts" className="text-gray-800 text-lg font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 px-3 py-2 rounded-md">
+            <Link
+              to="/posts"
+              className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"
+            >
               Posts
             </Link>
           </li>
           <li>
-            <Link to="/employer-applicants" className="text-gray-800 text-lg font-medium transition duration-300 ease-in-out hover:font-bold hover:bg-gray-200 px-3 py-2 rounded-md">
+            <Link
+              to="/applicants"
+              className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"
+            >
               Applicants
             </Link>
           </li>
         </ul>
 
-        {/* TODO: use code below in an if statment if user is logged in */}
+        {/* TODO: use code below in an if statement if user is logged in */}
 
         {/* Profile Section with Dropdown */}
         {/* <div className="relative">
