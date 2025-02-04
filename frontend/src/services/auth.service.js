@@ -1,6 +1,4 @@
-// import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 
 export const authService = {
     async signUp(email, password){
@@ -11,6 +9,14 @@ export const authService = {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const idToken = await userCredential.user.getIdToken();
         sessionStorage.setItem('token', idToken);
+        const role = await fetch('/api/user/role', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${idToken}`,
+            },
+        });
+        sessionStorage.setItem('role', role);
     },
 
     async signIn(email, password){
@@ -23,6 +29,14 @@ export const authService = {
             const idToken = await userCredential.user.getIdToken();
             console.log('idToken', idToken);
             sessionStorage.setItem('token', idToken);
+            const role = await fetch('/api/user/role', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${idToken}`,
+                },
+            });
+            sessionStorage.setItem('role', role);
         } catch (error){
             throw new Error('Invalid email or password');
         }
@@ -34,8 +48,18 @@ export const authService = {
             sessionStorage.removeItem('token');
         }).catch((error) => {
             console.error(error);
-            return({ success: false, message:"Sign out not successful"})
+            return({ success: false, message:"Sign out not successful"});
         });
         
     },
+    async checkIfProfileCompleted(){
+        const response = await fetch('/api/user/completed', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem('idToken')}`,
+            },
+        });
+        return response;
+    }
 };
