@@ -26,7 +26,7 @@ function App() {
 				<Route path='/SignUp' element={<SignInUp mode="SignUp" />} />
 				<Route path="/dashboard" element={<AuthGuard> <Dashboard /> </AuthGuard>} /> {/* TODO: Fix the problem about back arrow  */}
 				<Route path="/" element={<LandingPage />} />
-				<Route path="applicant-dashboard/" element={<ApplicantDashboard />} /> 
+				<Route path="/applicant-dashboard" element={<ApplicantDashboard />} />
 				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
 				<Route path="/posts" element={<EmployerPosts />} />
 				<Route path="/user/jobs" element={<UserJobsPage />} />

@@ -1,15 +1,29 @@
-import React from "react";
+import React, { useState } from 'react';
+import JobList from '../../components/JobList.jsx';
+import Metrics from '../../components/Metrics.jsx';
+import Statistics from '../../components/Statistics.jsx';
 
-function EmployerDashboard() {
+const Dashboard = () => {
+    const [selectedJob, setSelectedJob] = useState('Job Post 1');
+
+    const jobs = ['Job Post 1', 'Job Post 2', 'Job Post 3'];
+
     return (
-        <div className="bg-gray-100 min-h-screen">
-            <div className="p-6 max-w-7xl mx-auto">
-                <h2 className="text-2xl font-semibold mt-8">Recent job posts</h2>
+        <div className="min-h-screen bg-gray-100 p-8">
+            <h1 className="text-3xl font-bold mb-6">Employer Dashboard</h1>
 
-                <h2 className="text-2xl font-semibold mt-8">Statistics</h2>
+            <div className="grid grid-cols-3 gap-6">
+                {/* Job List (Sidebar) */}
+                <JobList jobs={jobs} onSelectJob={setSelectedJob} />
+
+                {/* Metrics and Chart */}
+                <div className="col-span-2 space-y-6">
+                    <Metrics selectedJob={selectedJob} />
+                    {/*<Statistics selectedJob={selectedJob} />*/}
+                </div>
             </div>
         </div>
     );
-}
+};
 
-export default EmployerDashboard;
+export default Dashboard;
