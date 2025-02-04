@@ -1,6 +1,6 @@
-import Application from '../models/application.model';
-import Job from '../models/job.model';
-import User from '../models/user.model';
+import Application from '../models/application.model.js';
+import Job from '../models/job.model.js';
+import User from '../models/user.model.js';
 
 // Centralized response formatter
 const createResponse = (success, message, data = null, statusCode = 200) => ({
