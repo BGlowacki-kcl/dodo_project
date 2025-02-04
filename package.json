@@ -41,9 +41,6 @@
       "mjs",
       "cjs",
       "json"
-    ],
-    "transform": {
-      "^.+\\.(js|jsx|mjs|cjs)$": "babel-jest"
-    }
+    ]
   }
 }
