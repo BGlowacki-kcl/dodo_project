@@ -42,6 +42,18 @@ export const authService = {
                 },
             });
             sessionStorage.setItem('role', role);
+            const isComplete = await fetch('/api/user/complete', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${idToken}`,
+                },
+            });
+            // if(isComplete.redirect){
+            //     console.log("REDIRECTING!")
+            //     navigate('/completeProfile');
+            // }
+            // REDIRET DOES NOT WORK
 
         } catch (error){
             throw new Error('Invalid email or password');
