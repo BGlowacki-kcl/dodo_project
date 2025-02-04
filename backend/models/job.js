@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const jobSchema = new Schema({
@@ -8,25 +8,11 @@ const jobSchema = new Schema({
         required: true
     },
 
-    company: {
-        type: String,
-        required: true
-    },
+    description: String,
 
-    location: {
-        type: String,
-        required: true
-    },
+    requirements: [String],
 
-    description: {
-        type: String,
-        required: true
-    },
-
-    salaryRange: {
-        min: Number,
-        max: Number
-    },
+    location: String,
 
     // can change if needed if we only want 1 employment type
     employmentType: {
@@ -35,7 +21,12 @@ const jobSchema = new Schema({
         default: ['full-time']
     },
 
-    requirements: [String],
+    salaryRange: {
+        min: Number,
+        max: Number
+    },
+
+    skillsNeeded: [String],
 
     experienceLevel: String, //such as entry, mid, senior
 
@@ -66,4 +57,4 @@ const jobSchema = new Schema({
     // }
 });
 
-export default mongoose.model('Job', jobSchema);
+module.exports = mongoose.model('Job', jobSchema);
