@@ -3,22 +3,21 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase';
+import { authService } from '../services/auth.service';
 
 const AuthGuard = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-
+    
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log("Checking...")
-            if (!user) {
-                navigate('/login', { replace: true });
-            }
-            setLoading(false);
-        });
-        
-        return () => unsubscribe();
-    }, [navigate]);
+        const token = sessionStorage.getItem("token");
+        if(!token){
+            navigate('/signin', { replace: true });
+        }
+
+        authService.checkIfProfileCompleted();
+        setLoading(false);
+    })
 
     if (loading) {
         return <div>Loading...</div>;
