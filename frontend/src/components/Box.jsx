@@ -1,6 +1,6 @@
 import React from "react";
 
-const Box = ({ image, text, onClick }) => {
+const Box = ({ image, text, onClick,counter }) => {
   return (
     <button
       onClick={onClick}
@@ -8,8 +8,9 @@ const Box = ({ image, text, onClick }) => {
       style={{ backgroundImage: `url(${image})` }}
     >
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-        <span className="text-center">{text}</span>
+      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center flex-col">
+        <p className="text-center">{counter}</p>
+        <p className="text-center">{text}</p>
       </div>
     </button>
   );
