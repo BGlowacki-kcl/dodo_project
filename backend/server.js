@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
-import authRoutes from './routes/auth.route.js';
+import userRouter from './routes/user.routes.js';
 
 dotenv.config();
 const app = express();
@@ -12,7 +12,7 @@ app.get('/', (req, res) => {
 });
 
 app.use(express.json());
-app.use('/api/auth', authRoutes); // e.g. http://localhost:5000/api/auth/signup
+app.use('/api/user', userRouter);
 
 app.listen(port, () => {
     connectDB();
