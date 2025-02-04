@@ -9,7 +9,6 @@ router.get('/applicant/:applicantId', applicationController.getApplication);
 router.delete('/cancel', applicationController.cancel);
 router.put('/:id/status', applicationController.updateApplicationStatus);
 
-router.get('/applicant/:applicantId', applicationController.getApplication);
 
 export default router;
 
