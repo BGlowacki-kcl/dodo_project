@@ -7,22 +7,8 @@ import { authService } from '../services/auth.service';
 
 const AuthGuard = ({ children }) => {
     const [loading, setLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
-
-    // useEffect(() => {
-    //     const unsubscribe = onAuthStateChanged(auth, (user) => {
-    //         if (user) {
-    //             setIsAuthenticated(true);
-    //         } else {
-    //             navigate('/signin', { replace: true });
-    //         }
-    //         setLoading(false);
-    //     });
-
-    //     return () => unsubscribe();
-    // }, [navigate]);
-
+    
     useEffect(() => {
         const token = sessionStorage.getItem("token");
         if(!token){
@@ -30,14 +16,11 @@ const AuthGuard = ({ children }) => {
         }
 
         authService.checkIfProfileCompleted();
+        setLoading(false);
     })
 
     if (loading) {
         return <div>Loading...</div>;
-    }
-
-    if (!isAuthenticated) {
-        return null; // or a redirect component
     }
 
     return children;

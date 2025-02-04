@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
@@ -20,7 +20,7 @@ const userSchema = new Schema({
     role: {
         type: String,
         enum: ['jobSeeker', 'employer', 'admin'],
-        default: 'jobSeeker'
+        required: true
     },
 
     createdAt: {
@@ -57,4 +57,4 @@ const userSchema = new Schema({
 { discriminatorKey: "role", collection: "users" }
 );
 
-module.exports = mongoose.model('User', userSchema);
+export const User = mongoose.model('User', userSchema);

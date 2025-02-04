@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
-import User from "./user.model";
+import { User } from "./user.model.js";
+const { Schema } = mongoose;
 
-const Employer = User.discriminator(
+const employer = User.discriminator(
     "employer",
     new mongoose.Schema({
         companyName: String,
@@ -14,4 +15,4 @@ const Employer = User.discriminator(
     })
 );
 
-module.exports = Employer;
+export const Employer = employer;

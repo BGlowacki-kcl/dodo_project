@@ -1,16 +1,18 @@
-import { User } from "../models/user.model"; 
- 
+import { User } from "../models/user/user.model.js"; 
+import { JobSeeker } from "../models/user/jobSeeker.model.js";
+import { Employer } from "../models/user/Employer.model.js"; 
+
 export const userController = {
 
     async getUser(req, res){
         try {
-            if(!req || !req.params.uid){
+            if(!req || !req.query.uid){
                 res.status(500).json({ success: false, message: "No user provided!" });
             }
-            const { uid } = req.params;
-            const user = User.find({ uid: uid});
+            const { uid } = req.query;
+            const user = await User.findOne({ uid: uid});
             if(!user){
-                res.status(500).json({ success: false, messgae: "No user found with this ID" });
+                return res.status(500).json({ success: false, messgae: "No user found with this ID" });
             }
             res.status(200).json({ success: true, message: "User found", data: user });
         } catch (error) {
@@ -20,13 +22,17 @@ export const userController = {
 
     async getRole(req, res) {
         if(!req.uid){
-            res.status(401).json({ success: false, message: "No user found" });
+            return res.status(401).json({ success: false, message: "No user found" });
         }
-        const user = User.find({ id: uid });
-        res.status(200).json({ success: true, message: "User found", data: user.role });
+        const uid = req.uid;
+        const user = await User.findOne({ uid: uid });
+        if(!user){
+            return res.status(500).json({ success: false, messgae: "No user found with this ID" });
+        }
+        res.status(200).json({ success: true, message: "User found", "data": user.role });
     },
 
-    async checkUserCompletion(req, res) {
+    async checkProfileCompletion(req, res) {
         const { uid } = req;
         if (!uid) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -48,6 +54,8 @@ export const userController = {
                 missingFields 
             });
         }
+
+        res.status(200).json({ success: true, message: "User's profile is completed!" });
     },
 
     async createBasicUser(req, res) {
@@ -60,13 +68,16 @@ export const userController = {
         if(!email || !role) {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
+        
+        let newUser = null;
         if (role === 'jobSeeker') {
             newUser = new JobSeeker({ uid, email, role });
         } else if (role === 'employer') {
             newUser = new Employer({ uid, email, role });
         } else {
-            return res.status(400).json({ message: 'Invalid role' });
+            return res.status(400).json({ success: false, message: 'Invalid role' });
         }
+
         try {
             await newUser.save();
             res.status(201).json({ success: true, message: 'User created successfully' });
@@ -82,11 +93,14 @@ export const userController = {
             const { uid } = req;
             const updates = req.body;
     
-            const user = await User.findByIdAndUpdate(id, updates, { new: true });
-    
+            const user = await User.findOne({uid: uid});
+
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
+
+            Object.assign(user, updates);
+            await user.save();
 
             res.status(200).json(user);
         } catch (err) {
@@ -99,15 +113,15 @@ export const userController = {
         try {
             const { uid } = req;
     
-            const user = await User.findByIdAndDelete(id);
+            const user = await User.findOneAndDelete({uid: uid});
             if (!user){
-                return res.status(404).json({ message: 'User not found' });
+                return res.status(404).json({ success: false, message: 'User not found' });
             }
 
             res.status(200).json({ message: 'User deleted successfully' });
         } catch (error) {
             console.error('Error deleting user:', error);
-            res.status(500).json({ message: 'Server error' });
+            res.status(500).json({ success: false, message: 'Server error' });
         }
     },
 
