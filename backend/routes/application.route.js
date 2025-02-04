@@ -1,5 +1,5 @@
 import express from 'express';
-import applicationController from '../controllers/application.controller';
+import applicationController from '../controllers/application.controller.js';
 import { ExplainVerbosity } from 'mongodb';
 
 const router = express.Router();
