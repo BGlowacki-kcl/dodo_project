@@ -1,156 +1,113 @@
-import Application from '../models/application.model.js';
-import Job from '../models/job.model.js';
-import User from '../models/user.model.js';
+import { Application } from "../models/application.model.js";
+import Job from "../models/job.model.js";
+import { User } from "../models/user/user.model.js";
 
-// Centralized response formatter
-const createResponse = (success, message, data = null, statusCode = 200) => ({
+const createResponse = (success, message, data = null) => ({
     success,
     message,
-    ...(data && { data })
+    ...(data && { data }),
 });
 
-// Reusable error messages
-const ERROR_MESSAGES = {
-    JOB_NOT_FOUND: 'Job not found',
-    UNAUTHORIZED: 'Unauthorized: Only job seekers can apply for jobs',
-    ALREADY_APPLIED: 'You have already applied for this job',
-    SERVER_ERROR: 'Error submitting application'
-};
-
-// Validation helpers
-const validateJob = async (jobId) => {
-    const job = await Job.findById(jobId);
-    if (!job) {
-        throw { status: 404, message: ERROR_MESSAGES.JOB_NOT_FOUND };
-    }
-    return job;
-};
-
-const validateApplicant = async (applicantId) => {
-    const applicant = await User.findById(applicantId);
-    if (!applicant || applicant.role !== 'jobSeeker') { // temp
-        throw { status: 403, message: ERROR_MESSAGES.UNAUTHORIZED };
-    }
-    return applicant;
-};
-
-const checkExistingApplication = async (jobId, applicantId) => {
-    const existing = await Application.findOne({ job: jobId, applicant: applicantId });
-    if (existing) {
-        throw { status: 400, message: ERROR_MESSAGES.ALREADY_APPLIED };
-    }
+const handleError = (res, error, defaultMessage = "Server error") => {
+    console.error(error);
+    const statusCode = error.status || 500;
+    return res.status(statusCode).json(createResponse(false, error.message || defaultMessage));
 };
 
 export const applicationController = {
     async apply(req, res) {
         try {
             const { jobId, coverLetter } = req.body;
-            const applicantId = req.user.id;
-
-            // Run all validations
-            await Promise.all([
-                validateJob(jobId),
-                validateApplicant(applicantId),
-                checkExistingApplication(jobId, applicantId)
-            ]);
-
-            // Create and save application with 'applying' status
+    
             const application = await Application.create({
                 job: jobId,
-                applicant: applicantId,
+                applicant: "65a51cc1dd997c1460cab7be", // Temporary test applicant ID
                 coverLetter,
-                status: 'applying',
-                submittedAt: new Date()
+                status: "applying",
+                submittedAt: new Date(),
             });
-
-            return res.status(201).json(
-                createResponse(true, 'Application started successfully', application)
-            );
-
+    
+            return res.status(201).json(createResponse(true, "Application started successfully", application));
         } catch (error) {
-            const statusCode = error.status || 500;
-            const message = error.status ? error.message : ERROR_MESSAGES.SERVER_ERROR;
-
-            return res.status(statusCode).json(
-                createResponse(false, message, error.status ? null : error.message)
-            );
+            return handleError(res, error, "Error submitting application");
         }
     },
-
+    
     async getApplication(req, res) {
         try {
-            const { applicationId } = req.params;
-            const employerId = req.user.id; // Get employer ID from authenticated session
-
-            // Find the application
-            const application = await Application.findById(applicationId)
-                .populate('applicant', 'name email experience education skills'); // Get applicant details
-
+            const { jobId, userId } = req.params;
+            const application = await Application.findOne({ job: jobId, applicant: userId });
+    
             if (!application) {
-                return res.status(404).json(createResponse(false, 'Application not found'));
+                return res.status(404).json(createResponse(false, "Application not found"));
             }
-
-            // Ensure the employer owns the job before viewing the application
-            if (application.job.postedBy.toString() !== employerId) {
-                return res.status(403).json(createResponse(false, 'Unauthorized to view this application'));
-            }
-
-            return res.status(200).json(createResponse(true, 'Application retrieved successfully', application));
+    
+            return res.status(200).json(createResponse(true, "Application retrieved successfully", application));
         } catch (error) {
-            return res.status(500).json(createResponse(false, 'Server error', error.message));
+            return handleError(res, error, "Error retrieving application");
         }
     },
-
+    
     async cancel(req, res) {
         try {
-            const { applicationId } = req.body;
-            const applicantId = req.user.id; // Get user ID from token
-
-            // Find the application
+            const { applicationId } = req.params;
+            
             const application = await Application.findById(applicationId);
+    
             if (!application) {
-                return res.status(404).json(createResponse(false, 'Application not found'));
+                return res.status(404).json(createResponse(false, "Application not found"));
             }
-
-            // Ensure only the owner can delete it
-            if (application.applicant.toString() !== applicantId) {
-                return res.status(403).json(createResponse(false, 'Unauthorized to cancel this application'));
+    
+            if (application.status !== "applying") {
+                return res.status(400).json(createResponse(false, "Only applications in 'applying' status can be canceled"));
             }
-
-            // Ensure the application is still in 'applying' status
-            if (application.status !== 'applying') {
-                return res.status(400).json(createResponse(false, 'Application cannot be canceled after submission'));
-            }
-
-            // Delete the application
+    
             await Application.findByIdAndDelete(applicationId);
-
-            return res.status(200).json(createResponse(true, 'Application canceled successfully'));
+    
+            return res.status(200).json(createResponse(true, "Application canceled successfully"));
         } catch (error) {
-            return res.status(500).json(createResponse(false, 'Server error', error.message));
+            return handleError(res, error, "Error canceling application");
         }
     },
-
+    
     async updateApplicationStatus(req, res) {
         try {
-            const { id } = req.params; // Application ID
-            const { status } = req.body; // New status
-
-            // Check if status is valid
-            const validStatuses = ['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'hired'];
+            const { id } = req.params;
+            const { status } = req.body;
+    
+            const validStatuses = ["applying", "applied", "in review", "shortlisted", "rejected", "hired"];
             if (!validStatuses.includes(status)) {
-                return res.status(400).json(createResponse(false, 'Invalid application status'));
+                return res.status(400).json(createResponse(false, "Invalid application status"));
             }
-
-            // Update the application status
-            const application = await Application.findByIdAndUpdate(id, { status }, { new: true });
+    
+            const application = await Application.findById(id);
             if (!application) {
-                return res.status(404).json(createResponse(false, 'Application not found'));
+                return res.status(404).json(createResponse(false, "Application not found"));
             }
-
-            return res.status(200).json(createResponse(true, 'Application status updated successfully', application));
+    
+            application.status = status;
+            await application.save();
+    
+            return res.status(200).json(createResponse(true, "Application status updated successfully", application));
         } catch (error) {
-            return res.status(500).json(createResponse(false, 'Server error', error.message));
+            return handleError(res, error, "Error updating application status");
         }
-    }
+    },
+    
+    async getApplicants(req, res) {
+        try {
+            const { jobId } = req.params;
+            const applications = await Application.find({ job: jobId }).populate("applicant", "name email");
+            
+            const applicants = applications.map(app => ({
+                id: app.applicant._id,
+                name: app.applicant.name,
+                email: app.applicant.email
+            }));
+            
+            return res.status(200).json(createResponse(true, "Applicants retrieved successfully", applicants));
+        } catch (error) {
+            return handleError(res, error, "Error retrieving applicants");
+        }
+    },
 };
