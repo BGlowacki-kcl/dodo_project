@@ -18,7 +18,7 @@
     "firebase-admin": "^13.0.2",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.5",
-    "require": "^2.4.20"
+    "require": "^0.4.4"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.7",
