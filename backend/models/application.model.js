@@ -1,32 +1,38 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
+
 const { Schema } = mongoose;
 
 const jobApplicationSchema = new Schema({
   job: {
     type: Schema.Types.ObjectId,
-    ref: 'Job',
-    required: true
+    ref: "Job",
+    required: true,
   },
 
   applicant: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: "User",
+    required: true,
   },
 
   status: {
     type: String,
-    enum: ['applied', 'in review', 'shortlisted', 'rejected', 'hired'],
-    default: 'applied'
+    enum: ["applied", "in review", "shortlisted", "rejected", "hired"],
+    default: "applied",
   },
 
-  // if we want a coverletter or anything else linked to the job application
-  coverLetter: String,
+  coverLetter: {
+    type: String,
+    trim: true,
+  },
 
   submittedAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model('Application', jobApplicationSchema);
+const Application = mongoose.model("Application", jobApplicationSchema);
+export default Application;
+
+
