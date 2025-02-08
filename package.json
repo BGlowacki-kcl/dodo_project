@@ -17,6 +17,7 @@
     "firebase-admin": "^13.0.2",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.5",
+    "openai": "^4.83.0",
     "require": "^0.4.4"
   },
   "devDependencies": {
