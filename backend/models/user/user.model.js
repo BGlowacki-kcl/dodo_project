@@ -57,4 +57,6 @@ const userSchema = new Schema({
 { discriminatorKey: "role", collection: "users" }
 );
 
-export const User = mongoose.model('User', userSchema);
+
+const User = mongoose.model("User", userSchema);
+export default User;
