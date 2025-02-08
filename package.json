@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon backend/server.js",
-    "test": "jest --coverage"
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest --coverage"
   },
   "type": "module",
   "keywords": [],
@@ -21,9 +21,7 @@
     "require": "^0.4.4"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.26.7",
     "@eslint/js": "^9.19.0",
-    "babel-jest": "^29.7.0",
     "eslint": "^9.19.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
@@ -36,11 +34,21 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "./backend/tests/setup.js"
+    ],
     "moduleFileExtensions": [
       "js",
       "mjs",
       "cjs",
       "json"
-    ]
+    ],
+    "extensionsToTreatAsEsm": [
+      ".ts",
+      ".tsx"
+    ],
+    "verbose": true,
+    "collectCoverage": true,
+    "coverageDirectory": "coverage"
   }
 }
