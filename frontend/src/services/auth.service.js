@@ -21,7 +21,7 @@ export const authService = {
             })
         });
         // Delete if user not signed in after signup
-        sessionStorage.setItem('role', role.json());
+        sessionStorage.setItem('role', role);
     },
 
     async signIn(email, password){
