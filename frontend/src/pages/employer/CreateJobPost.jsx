@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createJob } from '../../services/jobService';
 
 function CreateJobPost() {
   const [jobData, setJobData] = useState({
@@ -12,6 +13,8 @@ function CreateJobPost() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const userId = "abc123"; //////////////////////////////////////// CONSTANT FOR NOW WILL CHANGE!!!
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +40,14 @@ function CreateJobPost() {
         throw new Error(`Please fill in: ${missingFields.join(', ')}`);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const newJob = {
+        ...jobData,
+        postedBy: userId, 
+      };
+
+      //await new Promise((resolve) => setTimeout(resolve, 1000)); not sure if needed before, left commented
+      await createJob(newJob);
 
       const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
       const updatedJobs = [...storedJobs, { id: storedJobs.length + 1, ...jobData, applicants: 0 }];
