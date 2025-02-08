@@ -2,12 +2,51 @@ import * as pdfjs from "pdfjs-dist/build/pdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
-/**
- * Extracts text from a PDF file
- * @param {File} file - The uploaded PDF file
- * @returns {Promise<string>} - Extracted text from the PDF
- */
-export default async function extractTextFromPDF(file, setText, setError) {
+export default async function getParsedResume(file){
+    try{
+        const text = await extractTextFromPDF(file);
+        if(!text){
+            throw new Error("No text extraxcted");
+        }
+        const response = await getChatResponse(text);
+
+        return await responseToJson(response);
+        
+    } catch (err) {
+        console.error("Error occured while generating text: "+err);
+        throw new Error("Error: "+err);
+    }
+}
+
+async function responseToJson(response){
+    const responseJSON = await response.json();
+    let answer = responseJSON.data.choices[0].message.content.trim();
+    if (answer.startsWith(`"data":`)) {
+        answer = `{ ${answer} }`; 
+    }
+    try {
+        const jsonData = JSON.parse(answer); 
+        return jsonData?.data || null;
+    } catch (error) {
+        console.error("Invalid JSON format:", error);
+        return null;
+    }
+}
+
+async function getChatResponse(text){
+    return await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            //'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+            query: text,
+        })
+    });
+}
+
+async function extractTextFromPDF(file) {
     try {
         
         const arrayBuffer = await file.arrayBuffer();
@@ -23,9 +62,9 @@ export default async function extractTextFromPDF(file, setText, setError) {
             fullText += pageText + '\n\n';
         }
         
-        setText(fullText);
+        return fullText;
     } catch (err) {
-        setError('Error reading PDF: ' + err.message);
         console.error('Error reading PDF:', err);
+        throw new Error("Error: "+err);
     }
 };
