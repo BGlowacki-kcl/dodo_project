@@ -37,6 +37,7 @@ export const userController = {
         if (!uid) {
             return res.status(401).json({ success: false, message: "Unauthorized" });
         }
+        console.log("-------", uid);
 
         const user = await User.findOne({ uid });
         if (!user) {
@@ -48,7 +49,7 @@ export const userController = {
 
         if (missingFields.length > 0) {
             return res.status(403).json({ 
-                success: false, 
+                success: true, 
                 message: "Profile incomplete, redirecting to addDetails",
                 redirect: "/addDetails",
                 missingFields 

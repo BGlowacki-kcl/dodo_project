@@ -12,10 +12,11 @@ import EmployerPosts from './pages/employer/EmployerPosts.jsx';
 import Swiping from './pages/applicant/Swiping.jsx';
 import CreateJobPost from './pages/employer/CreateJobPost.jsx';
 import EditJobPost from './pages/employer/EditJobPost.jsx';
-
 import UserJobsPage from './pages/user/UserJobsPage.jsx';
 import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
+import AddDetails from './pages/AddDetails.jsx';
+import AddPdf from './pages/addPdf.jsx';
 
 function App() {
   return (
@@ -32,9 +33,11 @@ function App() {
 				<Route path="/user/jobs" element={<UserJobsPage />} />
 				<Route path="/user/applications" element={<UserApplicationsPage />} />
 				<Route path="/user/applications/:appId" element={<SingleApplicationPage />} />
-        <Route path="/posts/new" element={<CreateJobPost />} />
-        <Route path="/posts/edit/:id" element={<EditJobPost />} />
-        <Route path="/swipe" element={<Swiping />} />
+				<Route path="/addDetails" element={<AddDetails />} />
+				<Route path="/addPdf" element={<AddPdf />} />
+				<Route path="/posts/new" element={<CreateJobPost />} />
+				<Route path="/posts/edit/:id" element={<EditJobPost />} />
+				<Route path="/swipe" element={<Swiping />} />
 			</Routes>
 		</Box>
   );

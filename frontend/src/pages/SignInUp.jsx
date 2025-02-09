@@ -36,8 +36,8 @@ const AuthForm = () => {
       }
 
       const response = isLogin 
-        ? await authService.signIn(email, password)
-        : await authService.signUp(email, password);
+        ? await authService.signIn(email, password, "jobSeeker")
+        : await authService.signUp(email, password, "jobSeeker");
 
       navigate('/dashboard');
 
