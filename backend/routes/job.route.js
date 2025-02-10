@@ -6,7 +6,6 @@ import {
     getJobById,
     updateJob,
     deleteJob,
-    applyToJob
 } from '../controllers/job.controller.js';
 
 const router = express.Router();
@@ -25,8 +24,5 @@ router.put('/:id', updateJob);
 
 // Delete a job post
 router.delete('/:id', deleteJob);
-
-// Apply to a job post
-router.post('/:id/apply', applyToJob);
 
 export default router;
