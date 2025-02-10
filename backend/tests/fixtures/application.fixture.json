@@ -1,0 +1,16 @@
+[
+    {
+      "job": "60d21b4667d0d8992e610c85",
+      "applicant": "60d21b4967d0d8992e610c86",
+      "status": "applied",
+      "coverLetter": "I am highly interested in this role and believe I would be a great addition to your team.",
+      "submittedAt": "20/10/2023 10:00:00"
+    },
+    {
+      "job": "60d21b4667d0d8992e610c85",
+      "applicant": "60d21b4967d0d8992e610c86",
+      "status": "applying",
+      "coverLetter": "I am highly interested in this role and believe I would be a great addition to your team.",
+      "submittedAt": "20/10/2023 09:00:00"
+    }
+  ]

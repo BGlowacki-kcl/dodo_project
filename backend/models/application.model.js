@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const jobApplicationSchema = new Schema({
@@ -16,8 +16,8 @@ const jobApplicationSchema = new Schema({
 
   status: {
     type: String,
-    enum: ['applied', 'in review', 'shortlisted', 'rejected', 'hired'],
-    default: 'applied'
+    enum: ['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'hired'],
+    default: 'applying'
   },
 
   // if we want a coverletter or anything else linked to the job application
@@ -29,4 +29,4 @@ const jobApplicationSchema = new Schema({
   }
 });
 
-module.exports = mongoose.model('Application', jobApplicationSchema);
+export const Application = mongoose.model('Application', jobApplicationSchema);

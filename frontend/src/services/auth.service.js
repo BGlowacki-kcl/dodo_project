@@ -1,4 +1,5 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, getAuth } from "firebase/auth";
+import { Navigate } from "react-router-dom";
 
 export const authService = {
     async signUp(email, password, role){
@@ -9,19 +10,24 @@ export const authService = {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const idToken = await userCredential.user.getIdToken();
         sessionStorage.setItem('token', idToken);
-        const saveToDb = await fetch('/api/user/basic', {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-                "email": email,
-                "role": role,
-            })
-        });
-        // Delete if user not signed in after signup
-        sessionStorage.setItem('role', role.json());
+        try{
+            const saveToDb = await fetch('/api/user/basic', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({
+                    "email": email,
+                    "role": role,
+                })
+            });
+            // Delete if user not signed in after signup
+            sessionStorage.setItem('role', role);
+        } catch(error){
+            console.error("SignUp error: ",error);
+        }
+
     },
 
     async signIn(email, password){
@@ -42,13 +48,13 @@ export const authService = {
                 },
             });
             sessionStorage.setItem('role', role);
-            const isComplete = await fetch('/api/user/complete', {
-                method: 'GET',
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${idToken}`,
-                },
-            });
+            // const isComplete = await fetch('/api/user/completed', {
+            //     method: 'GET',
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //         'Authorization': `Bearer ${idToken}`,
+            //     },
+            // });
             // if(isComplete.redirect){
             //     console.log("REDIRECTING!")
             //     navigate('/completeProfile');
@@ -70,18 +76,23 @@ export const authService = {
         });
         
     },
-    async checkIfProfileCompleted(){
-        const response = await fetch('/api/user/completed', {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        });
-        const data = await res.json();
-        if (data.redirect) {
-            navigate(data.redirect);
-        }
+    async checkIfProfileCompleted(navigate){
+        try{
+            const response = await fetch('/api/user/completed', {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                },
+            });
+            const data = await response.json();
+            console.log(data)
+            if (data.redirect) {
+                navigate(data.redirect);
+            }
         return response;
+        } catch (err) {
+            console.log("Error while checking profile completion: ", err);
+        }
     }
 };

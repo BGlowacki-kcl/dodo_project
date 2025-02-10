@@ -13,11 +13,12 @@ const AuthGuard = ({ children }) => {
         const token = sessionStorage.getItem("token");
         if(!token){
             navigate('/signin', { replace: true });
+            return;
         }
 
-        authService.checkIfProfileCompleted();
+        authService.checkIfProfileCompleted(navigate);
         setLoading(false);
-    })
+    }, [])
 
     if (loading) {
         return <div>Loading...</div>;
