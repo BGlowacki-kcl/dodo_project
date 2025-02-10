@@ -14,7 +14,7 @@ function EmployerPosts() {
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
 
-    const employerId = "abc123"; /// TEMPORARY FOR NOW WILL CHANGE!!!
+    const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMPORARY FOR NOW WILL CHANGE!!!
 
     useEffect(() => {
         async function fetchJobs() {

@@ -11,7 +11,7 @@ function EmployerPosts() {
   const [filters, setFilters] = useState({ title: '', type: '' });
 
 
-  const employerId = "abc123"; /// TEMP ID FOR NOW WILL CHANGE!!!
+  const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMP ID FOR NOW WILL CHANGE!!!
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -33,14 +33,14 @@ function EmployerPosts() {
     if (location.state && location.state.updatedJob) {
       setJobs(prevJobs =>
         prevJobs.map(job =>
-          job.id === location.state.updatedJob.id ? { ...job, ...location.state.updatedJob } : job
+          job._id === location.state.updatedJob._id ? { ...job, ...location.state.updatedJob } : job
         )
       );
       navigate('/posts', { replace: true });
     }
   }, [location, navigate]);
 
-  const handleDelete = (id) => async (id) => {
+  const handleDelete = async (id) => {
     try {
       await deleteJob(id);
       setJobs((prevJobs) => prevJobs.filter((job) => job._id !== id));
@@ -104,13 +104,13 @@ function EmployerPosts() {
             <p className="text-gray-500">No job posts available.</p>
           ) : (
             filteredJobs.map((job) => (
-              <div key={job.id} className="bg-white p-6 rounded-lg shadow-md">
+              <div key={job._id} className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-medium">{job.title} - {job.type} in {job.location}</h3>
                 <p>Applicants: {job.applicants}</p>
-                <button onClick={() => handleEdit(job.id)} className="mr-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button onClick={() => handleEdit(job._id)} className="mr-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                   Edit
                 </button>
-                <button onClick={() => handleDelete(job.id)} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                <button onClick={() => handleDelete(job._id)} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                   Delete
                 </button>
               </div>

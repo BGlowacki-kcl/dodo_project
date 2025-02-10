@@ -27,6 +27,10 @@ function EditJobPost() {
     /// JOB FETCH FROM BACKEND
     async function fetchJob() {
       try {
+        if (!id) {
+          setError("Missing job ID in URL.");
+          return;
+        }
         const job = await getJobById(id);
         setJobData({
           title: job.title,
@@ -71,7 +75,7 @@ function EditJobPost() {
         employmentType: [jobData.type]
       };
       await updateJob(id, updatedJob);
-      navigate('/employer/posts', { state: { updatedJob: updatedJob } });
+      navigate('/posts', { state: { updatedJob: updatedJob } });
     } catch (err) {
       setError('Error updating job');
     }

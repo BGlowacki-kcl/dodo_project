@@ -8,7 +8,7 @@ const Dashboard = () => {
     const [selectedJob, setSelectedJob] = useState('');
     const [jobs, setJobs] = useState([]);
 
-    const employerId = "abc123"; /// TEMPORARY WILL GET FROM AUTH CONTEXT
+    const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMPORARY WILL GET FROM AUTH CONTEXT
 
     useEffect(() => {
         async function fetchJobs() {

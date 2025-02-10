@@ -4,6 +4,7 @@ import { createJob } from '../../services/jobService';
 
 function CreateJobPost() {
   const [jobData, setJobData] = useState({
+    company: '',
     title: '',
     description: '',
     type: 'Full-time',
@@ -14,7 +15,7 @@ function CreateJobPost() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const userId = "abc123"; //////////////////////////////////////// CONSTANT FOR NOW WILL CHANGE!!!
+  const userId = "67aa6f2ce7d1ee03803ef428"; //////////////////////////////////////// CONSTANT FOR NOW WILL CHANGE!!!
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +36,7 @@ function CreateJobPost() {
       if (!jobData.title) missingFields.push("Title");
       if (!jobData.description) missingFields.push("Description");
       if (!jobData.location) missingFields.push("Location");
+      if (!jobData.company) missingFields.push("Company");
 
       if (missingFields.length > 0) {
         throw new Error(`Please fill in: ${missingFields.join(', ')}`);
@@ -49,9 +51,9 @@ function CreateJobPost() {
       //await new Promise((resolve) => setTimeout(resolve, 1000)); not sure if needed before, left commented
       await createJob(newJob);
 
-      const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
-      const updatedJobs = [...storedJobs, { id: storedJobs.length + 1, ...jobData, applicants: 0 }];
-      localStorage.setItem('jobs', JSON.stringify(updatedJobs));
+      // const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
+      // const updatedJobs = [...storedJobs, { id: storedJobs.length + 1, ...jobData, applicants: 0 }];
+      // localStorage.setItem('jobs', JSON.stringify(updatedJobs));
 
       navigate('/posts');
     } catch (err) {
@@ -71,6 +73,17 @@ function CreateJobPost() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+          <label className="block text-sm font-medium text-gray-700">Company</label>
+          <input
+            type="text"
+            name="company"
+            value={jobData.company}
+            onChange={handleChange}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Title</label>
           <input
