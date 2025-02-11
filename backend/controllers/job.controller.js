@@ -40,18 +40,17 @@ export const createJob = async (req, res) => {
 
 export const getJobs = async (req, res) => {
     try {
-        const jobs = await Job.find().populate('postedBy', 'name email').populate('applicants', 'name email');
+        const jobs = await Job.find();//.populate('postedBy', 'name email').populate('applicants', 'name email'); // ????
         res.status(200).json(jobs);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: error.message });
     }
 };
 
 export const getJobById = async (req, res) => {
     try {
-        const job = await Job.findById(req.params.id)
-            .populate('postedBy', 'name email')
-            .populate('applicants', 'name email');
+        const job = await Job.findById(req.params.id);//.populate('postedBy', 'name email').populate('applicants', 'name email');
 
         if (!job) {
             return res.status(404).json({ message: 'Job not found' });
@@ -90,7 +89,7 @@ export const deleteJob = async (req, res) => {
             return res.status(404).json({ message: 'Job not found' });
         }
 
-        await job.remove();
+        await Job.deleteOne({ _id: job.id });
         res.status(200).json({ message: 'Job deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
