@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getJobById, updateJob } from '../../services/jobService';
 
 function EditJobPost() {
   const { id } = useParams();
@@ -14,14 +15,34 @@ function EditJobPost() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
-    const jobToEdit = storedJobs.find(job => job.id === parseInt(id));
+    // const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
+    // const jobToEdit = storedJobs.find(job => job.id === parseInt(id));
+    
+    // if (jobToEdit) {
+    //   setJobData(jobToEdit);
+    // } else {
+    //   setError("Job not found.");
+    // }
 
-    if (jobToEdit) {
-      setJobData(jobToEdit);
-    } else {
-      setError("Job not found.");
+    /// JOB FETCH FROM BACKEND
+    async function fetchJob() {
+      try {
+        if (!id) {
+          setError("Missing job ID in URL.");
+          return;
+        }
+        const job = await getJobById(id);
+        setJobData({
+          title: job.title,
+          description: job.description,
+          type: job.employmentType?.[0] || 'Full-time',
+          location: job.location
+        });
+      } catch (err) {
+        setError('Could not fetch job from server.');
+      }
     }
+    fetchJob();
   }, [id]);
 
   const handleChange = (e) => {
@@ -32,7 +53,7 @@ function EditJobPost() {
     }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => { //made into async (check if problematic)
     e.preventDefault();
 
     if (!jobData.title || !jobData.description || !jobData.location) {
@@ -40,14 +61,24 @@ function EditJobPost() {
       return;
     }
 
-    const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
-    const updatedJobs = storedJobs.map(job => 
-      job.id === parseInt(id) ? { ...job, ...jobData } : job
-    );
+    // const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
+    // const updatedJobs = storedJobs.map(job => 
+    //   job.id === parseInt(id) ? { ...job, ...jobData } : job
+    // );
 
-    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
+    // localStorage.setItem('jobs', JSON.stringify(updatedJobs));
     
-    navigate('/posts', { state: { updatedJob: jobData } }); 
+    // navigate('/posts', { state: { updatedJob: jobData } }); 
+    try {
+      const updatedJob = {
+        ...jobData,
+        employmentType: [jobData.type]
+      };
+      await updateJob(id, updatedJob);
+      navigate('/posts', { state: { updatedJob: updatedJob } });
+    } catch (err) {
+      setError('Error updating job');
+    }
   };
 
   return (
