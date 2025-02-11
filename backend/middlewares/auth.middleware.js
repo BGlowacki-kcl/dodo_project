@@ -1,8 +1,7 @@
 import admin from "../config/firebase.js";
 import User from "../models/user/user.model.js";
 
-export function checkRole(roles) {
-    return async function (req, res, next) {
+export const checkRole = (roles) => async (req, res, next) => {
         try {
             const idToken = req.headers.authorization?.split('Bearer ')[1];
             if (!idToken) {
@@ -41,4 +40,3 @@ export function checkRole(roles) {
             });
         }
     }
-}

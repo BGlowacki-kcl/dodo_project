@@ -27,7 +27,7 @@ export const userController = {
         const uid = req.uid;
         const user = await User.findOne({ uid: uid });
         if(!user){
-            return res.status(500).json({ success: false, messgae: "No user found with this ID" });
+            return res.status(500).json({ success: false, message: "No user found with this ID" });
         }
         res.status(200).json({ success: true, message: "User found", "data": user.role });
     },
