@@ -1,45 +1,17 @@
 import request from "supertest";
 import { app } from "../../app.js";
-import mongoose from "mongoose";
 import { jest } from "@jest/globals";
-import { JobSeeker } from "../../models/user/jobSeeker.model.js";
 import { mockUser } from "../fixtures/user.fixture.js";
-import { MongoMemoryServer } from "mongodb-memory-server";
 import User from "../../models/user/user.model.js";
-import { checkRole } from "../../middlewares/auth.middleware.js";
 
+// Override middleware function
 jest.mock('../../middlewares/auth.middleware.js', () => ({
     checkRole: () => (req, res, next) => {
-        console.log("Mock middleware called-------------------------------------");
         req.uid = "mock-firebase-uid"; // Attach mock user ID to request
         next();
     }
 }));
 
-let mongoServer;
-
-beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    
-    await mongoose.connect(mongoUri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    });
-
-    // Create a test user in the database
-    await JobSeeker.create(mockUser);
-});
-
-afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
-});
-
-beforeEach(() => {
-    // Clear all mocks before each test
-    jest.clearAllMocks();
-});
 
 describe("GET /api/user/role", () => {
     test("Should respond with 200 and return the user's role", async () => {
