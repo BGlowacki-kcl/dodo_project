@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config()
 
 const serviceAccount = JSON.parse(
-  readFileSync('./backend/config/dodo-project-42d5c-firebase-adminsdk-fbsvc-681422d262.json', 'utf8')
+  readFileSync(process.env.FIREBASE_PATH, 'utf8')
 );
 
 admin.initializeApp({
