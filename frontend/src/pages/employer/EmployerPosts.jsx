@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar';
+import { getAllJobs, deleteJob } from '../../services/jobService';
 
 function EmployerPosts() {
   const navigate = useNavigate();
@@ -9,36 +10,43 @@ function EmployerPosts() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ title: '', type: '' });
 
+
+  const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMP ID FOR NOW WILL CHANGE!!!
+
   useEffect(() => {
     const fetchJobs = async () => {
-      setLoading(true);
-      const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
-      const defaultJobs = [
-        { id: 1, title: 'Software Engineer', location: 'San Francisco', type: 'Full-time', applicants: 10 },
-        { id: 2, title: 'Data Analyst', location: 'Remote', type: 'Part-time', applicants: 5 },
-      ];
-      setJobs([...defaultJobs, ...storedJobs]);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const data = await getAllJobs(employerId); 
+        setJobs(data);
+      } catch (err) {
+        console.error("Error fetching employer's jobs:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchJobs();
-  }, []);
+  }, [employerId]);
 
   useEffect(() => {
     if (location.state && location.state.updatedJob) {
       setJobs(prevJobs =>
         prevJobs.map(job =>
-          job.id === location.state.updatedJob.id ? location.state.updatedJob : job
+          job._id === location.state.updatedJob._id ? { ...job, ...location.state.updatedJob } : job
         )
       );
       navigate('/posts', { replace: true });
     }
   }, [location, navigate]);
 
-  const handleDelete = (id) => {
-    const updatedJobs = jobs.filter(job => job.id !== id);
-    setJobs(updatedJobs);
-    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
+  const handleDelete = async (id) => {
+    try {
+      await deleteJob(id);
+      setJobs((prevJobs) => prevJobs.filter((job) => job._id !== id));
+    } catch (err) {
+      console.error("Error deleting job:", err);
+    }
   };
 
   const handleEdit = (id) => {
@@ -96,13 +104,13 @@ function EmployerPosts() {
             <p className="text-gray-500">No job posts available.</p>
           ) : (
             filteredJobs.map((job) => (
-              <div key={job.id} className="bg-white p-6 rounded-lg shadow-md">
+              <div key={job._id} className="bg-white p-6 rounded-lg shadow-md">
                 <h3 className="text-xl font-medium">{job.title} - {job.type} in {job.location}</h3>
                 <p>Applicants: {job.applicants}</p>
-                <button onClick={() => handleEdit(job.id)} className="mr-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button onClick={() => handleEdit(job._id)} className="mr-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                   Edit
                 </button>
-                <button onClick={() => handleDelete(job.id)} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                <button onClick={() => handleDelete(job._id)} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                   Delete
                 </button>
               </div>

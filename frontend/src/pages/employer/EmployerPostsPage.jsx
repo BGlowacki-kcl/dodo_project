@@ -1,13 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SearchBar from "../../components/SearchBar";
+import { getAllJobs } from "../../services/jobService";
 
 function EmployerPosts() {
-    const jobs = [
-        { id: 1, title: "Software Engineer", location: "San Francisco", type: "Full-time", applicants: 10 },
-        { id: 2, title: "Data Analyst",  location: "Remote", type: "Part-time", applicants: 5 },
-        { id: 3, title: "Frontend Developer",  location: "New York", type: "Full-time", applicants: 7 },
-        { id: 4, title: "Backend Developer", location: "Remote", type: "Contract", applicants: 3 },
-    ];
+    const [jobs, setJobs] = useState([]);
 
     const [filters, setFilters] = useState({
         location: "",
@@ -16,6 +12,26 @@ function EmployerPosts() {
     });
 
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
+
+    const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMPORARY FOR NOW WILL CHANGE!!!
+
+    useEffect(() => {
+        async function fetchJobs() {
+          try {
+            setLoading(true);
+            const data = await getAllJobs(employerId);
+            setJobs(data);
+          } 
+          catch (error) {
+            console.error("Error fetching jobs from backend:", error);
+          } 
+          finally {
+            setLoading(false);
+          }
+        }
+        fetchJobs();
+      }, [employerId]);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -38,6 +54,9 @@ function EmployerPosts() {
 
     const filteredJobs = jobs.filter(applyFilters);
 
+    if (loading) {
+        return <div className="p-4">Loading jobs...</div>;
+      }
     return (
         <div className="min-h-screen bg-gray-100 flex">
             <div className="w-64 bg-white shadow-lg p-6">

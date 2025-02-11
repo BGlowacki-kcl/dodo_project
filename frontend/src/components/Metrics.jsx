@@ -1,11 +1,15 @@
 import React from 'react';
 
 const Metrics = ({ selectedJob }) => {
+    if (!selectedJob) {
+        return <div>No job selected</div>;
+      }
+    const applicantCount = selectedJob.applicants ? selectedJob.applicants.length : 0;
     return (
         <div className="grid grid-cols-2 gap-4">
             <div className="bg-green-100 p-6 shadow rounded">
                 <h3 className="text-lg font-bold">Applicants</h3>
-                <p className="text-2xl">10 (placeholder)</p>
+                <p className="text-2xl">{applicantCount}</p>
             </div>
 
             <div className="bg-yellow-100 p-6 shadow rounded">
