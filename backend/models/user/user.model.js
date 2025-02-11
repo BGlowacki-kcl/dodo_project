@@ -60,4 +60,5 @@ const userSchema = new Schema({
 
 // const User = mongoose.model("User", userSchema);          ISSUE WITH THIS and other files importing?
 // export default User;
-export const User = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+export default User;
