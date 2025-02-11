@@ -39,7 +39,7 @@ const AuthForm = () => {
         ? await authService.signIn(email, password, "jobSeeker")
         : await authService.signUp(email, password, "jobSeeker");
 
-      navigate('/dashboard');
+      navigate('/');
 
     } catch (error) {
       console.error('Authentication error:', error.message);
