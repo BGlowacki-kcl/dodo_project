@@ -1,8 +1,25 @@
 
 import axios from 'axios';
 
+const api = axios.create({
+  baseURL: '/api',
+});
+ 
+const getAuthToken = () => {
+  return localStorage.getItem('token');  
+};
+ 
+api.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+); 
 
-/// all jobs from this employer
 export const getAllJobs = async (employerId) => {
   const url = employerId ? `/api/job?postedBy=${employerId}` : `/api/job`;
   const response = await axios.get(url);
