@@ -59,11 +59,6 @@ const jobSchema = new Schema({
         }
     ],
 
-    // here if we want jobs to have their own assesments or we can move it
-    // codeAssessment: {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'CodeAssessment'
-    // }
 });
 
 export default mongoose.model('Job', jobSchema);
