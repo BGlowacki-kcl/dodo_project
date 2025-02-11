@@ -17,6 +17,7 @@ import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
 import AddPdf from './pages/addPdf.jsx';
+import CompleteProfile from './pages/applicant/CompleteProfile.jsx';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
 				<Route path="/posts/new" element={<CreateJobPost />} />
 				<Route path="/posts/edit/:id" element={<EditJobPost />} />
 				<Route path="/swipe" element={<Swiping />} />
+				<Route path="/complete-profile" element={<CompleteProfile />} />
 			</Routes>
 		</Box>
   );
