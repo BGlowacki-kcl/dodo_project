@@ -1,22 +1,22 @@
 import { applicationController } from "../../controllers/application.controller.js";
 import { Application } from "../../models/application.model.js";
-import { jest } from "@jest/globals";
+import { mockApplications } from "../fixtures/application.fixture.js";
 
-jest.mock("../../models/application.model.js"); // Mock Mongoose Model
+jest.mock('../../middlewares/auth.middleware.js', () => ({
+    checkRole: () => (req, res, next) => {
+        req.uid = "mock-firebase-uid"; // Attach mock user ID to request
+        next();
+    }
+}));
 
 describe("Application Controller", () => {
   let req, res;
-  let applicationFixture;
-
-  beforeAll(async () => {
-    applicationFixture = await loadFixture("application.fixture.json");
-  });
 
   beforeEach(() => {
     req = {
       body: {
-        jobId: applicationFixture[0].job,
-        coverLetter: applicationFixture[0].coverLetter,
+        jobId: mockApplications[0].job,
+        coverLetter: mockApplications[0].coverLetter,
       },
     };
     res = {
@@ -25,10 +25,10 @@ describe("Application Controller", () => {
     };
   });
 
-  // ✅ Test: Applying for a Job
+  //  Test: Applying for a Job
   describe("apply", () => {
     it("should create a new application and return 201", async () => {
-      Application.create.mockResolvedValue(applicationFixture[0]);
+      Application.create = jest.fn().mockResolvedValue(mockApplications[0]);
 
       await applicationController.apply(req, res);
 
@@ -45,7 +45,7 @@ describe("Application Controller", () => {
     });
 
     it("should return 500 if an error occurs", async () => {
-      Application.create.mockRejectedValue(new Error("Database error"));
+      Application.create = jest.fn().mockRejectedValue(new Error("Database error"));
 
       await applicationController.apply(req, res);
 
@@ -57,12 +57,12 @@ describe("Application Controller", () => {
     });
   });
 
-  // ✅ Test: Retrieving an Application
+  //  Test: Retrieving an Application
   describe("getApplication", () => {
     it("should return an application if found", async () => {
-      req.params = { jobId: applicationFixture[0].job, userId: applicationFixture[0].applicant };
+      req.params = { jobId: mockApplications[0].job, userId: mockApplications[0].applicant };
 
-      Application.findOne.mockResolvedValue(applicationFixture[0]);
+      Application.findOne = jest.fn().mockResolvedValue(mockApplications[0]);
 
       await applicationController.getApplication(req, res);
 
@@ -81,7 +81,7 @@ describe("Application Controller", () => {
     it("should return 404 if application not found", async () => {
       req.params = { jobId: "nonexistent", userId: "unknown" };
 
-      Application.findOne.mockResolvedValue(null);
+      Application.findOne = jest.fn().mockResolvedValue(null);
 
       await applicationController.getApplication(req, res);
 
@@ -95,7 +95,7 @@ describe("Application Controller", () => {
     it("should return 500 if an error occurs", async () => {
       req.params = { jobId: "error", userId: "error" };
 
-      Application.findOne.mockRejectedValue(new Error("Database failure"));
+      Application.findOne = jest.fn().mockRejectedValue(new Error("Database failure"));
 
       await applicationController.getApplication(req, res);
 

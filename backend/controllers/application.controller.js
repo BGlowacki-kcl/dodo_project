@@ -27,9 +27,9 @@ export const applicationController = {
                 submittedAt: new Date(),
             });
     
-            return res.status(201).json(createResponse(true, "Application started successfully", application));
+            return res.status(201).json(createResponse(true, "Application started successfully", application)); // ????
         } catch (error) {
-            return handleError(res, error, "Error submitting application");
+            return res.status(500).json({ message: "Error submitting application", success: false }); //handleError(res, error, "Error submitting application");
         }
     },
     
@@ -44,7 +44,7 @@ export const applicationController = {
     
             return res.status(200).json(createResponse(true, "Application retrieved successfully", application));
         } catch (error) {
-            return handleError(res, error, "Error retrieving application");
+            return res.status(500).json({ message: "Error retrieving application", success: false }) //handleError(res, error, "Error retrieving application");
         }
     },
     

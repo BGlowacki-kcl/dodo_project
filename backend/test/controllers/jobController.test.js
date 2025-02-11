@@ -3,6 +3,13 @@ import * as jobController from '../../controllers/job.controller.js';
 
 jest.mock('../../models/job.model.js');
 
+jest.mock('../../middlewares/auth.middleware.js', () => ({
+    checkRole: () => (req, res, next) => {
+        req.uid = "mock-firebase-uid"; // Attach mock user ID to request
+        next();
+    }
+}));
+
 describe('Job Controller', () => {
     let req, res;
 

@@ -1,6 +1,5 @@
 import request from "supertest";
 import { app } from "../../app.js";
-import { jest } from "@jest/globals";
 import { mockUser } from "../fixtures/user.fixture.js";
 import User from "../../models/user/user.model.js";
 
