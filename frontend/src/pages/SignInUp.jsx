@@ -35,11 +35,10 @@ const AuthForm = () => {
         }
       }
 
-      const response = isLogin 
-        ? await authService.signIn(email, password, "jobSeeker")
-        : await authService.signUp(email, password, "jobSeeker");
-
-      navigate('/');
+      //  Redirect after checking profile completion
+      await (isLogin 
+        ? authService.signIn(email, password, navigate) 
+        : authService.signUp(email, password, "jobSeeker", navigate));
 
     } catch (error) {
       console.error('Authentication error:', error.message);
