@@ -5,7 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase';
 import { authService } from '../services/auth.service';
 
-const AuthGuard = ({ children }) => {
+const AuthGuard = ({ children, roles }) => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     

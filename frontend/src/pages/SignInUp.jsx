@@ -1,17 +1,30 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { Link } from 'react-router-dom';
+import { Checkbox, FormControlLabel } from '@mui/material';
 
-const AuthForm = () => {
+const AuthForm = (mode) => {
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
+  const isLogin = location.pathname === '/signin';
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  // TODO: Send also to sign up and set role of the user
+  const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setError(null);
+    setShowPassword(false);
+    setIsEmployer(false);
+  }, [location.pathname]);
 
   const isPasswordStrong = (password) => {
     return password.length >= 8 && 
@@ -107,7 +120,9 @@ const AuthForm = () => {
                 required
                 className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
               />
+              <FormControlLabel control={<Checkbox onChange={(e) => setIsEmployer(e.target.value)} />} label="Is employer?" />
             </div>
+            
           )}
 
           <button 
@@ -137,13 +152,12 @@ const AuthForm = () => {
           <span className="text-gray-600 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"} 
           </span>
-          <button 
-            type="button"
-            onClick={() => setIsLogin(!isLogin)}
+          <Link 
+            to={isLogin ? '/signup' : '/signin'}
             className="ml-2 text-blue-500 font-medium hover:text-blue-700"
           >
             {isLogin ? 'Sign Up' : 'Sign In'}
-          </button>
+          </Link>
         </div>
       </div>
     </div>
