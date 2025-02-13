@@ -1,14 +1,20 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 import ComboBox from "../../components/ComboBox";
 import Dropdown from "../../components/Dropdown";
 import Box from "../../components/Box";
-import internship from "../../assets/intern.jpg"
-import job from "../../assets/job.jpg"
-import placement from "../../assets/placement.jpg"
+import internship from "../../assets/intern.jpg";
+import job from "../../assets/job.jpg";
+import placement from "../../assets/placement.jpg";
 
 const Landing = () => {
+    const navigate = useNavigate();
+
     const handleSearch = (searchTerm) => {
         console.log("Search term:", searchTerm);
+    };
+
+    const navigateToJobs = () => {
+        navigate("/user/jobs");
     };
 
     return (
@@ -32,21 +38,22 @@ const Landing = () => {
                     label="Region"
                     options={["England", "Scotland", "Wales", "Northern Ireland"]}
                 />
-               
             </div>
-            {/*TODO: change couunter to make it out how many from the actual db
-                     add onclick to the 3 buttons so it takes you to the respective pages*/}
             <div className="p-10 flex flex-row gap-10">
-                <Box image={internship} text={"Internships"} counter={256}/>
-                <Box image={placement} text={"Placements"} counter={256}/>
-                <Box image={job} text={"Jobs"} counter={256}/>
+                <Box image={internship} text="Internships" counter={256} onClick={navigateToJobs} />
+                <Box image={placement} text="Placements" counter={256} onClick={navigateToJobs} />
+                <Box image={job} text="Jobs" counter={256} onClick={navigateToJobs} />
             </div>
-
         </div>
     );
 };
 
 export default Landing;
+
+
+
+
+
 
 
 
