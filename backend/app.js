@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import userRouter from './routes/user.routes.js';
 import jobRoutes from './routes/job.route.js';
 import applicationRoute from './routes/application.route.js';
+import matcher from './routes/matcher.route.js'
 import chat from "./api/chat.api.js";
 import { checkRole } from './middlewares/auth.middleware.js';
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/job', jobRoutes);
 app.use('/api/user', userRouter);
 app.use('/api/application', applicationRoute);
+app.use('/api/matcher', matcher);
 
 app.post('/api/chat', chat); //add auth middleware
 
