@@ -15,6 +15,7 @@ import EditJobPost from './pages/employer/EditJobPost.jsx';
 import UserJobsPage from './pages/user/UserJobsPage.jsx';
 import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
+import EmployerSignIn from "./pages/employer/EmployerSignIn.jsx"; // Add this import
 import AddDetails from './pages/AddDetails.jsx';
 import AddPdf from './pages/addPdf.jsx';
 
@@ -29,6 +30,7 @@ function App() {
 				<Route path="/" element={<LandingPage />} />
 				<Route path="/applicant-dashboard" element={<ApplicantDashboard />} />
 				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
+				<Route path = "/employer-login" element={<EmployerSignIn />} />
 				<Route path="/posts" element={<EmployerPosts />} />
 				<Route path="/user/jobs" element={<UserJobsPage />} />
 				<Route path="/user/applications" element={<UserApplicationsPage />} />
