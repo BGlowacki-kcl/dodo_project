@@ -111,3 +111,74 @@ export const applicationController = {
         }
     },
 };
+
+//GET ALL APPLICATIONS (CAN BE FILTERED BY APPLICANT)
+export async function getAllApplications(req, res) {
+    try {
+        const { applicant } = req.query;
+        const filter = applicant ? { applicant } : {}; // filter if user
+        const apps = await Application.find(filter).populate("job");
+        res.json(createResponse(true, "Applications fetched", apps));
+    } 
+    catch (err) {
+        console.error("Error fetching applications:", err);
+        res.status(500).json(createResponse(false, err.message));
+    }
+  }
+  
+  //GET AN APPLICATION BY ITS ID!!!
+  export async function getOneApplication(req, res) {
+    try {
+        const { id } = req.params;
+        const app = await Application.findById(id).populate("job");
+        if (!app) {
+            return res.status(404).json(createResponse(false, "Application not found"));
+        }
+        res.json(createResponse(true, "Application found", app));
+    } 
+    catch (err) {
+        console.error("Error getting application:", err);
+        res.status(500).json(createResponse(false, err.message));
+    }
+  }
+  
+  //CREATE A NEW APPLICATION
+  export async function createApplication(req, res) {
+    try {
+        const { jobId, applicant, coverLetter } = req.body;
+        if (!jobId || !applicant) {
+            return res.status(400).json(createResponse(false, "Missing jobId or applicant in body"));
+        }
+  
+        const newApp = await Application.create({
+            job: jobId,
+            applicant,
+            coverLetter,
+            status: "applied", 
+        });
+  
+        const populatedApp = await newApp.populate("job");
+        res.status(201).json(createResponse(true, "Application created", populatedApp));
+    } 
+    catch (err) {
+        console.error("Error creating application:", err);
+        res.status(500).json(createResponse(false, err.message));
+    }
+  }
+  
+  //DELETE/WITHDRAW AN APPLICATION BY ITS ID
+  export async function withdrawApplication(req, res) {
+    try {
+        const { id } = req.params;
+        const app = await Application.findById(id);
+        if (!app) {
+            return res.status(404).json(createResponse(false, "Application not found"));
+        }
+        await app.deleteOne();
+        res.json(createResponse(true, "Application withdrawn", null));
+    } 
+    catch (err) {
+        console.error("Error withdrawing application:", err);
+        res.status(500).json(createResponse(false, err.message));
+    }
+  }
