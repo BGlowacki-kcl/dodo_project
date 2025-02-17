@@ -81,5 +81,6 @@ function addPdf() {
 }
 
 // TO DO: change the render data so that if fills the respective fields instead of just printing it out.
+// TO DO: add save button, and do later button. The save button should save the entries to the profile.
 
 export default addPdf;
