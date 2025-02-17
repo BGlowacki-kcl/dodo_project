@@ -1,5 +1,26 @@
 import axios from "axios";
 
+const api = axios.create({
+  baseURL: "/api", /// CHECK IF HERE
+});
+
+function getAuthToken() {
+  return localStorage.getItem("token");
+}
+
+api.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+
+
 export async function getAllUserApplications(userId) {
   const response = await axios.get(`/api/application?applicant=${userId}`);
   if (!response.data.success) {
