@@ -32,7 +32,7 @@ function App() {
 				<Route path="/applicant-dashboard" element={<ApplicantDashboard />} />
 				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
 				<Route path = "/employer-login" element={<EmployerSignIn />} />
-				
+				<Route path="/employer/posts" element={<EmployerPosts />} />
 				<Route path="/postspage" element={<EmployerPostsPage />} />
 				<Route path="/user/jobs" element={<UserJobsPage />} />
 				<Route path="/user/applications" element={<UserApplicationsPage />} />

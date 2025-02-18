@@ -1,117 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import SearchBar from '../../components/SearchBar';
+import Metrics from '../../components/Metrics.jsx';
 
-function EmployerPosts() {
-  const navigate = useNavigate();
-  const location = useLocation();
+const EmployerPostsPage = () => {
+  const [selectedJob, setSelectedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ title: '', type: '' });
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      setLoading(true);
-      const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
-      const defaultJobs = [
-        { id: 1, title: 'Software Engineer', location: 'San Francisco', type: 'Full-time', applicants: 10 },
-        { id: 2, title: 'Data Analyst', location: 'Remote', type: 'Part-time', applicants: 5 },
-      ];
-      setJobs([...defaultJobs, ...storedJobs]);
-      setLoading(false);
-    };
-
-    fetchJobs();
+    fetch('/api/job')
+      .then(response => response.json())
+      .then(data => {
+        setJobs(data);
+        if (data.length > 0) {
+          setSelectedJob(data[0]);
+        }
+      })
+      .catch(error => console.error('Error fetching jobs:', error));
   }, []);
 
-  useEffect(() => {
-    if (location.state && location.state.updatedJob) {
-      setJobs(prevJobs =>
-        prevJobs.map(job =>
-          job.id === location.state.updatedJob.id ? location.state.updatedJob : job
-        )
-      );
-      navigate('/posts', { replace: true });
-    }
-  }, [location, navigate]);
-
-  const handleDelete = (id) => {
-    const updatedJobs = jobs.filter(job => job.id !== id);
-    setJobs(updatedJobs);
-    localStorage.setItem('jobs', JSON.stringify(updatedJobs));
-  };
-
-  const handleEdit = (id) => {
-    navigate(`/posts/edit/${id}`);
-  };
-
-  const handleCreateNew = () => {
-    navigate('/posts/new');
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  const filteredJobs = jobs.filter(job =>
-    (filters.title ? job.title.toLowerCase().includes(filters.title.toLowerCase()) : true) &&
-    (filters.type ? job.type === filters.type : true)
-  );
-
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <div className="w-64 bg-white shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Filters</h2>
-        <input
-          type="text"
-          name="title"
-          value={filters.title}
-          onChange={(e) => setFilters({ ...filters, title: e.target.value })}
-          placeholder="Filter by job title..."
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-        />
-        <select
-          name="type"
-          value={filters.type}
-          onChange={(e) => setFilters({ ...filters, type: e.target.value })}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-        >
-          <option value="">All</option>
-          <option value="Full-time">Full-time</option>
-          <option value="Part-time">Part-time</option>
-          <option value="Contract">Contract</option>
-        </select>
-      </div>
+    <div className="min-h-screen bg-white p-8">
+      <h1 className="text-3xl font-bold text-[#1B2A41] mb-6">
+        
+      </h1>
 
-      <div className="flex-1 p-6">
-        <div className="flex justify-between items-center mb-6">
-          <SearchBar placeholder="Search jobs..." onSearch={(term) => setFilters({ ...filters, title: term })} />
-          <button onClick={handleCreateNew} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-            Create New Post
-          </button>
+      <div className="grid grid-cols-3 gap-6">
+        {/* Job List - Sidebar with Cards */}
+        <div className="bg-white text-[#1B2A41] p-4 rounded-lg shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">Job Posts</h2>
+          <div className="space-y-4">
+            {jobs.map((job) => (
+              <div
+                key={job.id}
+                onClick={() => setSelectedJob(job)}
+                className={`p-4 rounded-lg cursor-pointer shadow-md transition transform ${
+                  selectedJob?.id === job.id 
+                    ? 'border-2 border-[#8D86C9] scale-105' 
+                    : 'bg-[#CCC9DC] text-white'
+                }`}
+              >
+                <h3 className="text-lg font-semibold">{job.title}</h3>
+                <p className="text-sm text-gray-600">{job.company}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="space-y-4">
-          {filteredJobs.length === 0 ? (
-            <p className="text-gray-500">No job posts available.</p>
-          ) : (
-            filteredJobs.map((job) => (
-              <div key={job.id} className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-medium">{job.title} - {job.type} in {job.location}</h3>
-                <p>Applicants: {job.applicants}</p>
-                <button onClick={() => handleEdit(job.id)} className="mr-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(job.id)} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                  Delete
-                </button>
-              </div>
-            ))
-          )}
+        {/* Main Section - Metrics */}
+        <div className="col-span-2 space-y-6">
+          <div className="bg-[#CCC9DC] p-6 rounded-lg shadow-lg">
+            <Metrics selectedJob={selectedJob} />
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default EmployerPosts;
+export default EmployerPostsPage;
