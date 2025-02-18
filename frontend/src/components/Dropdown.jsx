@@ -11,23 +11,25 @@ const Dropdown = ({ label, options }) => {
 
   return (
     <div className="mb-4">
-    <label className="block text-slate-100 font-semibold mb-2">{label}</label>
+      <label className="block text-[#ffffff] font-semibold mb-2">{label}</label>
       <div className="relative">
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="w-64 h-full border bg-white border-gray-300 rounded-sm py-2 px-4 focus:outline-none focus:ring-2 focus:ring-slate-500 text-left truncate"
-          onBlur={() =>setDropdownOpen(false)}
+          className={`w-64 h-full bg-[#ccc9dc] rounded-sm py-2 px-4 text-left truncate ${
+            selectedOption ? "text-black" : "text-gray-500"
+          }`}
+          onBlur={() => setDropdownOpen(false)}
         >
-          {selectedOption || label} 
+          {selectedOption || "Select an option..."}
         </button>
 
         {/* Dropdown Menu */}
         {dropdownOpen && (
-          <ul className="absolute z-10 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg w-64">
+          <ul className="absolute z-10 mt-1 bg-white border rounded-sm shadow-lg w-64">
             {options.map((option) => (
               <li
                 key={option}
-                className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                className="px-4 py-2 cursor-pointer hover:bg-[#ccc9dc]"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleOptionClick(option)}
               >

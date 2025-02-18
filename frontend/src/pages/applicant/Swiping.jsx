@@ -46,11 +46,11 @@ const Swiping = () => {
   };
 
   return (
-    <div className="pt-10 bg-cover bg-center h-screen w-full grid grid-cols-8">
-      <div className="col-start-1">
+    <div className="pt-10 bg-cover bg-center h-screen w-full grid grid-cols-10 bg-[#1b2a41]">
+      <div className="col-start-1 col-span-2">
         <SwipeFilters />
       </div>
-      <div className="col-start-4">
+      <div className="col-start-5">
         {currentIndex < jobListings.length && (
           <SwipeBox 
             key={currentIndex}
