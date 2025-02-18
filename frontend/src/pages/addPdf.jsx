@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import getParsedResume from "../services/resume.service.js";
-import renderData from '../components/moreInformationForm.jsx';
+import renderData from '../components/MoreInformationForm.jsx';
 
 function addPdf() {
   const [text, setText] = useState(null);

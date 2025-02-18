@@ -40,7 +40,7 @@ export const createJob = async (req, res) => {
 
 export const getJobs = async (req, res) => {
     try {
-        const jobs = await Job.find();//.populate('postedBy', 'name email').populate('applicants', 'name email'); // ????
+        const jobs = await Job.find();
         res.status(200).json(jobs);
     } catch (error) {
         console.error(error);
