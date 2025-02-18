@@ -1,85 +1,69 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import ApplicantShortlist from "../../components/Shortlist";
+import ApplicantActivity from "../../components/Activity";
+import ApplicantProfile from "../../components/Profile";
+import ApplicantLogout from "../../components/Logout";
 
-function ApplicantDashboard() {
-    const jobs = [
-        { id: 1, title: "Software Engineer", company: "Tech Corp", location: "San Francisco", type: "Full-time" },
-        { id: 2, title: "Data Analyst", company: "Data Inc", location: "Remote", type: "Part-time" },
-        { id: 3, title: "Frontend Developer", company: "Web Solutions", location: "New York", type: "Full-time" },
-        { id: 4, title: "Backend Developer", company: "Code Masters", location: "Remote", type: "Contract" },
-    ];
-
-    const [filters, setFilters] = useState({
-        location: "",
-        jobType: "",
-    });
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters({
-            ...filters,
-            [name]: value,
-        });
-    };
-
-    const filteredJobs = jobs.filter((job) => {
-        return (
-            (filters.location === "" || job.location.toLowerCase().includes(filters.location.toLowerCase())) &&
-            (filters.jobType === "" || job.type === filters.jobType)
-        );
-    });
+const ApplicantDashboard = () => {
+    const [activeView, setActiveView] = useState("activity");
 
     return (
-        <div className="min-h-screen bg-black text-white flex">
-            <div className="flex flex-1">
-                {/* Sidebar */}
-                <div className="w-72 bg-gray-900 p-6 shadow-xl">
-                    <h2 className="text-2xl font-bold mb-6 text-white">Filters</h2>
-                    <div className="mb-6">
-                        <label className="block text-sm font-semibold">Location</label>
-                        <input
-                            type="text"
-                            name="location"
-                            value={filters.location}
-                            onChange={handleFilterChange}
-                            placeholder="Enter location"
-                            className="mt-2 block w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring focus:ring-white"
-                        />
-                    </div>
-                    <div className="mb-6">
-                        <label className="block text-sm font-semibold">Job Type</label>
-                        <select
-                            name="jobType"
-                            value={filters.jobType}
-                            onChange={handleFilterChange}
-                            className="mt-2 block w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring focus:ring-white"
-                        >
-                            <option value="">All</option>
-                            <option value="Full-time">Full-time</option>
-                            <option value="Part-time">Part-time</option>
-                            <option value="Contract">Contract</option>
-                        </select>
-                    </div>
-                </div>
+        <div className="min-h-screen bg-[#0C1821] flex">
+            {/* Sidebar */}
+            <div className="w-64 bg-[#1B2A41] shadow-lg p-4 border-r border-[#324A5F] flex flex-col h-screen">
+                <nav className="space-y-2">
+                    <button
+                        onClick={() => setActiveView("activity")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeView === "activity"
+                                ? "bg-[#324A5F] text-white font-medium"
+                                : "hover:bg-[#324A5F]/30 text-gray-200"
+                        }`}
+                    >
+                        Activity
+                    </button>
+                    <button
+                        onClick={() => setActiveView("shortlist")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeView === "shortlist"
+                                ? "bg-[#324A5F] text-white font-medium"
+                                : "hover:bg-[#324A5F]/30 text-gray-200"
+                        }`}
+                    >
+                        Job Shortlist
+                    </button>
+                    <button
+                        onClick={() => setActiveView("profile")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeView === "profile"
+                                ? "bg-[#324A5F] text-white font-medium"
+                                : "hover:bg-[#324A5F]/30 text-gray-200"
+                        }`}
+                    >
+                        Profile
+                    </button>
+                    <button
+                        onClick={() => setActiveView("logout")}
+                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                            activeView === "logout"
+                                ? "bg-[#324A5F] text-white font-medium"
+                                : "hover:bg-[#324A5F]/30 text-gray-200"
+                        }`}
+                    >
+                        Logout
+                    </button>
+                </nav>
+            </div>
 
-                {/* Job listing */}
-                <div className="flex-1 p-10 bg-gray-800">
-                    <h2 className="text-3xl font-bold mb-8 text-white">Job Listings</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredJobs.map((job) => (
-                            <div key={job.id} className="bg-gray-700 p-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl border border-gray-600">
-                                <h3 className="text-2xl font-semibold text-white">{job.title}</h3>
-                                <p className="text-gray-300 mt-2">{job.company} - {job.location}</p>
-                                <p className="text-gray-300 mt-2">{job.type}</p>  {/* Updated: No bubble, just plain text */}
-                                <button className="mt-5 w-full bg-white text-black py-2 rounded-lg transition-all hover:bg-gray-300 shadow-md">
-                                    Apply Now
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+            {/* Main Content Area */}
+            <div className="flex-1 p-8 max-w-7xl mx-auto bg-[#0C1821]">
+                {activeView === "activity" && <ApplicantActivity />}
+                {activeView === "shortlist" && <ApplicantShortlist />}
+                {activeView === "profile" && <ApplicantProfile />}
+                {activeView === "logout" && <ApplicantLogout />}
             </div>
         </div>
     );
-}
+};
 
 export default ApplicantDashboard;
