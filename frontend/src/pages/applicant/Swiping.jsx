@@ -1,45 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SwipeBox from "../../components/SwipeBox";
 import SwipeFilters from "../../components/SwipeFilters";
 import amazon from "../../assets/amazon.jpg";
 import apple from "../../assets/apple.jpg";
 import google from "../../assets/google.jpg";
+import { getAllJobs } from "../../services/jobService";
 
-const jobListings = [
-  {
-    companyLogo: amazon,
-    companyName: "Amazon",
-    role: "Software Developer",
-    jobDescription: "Write code for the big bald rich man, C++. Required second year in computer science.",
-    jobType: "Internship",
-    location: "London",
-    salary: "£24,000",
-    duration: "8 Weeks",
-  },
-  {
-    companyLogo: google,
-    companyName: "Google",
-    role: "Backend Engineer",
-    jobDescription: "Build backend APIs and services for the big bald rich man. Requires knowledge of Node.js and databases.",
-    jobType: "Full-Time",
-    location: "London",
-    salary: "£45,000",
-    duration: "Permanent",
-  },
-  {
-    companyLogo: apple,
-    companyName: "Apple",
-    role: "Data Analyst",
-    jobDescription: "Analyze customer data for Amazon. Requires SQL and Python skills.",
-    jobType: "Internship",
-    location: "Remote",
-    salary: "£30,000",
-    duration: "6 Months",
-  },
-];
+// const jobListings = [
+//   {
+//     companyLogo: amazon,
+//     companyName: "Amazon",
+//     role: "Software Developer",
+//     jobDescription: "Write code for the big bald rich man, C++. Required second year in computer science.",
+//     jobType: "Internship",
+//     location: "London",
+//     salary: "£24,000",
+//     duration: "8 Weeks",
+//   },
+//   {
+//     companyLogo: google,
+//     companyName: "Google",
+//     role: "Backend Engineer",
+//     jobDescription: "Build backend APIs and services for the big bald rich man. Requires knowledge of Node.js and databases.",
+//     jobType: "Full-Time",
+//     location: "London",
+//     salary: "£45,000",
+//     duration: "Permanent",
+//   },
+//   {
+//     companyLogo: apple,
+//     companyName: "Apple",
+//     role: "Data Analyst",
+//     jobDescription: "Analyze customer data for Amazon. Requires SQL and Python skills.",
+//     jobType: "Internship",
+//     location: "Remote",
+//     salary: "£30,000",
+//     duration: "6 Months",
+//   },
+// ];
 
 const Swiping = () => {
+  const [jobListings, setJobListings] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    async function fetchJobs() {
+      try {
+        const data = await getAllJobs();
+        setJobListings(data); 
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
+      }
+    }
+    fetchJobs();
+  }, []);
 
   const handleSwipe = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1 < jobListings.length ? prevIndex + 1 : 0));
