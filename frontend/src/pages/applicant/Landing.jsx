@@ -12,10 +12,10 @@ const Landing = () => {
     };
 
     return (
-        <div className="bg-cover bg-center h-full w-full bg-slate-900 flex flex-col items-center">
+        <div className="bg-cover bg-center h-full w-full bg-[#0c1821] flex flex-col items-center">
             <div className="self-center content-center">
                 <p className="text-white text-center text-5xl font-mono pt-10 pl-10">LOGO</p>
-                <p className="text-stone-200 text-center text-2xl font-mono pl-10">
+                <p className="text-[#ccc9dc] text-center text-2xl font-mono pl-10">
                     Find what you're looking for:
                 </p>
             </div>

@@ -4,7 +4,7 @@ const Box = ({ image, text, onClick,counter }) => {
   return (
     <button
       onClick={onClick}
-      className="relative w-48 h-48 bg-cover bg-center rounded-lg shadow-lg text-white font-semibold overflow-hidden focus:outline-none focus:ring-2 focus:ring-slate-500 transform transition-transform duration-300 hover:scale-105 hover:brightness-110"
+      className="relative w-48 h-48 bg-cover bg-center rounded-lg shadow-lg text-white font-semibold overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:brightness-110"
       style={{ backgroundImage: `url(${image})` }}
     >
       {/* Overlay */}

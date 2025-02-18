@@ -26,26 +26,26 @@ const SwipeFilters = ({ onApplyFilters }) => {
   };
 
   return (
-    <div className="left-32 w-48 h-screen p-5 rounded-lg shadow-lg overflow-hidden border border-gray-200  bg-white-600">
-      <p className="text-xl font-bold mb-4">Filter Job Type</p>
+    <div className="left-32 h-full p-5 bg-[#0c1821]">
+      <p className="text-xl font-bold mb-4 text-white">Filter Job Type</p>
 
       <div className="space-y-3">
         {filtersList.map((filter) => (
           <label key={filter.id} className="flex items-center space-x-2">
-        <input
-        type="checkbox"
-        checked={selectedFilters.includes(filter.id)}
-        onChange={() => handleCheckboxChange(filter.id)}
-        className="form-checkbox h-5 w-5"
-        />
-            <p className="text-gray-800">{filter.label}</p>
+            <input
+              type="checkbox"
+              checked={selectedFilters.includes(filter.id)}
+              onChange={() => handleCheckboxChange(filter.id)}
+              className="h-5 w-5 appearance-none bg-gray-300 rounded-lg checked:bg-[#324a5f] focus:outline-none"
+            />
+            <p className="text-white">{filter.label}</p>
           </label>
         ))}
       </div>
 
       <button
         onClick={handleApplyFilters}
-        className="mt-6 w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition"
+        className="mt-6 w-full bg-[#324a5f] text-white py-2 rounded-lg hover:scale-105 hover:brightness-110 transition"
       >
         Apply Filters
       </button>
