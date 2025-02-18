@@ -20,6 +20,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 ); 
 
+/// change to api.---- for header
 export const getAllJobs = async (employerId) => {
   const url = employerId ? `/api/job?postedBy=${employerId}` : `/api/job`;
   const response = await axios.get(url);

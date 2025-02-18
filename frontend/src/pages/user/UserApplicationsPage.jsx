@@ -5,14 +5,19 @@ function UserApplicationsPage() {
     const [applications, setApplications] = useState([]);
     const [viewMode, setViewMode] = useState("list"); //LIST OR GRID!!
     const [statusFilter, setStatusFilter] = useState("all"); //// update when backend
-    const userId = "user1"; ////// REPLACEHERERERE
+    const userId = "67b0ea901bfe9921052c6d2d"; ////// REPLACEHERERERE
 
     useEffect(() => {
-        async function fetchApplications() {
-            const data = await getAllUserApplications(userId);
-            setApplications(data);
+      async function fetchApps() {
+        try {
+          const data = await getAllUserApplications(userId);
+          setApplications(data);
+        } 
+        catch (err) {
+          console.error("Error fetching applications:", err);
         }
-        fetchApplications();
+      }
+      fetchApps();
     }, [userId]);
 
     const filteredApplications = applications.filter((app) => {
