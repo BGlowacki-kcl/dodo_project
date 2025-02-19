@@ -7,7 +7,7 @@ const AddDetails = () => {
     
     const [userData, setUserData] = useState({
         name: "",
-        email: "",
+        location: "",
         phoneNumber: "",
         dob: "",
         education: [],
@@ -110,8 +110,8 @@ const AddDetails = () => {
                 </div>
 
                 <div>
-                    <label className="block text-gray-700 font-medium">Email</label>
-                    <input type="email" value={userData.email} onChange={(e) => handleChange("email", e.target.value)} required
+                    <label className="block text-gray-700 font-medium">Location</label>
+                    <input type="text" value={userData.location} onChange={(e) => handleChange("location", e.target.value)} required
                         className="w-full border rounded p-2 mt-1" />
                 </div>
 

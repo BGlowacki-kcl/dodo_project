@@ -23,7 +23,7 @@ export const checkRole = (roles) => async (req, res, next) => {
                 return;
             }
             
-            const user = User.findOne({ uid: uid });
+            const user = await User.findOne({ uid: uid });
             const userRole = user.role;
 
             // if (roles.length() == 0 || !roles.includes(userRole)) {

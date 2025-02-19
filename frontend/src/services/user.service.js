@@ -28,7 +28,8 @@ export const userService = {
             const response = await fetch(`${API_BASE_URL}/`, {
                 method: "GET",
                 headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
                 },
             });
 
@@ -37,6 +38,29 @@ export const userService = {
             }
 
             return await response.json();
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            throw error;
+        }
+    },
+
+    async getUserRole() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/role`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch user profile");
+            }
+
+            const responseJson =  await response.json();
+            const role = responseJson.data;
+            return role;
         } catch (error) {
             console.error("Error fetching user profile:", error);
             throw error;

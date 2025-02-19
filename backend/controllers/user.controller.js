@@ -44,6 +44,7 @@ export const userController = {
 
     async checkProfileCompletion(req, res) {
         try {
+            console.log(req);
             const { uid } = req;
             if (!uid) {
                 return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -58,8 +59,8 @@ export const userController = {
             const missingFields = requiredFields.filter(field => !user[field]);
 
             if (missingFields.length > 0) {
-                return res.status(403).json({ 
-                    success: true, 
+                return res.status(200).json({ 
+                    success: true,
                     message: "Profile incomplete, redirecting to addDetails",
                     redirect: "/addDetails",
                     missingFields 

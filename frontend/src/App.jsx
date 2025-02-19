@@ -25,7 +25,7 @@ function App() {
 			<Routes>
 				<Route path='/SignIn' element={<SignInUp mode="SignIn" />} />
 				<Route path='/SignUp' element={<SignInUp mode="SignUp" />} />
-				<Route path="/dashboard" element={<Dashboard />} /> {/* TODO: Fix the problem about back arrow  */}
+				<Route path="/dashboard" element={<AuthGuard roles={["jobSeeker"]} > <Dashboard /> </AuthGuard>} /> {/* TODO: Fix the problem about back arrow  */}
 				<Route path="/" element={<LandingPage />} />
 				<Route path="/applicant-dashboard" element={<ApplicantDashboard />} />
 				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
