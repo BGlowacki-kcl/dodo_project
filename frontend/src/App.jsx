@@ -17,27 +17,46 @@ import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
 import AddPdf from './pages/addPdf.jsx';
+import Forbidden from './pages/Forbidden';
 
 function App() {
+
+	const routeConfig = [
+		{ path: '/SignIn', element: <SignInUp mode="SignIn" />, isPublic: true },
+		{ path: '/SignUp', element: <SignInUp mode="SignUp" />, isPublic: true },
+		{ path: '/', element: <LandingPage />, isPublic: true },
+		{ path: '/dashboard', element: <Dashboard />, roles: ['jobSeeker'] },
+		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['applicant'] },
+		{ path: '/employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
+		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
+		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['applicant'] },
+		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['applicant'] },
+		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['applicant'] },
+		{ path: '/addDetails', element: <AddDetails />, roles: ['applicant', 'employer'] },
+		{ path: '/addPdf', element: <AddPdf />, roles: ['applicant'] },
+		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
+		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
+		{ path: '/swipe', element: <Swiping />, roles: ['applicant'] },
+		{ path: '/forbidden', element: <Forbidden />, isPublic: true }
+	  ];
+
   return (
     <Box className="bg-gray-100 min-h-screen">
 			<Navbar />
 			<Routes>
-				<Route path='/SignIn' element={<SignInUp mode="SignIn" />} />
-				<Route path='/SignUp' element={<SignInUp mode="SignUp" />} />
-				<Route path="/dashboard" element={<AuthGuard roles={["jobSeeker"]} > <Dashboard /> </AuthGuard>} /> {/* TODO: Fix the problem about back arrow  */}
-				<Route path="/" element={<LandingPage />} />
-				<Route path="/applicant-dashboard" element={<ApplicantDashboard />} />
-				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
-				<Route path="/posts" element={<EmployerPosts />} />
-				<Route path="/user/jobs" element={<UserJobsPage />} />
-				<Route path="/user/applications" element={<UserApplicationsPage />} />
-				<Route path="/user/applications/:appId" element={<SingleApplicationPage />} />
-				<Route path="/addDetails" element={<AddDetails />} />
-				<Route path="/addPdf" element={<AddPdf />} />
-				<Route path="/posts/new" element={<CreateJobPost />} />
-				<Route path="/posts/edit/:id" element={<EditJobPost />} />
-				<Route path="/swipe" element={<Swiping />} />
+			{routeConfig.map((route) => (
+				<Route
+				key={route.path}
+				path={route.path}
+				element={
+					route.isPublic ? (
+					route.element
+					) : (
+					<AuthGuard roles={route.roles} element={route.element} />
+					)
+				}
+				/>
+			))}
 			</Routes>
 		</Box>
   );

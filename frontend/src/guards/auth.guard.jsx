@@ -24,6 +24,8 @@ const AuthGuard = ({ children, roles = [] }) => {
             console.log(userRole);
 
             if(!roles.includes(userRole)){
+                setLoading(false);
+                navigate('/forbidden', { replace: true });
                 return new Error("User not authorized to view this page!");
             }
 
