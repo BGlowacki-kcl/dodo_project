@@ -1,17 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getAllJobs } from "../services/jobService";
 
 function ApplicantShortlist() {
-    const jobs = [
-        { id: 1, title: "Software Engineer", company: "Tech Corp", location: "San Francisco", type: "Full-time" },
-        { id: 2, title: "Data Analyst", company: "Data Inc", location: "Remote", type: "Part-time" },
-        { id: 3, title: "Frontend Developer", company: "Web Solutions", location: "New York", type: "Full-time" },
-        { id: 4, title: "Backend Developer", company: "Code Masters", location: "Remote", type: "Contract" },
-    ];
+    // const jobs = [
+    //     { id: 1, title: "Software Engineer", company: "Tech Corp", location: "San Francisco", type: "Full-time" },
+    //     { id: 2, title: "Data Analyst", company: "Data Inc", location: "Remote", type: "Part-time" },
+    //     { id: 3, title: "Frontend Developer", company: "Web Solutions", location: "New York", type: "Full-time" },
+    //     { id: 4, title: "Backend Developer", company: "Code Masters", location: "Remote", type: "Contract" },
+    // ];
+    const [jobs, setJobs] = useState([]);
 
     const [filters, setFilters] = useState({
         location: "",
         jobType: "",
     });
+
+    useEffect(() => {
+        async function fetchJobs() {
+          try {
+            const data = await getAllJobs();
+            setJobs(data);
+          } 
+          catch (err) {
+            console.error("Failed to fetch jobs:", err);
+          }
+        }
+        fetchJobs();
+      }, []);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
