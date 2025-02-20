@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, {useEffect, useState} from "react";
 import SwipeBox from "../../components/SwipeBox";
 import SwipeFilters from "../../components/SwipeFilters";
 import amazon from "../../assets/amazon.jpg";
 import apple from "../../assets/apple.jpg";
 import google from "../../assets/google.jpg";
-import { getAllJobs } from "../../services/jobService";
 
 // const jobListings = [
 //   {
@@ -39,38 +38,48 @@ import { getAllJobs } from "../../services/jobService";
 //   },
 // ];
 
-const Swiping = () => {
-  const [jobListings, setJobListings] = useState([]);
+const Swiping = ( { userId }) => {
+  const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const[loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchJobs() {
+    const fetchRecommendedJobs = async () => {
       try {
-        const data = await getAllJobs();
-        setJobListings(data); 
-      } catch (err) {
-        console.error("Error fetching jobs:", err);
+        const response = await fetch(`http://localhost:5000/api/matcher/recommend-jobs?uid=${userId}`);
+        if (!response.ok) throw new Error(("Failed to fetch recommended jobs"));
+        const data = await response.json();
+        setRecommendedJobs(data.recommendedJobs);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      } finally {
+        setLoading(false);
       }
     }
-    fetchJobs();
-  }, []);
+
+    fetchRecommendedJobs();
+  }, [userId]);
 
   const handleSwipe = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1 < jobListings.length ? prevIndex + 1 : 0));
+    setCurrentIndex((prevIndex) => (prevIndex + 1 < recommendedJobs.length ? prevIndex + 1 : 0));
   };
 
   return (
-    <div className="pt-10 bg-cover bg-center h-screen w-full grid grid-cols-8">
-      <div className="col-start-1">
+    <div className="pt-10 bg-cover bg-center h-screen w-full grid grid-cols-10 bg-[#1b2a41]">
+      <div className="col-start-1 col-span-2">
         <SwipeFilters />
       </div>
       <div className="col-start-4">
-        {currentIndex < jobListings.length && (
-          <SwipeBox 
-            key={currentIndex}
-            {...jobListings[currentIndex]}
-            onSwipe={handleSwipe}
-          />
+        {loading ? (
+            <p>Loading job recommendations...</p>
+        ) : recommendedJobs.length > 0 ? (
+            <SwipeBox
+                key={currentIndex}
+                {...recommendedJobs[currentIndex]}
+                onSwipe={handleSwipe}
+            />
+        ) : (
+            <p>No job recommendations available.</p>
         )}
       </div>
     </div>
