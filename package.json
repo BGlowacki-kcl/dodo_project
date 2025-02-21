@@ -15,6 +15,7 @@
     "@babel/core": "^7.26.8",
     "@babel/node": "^7.26.0",
     "@babel/preset-env": "^7.26.8",
+    "@faker-js/faker": "^9.5.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "firebase": "^11.2.0",
