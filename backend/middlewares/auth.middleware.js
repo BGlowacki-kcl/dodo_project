@@ -7,7 +7,7 @@ export const checkRole = (roles) => async (req, res, next) => {
             if (!idToken) {
                 res.status(403).json({ 
                     success: false,
-                    message: 'No token provided1' 
+                    message: 'No token provided' 
                 });
                 return;
             }

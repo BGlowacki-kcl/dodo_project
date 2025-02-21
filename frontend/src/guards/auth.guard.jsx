@@ -1,8 +1,6 @@
 // src/guards/AuthGuard.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
 import { authService } from '../services/auth.service';
 import { userService } from '../services/user.service';
 
@@ -18,11 +16,10 @@ const AuthGuard = ({ children, roles = [] }) => {
                 navigate('/signin', { replace: true });
                 return;
             }
-
             const userRole = await userService.getUserRole();
-            console.log(roles);
+            
             console.log(userRole);
-
+            console.log(roles);
             if(!roles.includes(userRole)){
                 setLoading(false);
                 navigate('/forbidden', { replace: true });

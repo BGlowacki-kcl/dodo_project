@@ -46,6 +46,9 @@ export const userService = {
 
     async getUserRole() {
         try {
+            if(!sessionStorage.getItem("token")){
+                return {"role": "unLogged" };
+            }
             const response = await fetch(`${API_BASE_URL}/role`, {
                 method: "GET",
                 headers: {

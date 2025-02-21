@@ -22,22 +22,21 @@ import Forbidden from './pages/Forbidden';
 function App() {
 
 	const routeConfig = [
-		{ path: '/SignIn', element: <SignInUp mode="SignIn" />, isPublic: true },
-		{ path: '/SignUp', element: <SignInUp mode="SignUp" />, isPublic: true },
-		{ path: '/', element: <LandingPage />, isPublic: true },
-		{ path: '/dashboard', element: <Dashboard />, roles: ['jobSeeker'] },
-		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['applicant'] },
+		{ path: '/Signin', element: <SignInUp/>, roles: ['unLogged'] },
+		{ path: '/signup', element: <SignInUp/>, roles: ['unLogged'] },
+		{ path: '/', element: <LandingPage />, roles: ['unLogged'] },
+		{ path: '/dashboard', element: <Dashboard />, roles: ['jobSeeker', 'employer'] },
+		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
-		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['applicant'] },
-		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['applicant'] },
-		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['applicant'] },
-		{ path: '/addDetails', element: <AddDetails />, roles: ['applicant', 'employer'] },
-		{ path: '/addPdf', element: <AddPdf />, roles: ['applicant'] },
+		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
+		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
+		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
+		{ path: '/addDetails', element: <AddDetails />, roles: ['jobSeeker', 'employer'] },
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
-		{ path: '/swipe', element: <Swiping />, roles: ['applicant'] },
-		{ path: '/forbidden', element: <Forbidden />, isPublic: true }
+		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
+		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	  ];
 
   return (
@@ -49,10 +48,10 @@ function App() {
 				key={route.path}
 				path={route.path}
 				element={
-					route.isPublic ? (
-					route.element
+					route.dontCheck ? (
+						route.element
 					) : (
-					<AuthGuard roles={route.roles} element={route.element} />
+						<AuthGuard roles={route.roles} element={route.element} />
 					)
 				}
 				/>
