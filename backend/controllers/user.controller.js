@@ -102,11 +102,12 @@ export const userController = {
             }
 
             await newUser.save();
-            res.status(201).json({ success: true, message: "User created successfully" });
+            return res.status(201).json({ success: true, message: "User created successfully" });
 
         } catch (err) {
             console.error("Error creating user:", err);
-            res.status(500).json({ success: false, message: "Server error" });
+            return res.status(500).json({ success: false, message: "Server error" });
+            
         }
     },
 

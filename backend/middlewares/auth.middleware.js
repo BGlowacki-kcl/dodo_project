@@ -22,8 +22,15 @@ export const checkRole = (roles) => async (req, res, next) => {
                 });
                 return;
             }
+
+            if(roles.includes("signUp")){
+                req.uid = uid;
+                next();
+            }
             
             const user = await User.findOne({ uid: uid });
+            console.log(user);
+            console.log(uid);
             const userRole = user.role;
 
             // if (roles.length() == 0 || !roles.includes(userRole)) {

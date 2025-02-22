@@ -12,7 +12,6 @@ const AuthForm = (mode) => {
   const isLogin = location.pathname === '/signin';
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  // TODO: Send also to sign up and set role of the user
   const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -51,7 +50,7 @@ const AuthForm = (mode) => {
       //  Redirect after checking profile completion
       await (isLogin 
         ? authService.signIn(email, password, navigate) 
-        : authService.signUp(email, password, "jobSeeker", navigate));
+        : authService.signUp(email, password, isEmployer, navigate));
 
     } catch (error) {
       console.error('Authentication error:', error.message);

@@ -22,7 +22,7 @@ import Forbidden from './pages/Forbidden';
 function App() {
 
 	const routeConfig = [
-		{ path: '/Signin', element: <SignInUp/>, roles: ['unLogged'] },
+		{ path: '/signin', element: <SignInUp/>, roles: ['unLogged'] },
 		{ path: '/signup', element: <SignInUp/>, roles: ['unLogged'] },
 		{ path: '/', element: <LandingPage />, roles: ['unLogged'] },
 		{ path: '/dashboard', element: <Dashboard />, roles: ['jobSeeker', 'employer'] },
@@ -51,7 +51,7 @@ function App() {
 					route.dontCheck ? (
 						route.element
 					) : (
-						<AuthGuard roles={route.roles} element={route.element} />
+						<AuthGuard roles={route.roles} >{route.element}</AuthGuard>
 					)
 				}
 				/>

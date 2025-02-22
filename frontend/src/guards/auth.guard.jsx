@@ -12,25 +12,29 @@ const AuthGuard = ({ children, roles = [] }) => {
         const checkAuth = async () => {
             setLoading(true);
             const token = sessionStorage.getItem("token");
-            if(!token){
+            if(!token && !roles.includes("unLogged")){
                 navigate('/signin', { replace: true });
+                setLoading(false);
                 return;
             }
             const userRole = await userService.getUserRole();
             
             console.log(userRole);
             console.log(roles);
-            if(!roles.includes(userRole)){
+            if(!userRole || !roles.includes(userRole)){
                 setLoading(false);
                 navigate('/forbidden', { replace: true });
-                return new Error("User not authorized to view this page!");
+                console.error("User not authorized to view this page!")
+                return;
             }
-
-            authService.checkIfProfileCompleted(navigate);
+            // if(userRole != "unLogged"){
+            //     authService.checkIfProfileCompleted(navigate);
+            // }
+            console.log("final");
             setLoading(false);
         }
         checkAuth();
-    }, [])
+    }, [navigate])
 
     if (loading) {
         return <div>Loading...</div>;

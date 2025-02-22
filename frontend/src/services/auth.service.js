@@ -4,15 +4,16 @@ import {
     signOut, 
     getAuth 
 } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase";
 
 export const authService = {
     
-    async signUp(email, password, role, navigate){
+    async signUp(email, password, isEmployer, navigate){
         if (!email || !password) {
             throw new Error('Email and password are required');
         }
-
+        const role = isEmployer ? 'employer' : 'jobSeeker';
+        console.log("role: ",role, ", isEmployer: ",isEmployer);
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const idToken = await userCredential.user.getIdToken();
@@ -119,7 +120,7 @@ export const authService = {
             if (data.redirect) {
                 navigate(data.redirect);  // Ensures navigation works
             } else {
-                navigate('/dashboard');  // Defaults to dashboard if complete
+                navigate('/dashboard');
             }
 
         } catch (err) {
