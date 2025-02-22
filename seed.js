@@ -125,8 +125,84 @@ const generateJobSeekers = (num) => {
     return jobSeekers;
 };
 
+// Fixed list of companies
+const techCompanies = [
+    {
+        uid: faker.string.uuid(),
+        email: "careers@google.com",
+        role: "employer",
+        name: "Google",
+        companyName: "Google",
+        companyWebsite: "https://careers.google.com",
+        companyDescription: "A global leader in search engines, advertising, and cloud computing."
+    },
+    {
+        uid: faker.string.uuid(),
+        email: "careers@meta.com",
+        role: "employer",
+        name: "Meta",
+        companyName: "Meta",
+        companyWebsite: "https://www.metacareers.com",
+        companyDescription: "Connecting people and communities through social media platforms."
+    },
+    {
+        uid: faker.string.uuid(),
+        email: "careers@amazon.com",
+        role: "employer",
+        name: "Amazon",
+        companyName: "Amazon",
+        companyWebsite: "https://www.amazon.jobs",
+        companyDescription: "World's largest e-commerce and cloud computing company."
+    },
+    {
+        uid: faker.string.uuid(),
+        email: "careers@apple.com",
+        role: "employer",
+        name: "Apple",
+        companyName: "Apple",
+        companyWebsite: "https://www.apple.com/careers",
+        companyDescription: "Innovator in consumer electronics, software, and online services."
+    },
+    {
+        uid: faker.string.uuid(),
+        email: "careers@microsoft.com",
+        role: "employer",
+        name: "Microsoft",
+        companyName: "Microsoft",
+        companyWebsite: "https://careers.microsoft.com",
+        companyDescription: "A leader in software, cloud computing, and enterprise solutions."
+    },
+    {
+        uid: faker.string.uuid(),
+        email: "careers@netflix.com",
+        role: "employer",
+        name: "Netflix",
+        companyName: "Netflix",
+        companyWebsite: "https://jobs.netflix.com",
+        companyDescription: "Leading streaming entertainment service with global reach."
+    },
+    {
+        uid: faker.string.uuid(),
+        email: "careers@tesla.com",
+        role: "employer",
+        name: "Tesla",
+        companyName: "Tesla",
+        companyWebsite: "https://www.tesla.com/careers",
+        companyDescription: "Electric vehicles, clean energy solutions, and AI-driven automation."
+    },
+    {
+        uid: faker.string.uuid(),
+        email: "careers@spacex.com",
+        role: "employer",
+        name: "SpaceX",
+        companyName: "SpaceX",
+        companyWebsite: "https://www.spacex.com/careers",
+        companyDescription: "Revolutionizing space transportation and exploration."
+    }
+];
+
 // Generate Random Employers
-const generateEmployers = (num) => {
+const generateRandomEmployers = (num) => {
   const employers = [];
 
   for (let i = 0; i < num; i++) {
@@ -144,24 +220,92 @@ const generateEmployers = (num) => {
   return employers;
 };
 
+const generateEmployers = (num) => {
+    const randomEmployers = generateRandomEmployers(num);
+    return [...techCompanies, ...randomEmployers];
+}
+
+// Tech job titles
+const techJobTitles = [
+    "Software Engineer",
+    "Frontend Developer",
+    "Backend Developer",
+    "Full Stack Developer",
+    "Data Analyst",
+    "Data Engineer",
+    "Machine Learning Engineer",
+    "DevOps Engineer",
+    "Cloud Architect",
+    "Cybersecurity Analyst",
+    "Mobile App Developer",
+    "Product Manager",
+    "UI/UX Designer",
+    "Blockchain Developer",
+    "AR/VR Developer",
+    "SWE Summer Intern",
+    "Research Developer"
+];
+
+const techJobDetails = {
+    "Software Engineer": "Develop scalable software applications, collaborate with cross-functional teams, and maintain code quality using best practices.",
+    "Frontend Developer": "Design and implement user-facing features using modern frontend frameworks such as React and Angular.",
+    "Backend Developer": "Build robust server-side logic, APIs, and manage database integrations to support scalable applications.",
+    "Full Stack Developer": "Develop full-stack applications with a strong focus on both frontend and backend functionality.",
+    "Data Scientist": "Analyze complex data sets to extract actionable insights, build predictive models, and collaborate with business stakeholders.",
+    "Data Engineer": "Design and maintain data pipelines, optimize data storage solutions, and ensure high data quality and availability.",
+    "Machine Learning Engineer": "Build and deploy machine learning models, fine-tune algorithms, and work with large-scale data sets.",
+    "DevOps Engineer": "Automate CI/CD pipelines, manage cloud infrastructure, and ensure high availability and security of applications.",
+    "Cloud Architect": "Design and implement cloud solutions using platforms like AWS, Azure, or GCP to optimize scalability and cost efficiency.",
+    "Cybersecurity Analyst": "Monitor and secure networks, perform vulnerability assessments, and implement security best practices.",
+    "Mobile App Developer": "Develop mobile applications for iOS and Android platforms using Swift, Kotlin, or React Native.",
+    "Product Manager": "Define product requirements, work closely with development teams, and ensure timely delivery of product features.",
+    "UI/UX Designer": "Create user-centric designs, conduct user research, and ensure a seamless user experience across digital platforms.",
+    "Blockchain Developer": "Build decentralized applications, implement smart contracts, and ensure security and performance on blockchain networks.",
+    "AR/VR Developer": "Develop immersive AR/VR experiences, optimize 3D graphics, and work with platforms like Unity or Unreal Engine.",
+    "SWE Summer Intern" : "Collaborate with engineering teams to develop software solutions, participate in code reviews, and learn from senior engineers. Gain hands-on experience with coding, debugging, and version control systems. Contribute to real-world projects and present findings to cross-functional teams.",
+    "Research Developer" : "Work with researchers and data scientists to design and develop innovative prototypes. Conduct exploratory data analysis, build proof-of-concept solutions, and contribute to research publications. Collaborate on algorithm development and stay up-to-date with emerging technologies."
+};
+
+// Tech skills and requirements
+const techSkills = [
+    "JavaScript",
+    "Python",
+    "Java",
+    "C++",
+    "React",
+    "Node.js",
+    "SQL",
+    "NoSQL",
+    "Machine Learning",
+    "Deep Learning",
+    "AWS",
+    "Azure",
+    "GCP",
+    "Kubernetes",
+    "Docker",
+    "Cybersecurity",
+    "Blockchain"
+];
+
 // Generate Random Jobs
 const generateJobs = (num, employers) => {
     const jobs = [];
 
     for (let i = 0; i < num; i++) {
         const employer = faker.helpers.arrayElement(employers);
+        const jobTitle = faker.helpers.arrayElement(Object.keys(techJobDetails));
 
         jobs.push({
-            title: faker.person.jobTitle(),
+            title: jobTitle,
             company: employer.companyName,
             location: faker.location.city(),
-            description: faker.lorem.sentences(3),
+            description: techJobDetails[jobTitle],
             salaryRange: {
-                min: faker.number.int({ min: 30000, max: 80000 }),
-                max: faker.number.int({ min: 80001, max: 150000 })
+                min: faker.number.int({ min: 30000, max: 60000 }),
+                max: faker.number.int({ min: 80000, max: 150000 })
             },
-            employmentType: faker.helpers.arrayElement(["full-time", "part-time", "contract"]),
-            requirements: faker.lorem.words(5).split(" "),
+            employmentType: faker.helpers.arrayElement(["full-time", "part-time", "internship", "contract"]),
+            requirements: faker.helpers.arrayElement(techSkills),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
             postedBy: employer._id, // Link to employer who posted the job
         });
@@ -181,7 +325,7 @@ const generateApplications = (num, jobSeekers, jobs) => {
         applications.push({
             job: job._id,
             applicant: jobSeeker._id,
-            status: faker.helpers.arrayElement(["applied", "in review", "rejected", "accepted"]),
+            status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'accepted']),
             coverLetter: faker.lorem.sentences(2)
         });
     }
@@ -213,7 +357,7 @@ const seedDatabase = async () => {
     // }
 
       const jobSeekers = generateJobSeekers(100); // Generate 100 jobseekers
-      const employers = generateEmployers(20); // Generate 20 employers
+      const employers = generateEmployers(10); // Generate 20 employers
 
       const createdJobSeekers = await JobSeeker.insertMany(jobSeekers);
       console.log("JobSeekers added...");
