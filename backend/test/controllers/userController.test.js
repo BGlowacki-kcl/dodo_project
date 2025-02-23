@@ -196,21 +196,28 @@ describe("GET /api/user", () => {
     });
   
     test("Should create a new user (jobSeeker) if valid", async () => {
-      User.findOne = jest.fn().mockResolvedValue(null);
-      const mockSave = jest.fn().mockResolvedValue(true);
-      const newUser = { ...mockUser, save: mockSave };
-      jest.mock('../../models/user/jobSeeker.model.js', () => ({
-        JobSeeker: jest.fn().mockImplementation(() => newUser)
-      }));
-  
-      const response = await request(app)
-        .post("/api/user/basic")
-        .send({ email: "test@example.com", role: "jobSeeker" })
-        .set("Authorization", "Bearer mockToken");
-  
-      expect(response.statusCode).toBe(201);
-      expect(response.body.message).toBe("User created successfully");
-    });
+        User.findOne = jest.fn().mockResolvedValue(null);
+      
+        // So we can spy on the .save call if needed
+        const mockSave = jest.fn().mockResolvedValue(true);
+      
+        // Mark it with a `mock` prefix so Jest doesn’t complain
+        const mockNewUser = { ...mockUser, save: mockSave };
+      
+        jest.mock('../../models/user/jobSeeker.model.js', () => ({
+          // "JobSeeker" references only local variables,
+          // no outside references except "mockNewUser"
+          JobSeeker: jest.fn().mockImplementation(() => mockNewUser)
+        }));
+      
+        const response = await request(app)
+          .post("/api/user/basic")
+          .send({ email: "test@example.com", role: "jobSeeker" })
+          .set("Authorization", "Bearer mockToken");
+      
+        expect(response.statusCode).toBe(201);
+        expect(response.body.message).toBe("User created successfully");
+      });
   });
   
   describe("PUT /api/user", () => {
