@@ -9,6 +9,7 @@ const EmployerSignIn = () => {
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,8 +18,15 @@ const EmployerSignIn = () => {
     setLoading(true);
 
     try {
-      await authService.signIn(email, password, 'employer');
-      navigate('/employer-dashboard');
+      const response = isLogin 
+        ? await authService.signIn(email, password, 'employer')
+        : await authService.signUp(email, password, 'employer');
+
+      if (response?.success) {
+        navigate('/employer-dashboard');
+      } else {
+        throw new Error('Authentication failed');
+      }
     } catch (error) {
       console.error('Authentication error:', error.message);
       setError(error.message || 'Invalid credentials');
@@ -31,10 +39,10 @@ const EmployerSignIn = () => {
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 w-96">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">
-          Employer Sign In
+          {isLogin ? 'Employer Sign In' : 'Create Employer Account'}
         </h2>
         <p className="text-sm text-gray-500 text-center mb-6">
-          Sign in to your employer account
+          {isLogin ? 'Sign in to your employer account' : 'Register as an employer'}
         </p>
 
         {error && (
@@ -50,7 +58,7 @@ const EmployerSignIn = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Enter your company email"
               required
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
             />
@@ -82,9 +90,22 @@ const EmployerSignIn = () => {
               loading && 'opacity-50 cursor-not-allowed'
             }`}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
           </button>
         </form>
+
+        <div className="text-center mt-4">
+          <span className="text-gray-600 text-sm">
+            {isLogin ? "Don't have an employer account?" : "Already have an account?"} 
+          </span>
+          <button 
+            type="button"
+            onClick={() => setIsLogin(!isLogin)}
+            className="ml-2 text-blue-500 font-medium hover:text-blue-700"
+          >
+            {isLogin ? 'Register' : 'Sign In'}
+          </button>
+        </div>
 
         <div className="text-center mt-4">
           <Link to="/signin" className="text-sm text-blue-500 hover:text-blue-700">
