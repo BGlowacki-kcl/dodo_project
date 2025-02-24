@@ -17,10 +17,11 @@ import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
 import AddPdf from './pages/addPdf.jsx';
+import SearchResults from './pages/SearchResults'
 
 function App() {
   return (
-    <Box className="bg-gray-100 min-h-screen">
+    <Box className="bg-background min-h-screen">
 			<Navbar />
 			<Routes>
 				<Route path='/SignIn' element={<SignInUp mode="SignIn" />} />
@@ -38,6 +39,7 @@ function App() {
 				<Route path="/posts/new" element={<CreateJobPost />} />
 				<Route path="/posts/edit/:id" element={<EditJobPost />} />
 				<Route path="/swipe" element={<Swiping />} />
+				<Route path="/search-results" element={<SearchResults />} />
 			</Routes>
 		</Box>
   );
