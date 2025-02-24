@@ -5,12 +5,14 @@ import User  from "../models/user/user.model.js";
 const createResponse = (success, message, data = null) => ({
     success,
     message,
-    ...(data && { data }),
+    ...(data && { data }), // issue here maybe with tests
 });
+
 
 const handleError = (res, error, defaultMessage = "Server error") => {
     console.error(error);
     const statusCode = error.status || 500;
+    //// is this the wrong way around?
     return res.status(statusCode).json(createResponse(false, error.message || defaultMessage));
 };
 
