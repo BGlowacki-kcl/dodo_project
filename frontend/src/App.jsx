@@ -16,8 +16,8 @@ import UserJobsPage from './pages/user/UserJobsPage.jsx';
 import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
-import AddPdf from './pages/addPdf.jsx';
 import Forbidden from './pages/Forbidden';
+import CodeAss from './pages/applicant/CodeAss';
 
 function App() {
 
@@ -36,6 +36,7 @@ function App() {
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
+		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	  ];
 

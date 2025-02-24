@@ -35,6 +35,7 @@ export const checkRole = (roles) => async (req, res, next) => {
 
             // if (roles.length() == 0 || !roles.includes(userRole)) {
             //     return res.status(403).json({ message: 'Forbidden' });
+            
             // } 
             
             req.uid = uid; // Attach user ID to request
