@@ -4,20 +4,21 @@ import {
     signOut, 
     getAuth 
 } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { auth } from "../firebase";
 
 export const authService = {
     
-    async signUp(email, password, role, navigate){
+    async signUp(email, password, isEmployer, navigate){
         if (!email || !password) {
             throw new Error('Email and password are required');
         }
-
+        const role = isEmployer ? 'employer' : 'jobSeeker';
+        console.log("role: ",role, ", isEmployer: ",isEmployer);
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const idToken = await userCredential.user.getIdToken();
         sessionStorage.setItem('token', idToken);
-
+        window.dispatchEvent(new Event('authChange'));
         try {
             const response = await fetch('/api/user/basic', {
                 method: 'POST',
@@ -57,6 +58,8 @@ export const authService = {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
             sessionStorage.setItem('token', idToken);
+            console.log("Token: "+idToken);
+            window.dispatchEvent(new Event('authChange'));
 
             //  Fetch role from backend
             const roleResponse = await fetch('/api/user/role', {
@@ -85,11 +88,12 @@ export const authService = {
 
     async signOut(){
         const auth = getAuth();
-
+        
         try {
             await signOut(auth);
             sessionStorage.removeItem('token');
             sessionStorage.removeItem('role');
+            window.dispatchEvent(new Event('authChange'));
         } catch (error) {
             console.error("SignOut error:", error);
             throw new Error("Sign out not successful");
@@ -116,7 +120,7 @@ export const authService = {
             if (data.redirect) {
                 navigate(data.redirect);  // Ensures navigation works
             } else {
-                navigate('/dashboard');  // Defaults to dashboard if complete
+                navigate('/dashboard');
             }
 
         } catch (err) {

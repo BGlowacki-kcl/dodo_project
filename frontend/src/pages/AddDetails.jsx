@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { userService } from "../services/user.service";
 import { useNavigate } from "react-router-dom";
+import getParsedResume from "../services/resume.service";
 
 const AddDetails = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
     
     const [userData, setUserData] = useState({
         name: "",
-        email: "",
+        location: "",
         phoneNumber: "",
         dob: "",
         education: [],
@@ -20,6 +22,53 @@ const AddDetails = () => {
     const handleChange = (field, value) => {
         setUserData({ ...userData, [field]: value });
     };
+
+    const handleUpload = async (event) => {
+        const file = event.target.files[0];
+        if(!file) return;
+    
+        setLoading(true);
+    
+        try{
+          const data = await getParsedResume(file);
+          if (!data) {
+            throw new Error("No data received from parser!");
+          }
+          handleAutoFill(data);
+        } catch (err) {
+          setError("Error: "+err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    
+      const handleAutoFill = (data) => {
+        setUserData({
+            name: `${data?.personal?.name || ""} ${data?.personal?.surname || ""}`.trim(),
+            location: data?.personal?.location || "",
+            phoneNumber: data?.personal?.phoneNumber || "",
+            education: data?.education?.map((edu) => ({
+                institution: edu?.University || "",
+                degree: edu?.Degree || "",
+                fieldOfStudy: edu?.Major || "",
+                description: edu?.description || "",
+                startDate: edu?.["start date"] || "",
+                endDate: edu?.["end date"] || "",
+            })) || [],
+            experience: data?.experience?.map((exp) => ({
+                company: exp?.company || "",
+                title: exp?.position || "",
+                fieldOfWork: exp?.fieldOfWork || "",
+                description: exp?.description || "",
+                startDate: exp?.["start date"] || "",
+                endDate: exp?.["end date"] || "",
+            })) || [],
+            skills: data?.projects?.reduce((acc, project) => {
+                const projectSkills = project?.skills?.split(",").map(skill => skill.trim()) || [];
+                return [...new Set([...acc, ...projectSkills])];
+            }, []) || []
+        });
+      }
 
     // Update nested state values for education & experience
     const updateNestedState = (section, index, field, value) => {
@@ -101,6 +150,12 @@ const AddDetails = () => {
         <div className="max-w-3xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
             <h2 className="text-2xl font-bold mb-4">Complete Your Profile</h2>
 
+            <h5 className="mt-5 ml-10"> Add PDF </h5>
+            <input type="file" id="pdfInput" accept="application/pdf" className="mt-3 ml-10 mb-20" onChange={handleUpload} />
+            {loading && 
+                <div className="text-green-500 m-3"> Loading </div>
+            }
+
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Basic Info */}
                 <div>
@@ -110,8 +165,8 @@ const AddDetails = () => {
                 </div>
 
                 <div>
-                    <label className="block text-gray-700 font-medium">Email</label>
-                    <input type="email" value={userData.email} onChange={(e) => handleChange("email", e.target.value)} required
+                    <label className="block text-gray-700 font-medium">Location</label>
+                    <input type="text" value={userData.location} onChange={(e) => handleChange("location", e.target.value)} required
                         className="w-full border rounded p-2 mt-1" />
                 </div>
 

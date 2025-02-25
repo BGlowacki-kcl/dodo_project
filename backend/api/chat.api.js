@@ -15,6 +15,7 @@ Rules:
     "location": "...",
     "name": "...",
     "surname": "...",
+    "phoneNumber": "...",
     "portfolio website": "...",
     "LinkedIn website": "...",
     "GitHub website": "..."
@@ -26,7 +27,8 @@ Rules:
       "skills": "...",
       "start date": "...",
       "end date": "...",
-      "description": "..."
+      "description": "...",
+      "fieldOfWork": "..."
     }
   ],
   "education": [
@@ -35,7 +37,8 @@ Rules:
       "start date": "...",
       "end date": "...",
       "Major": "...",
-      "Degree": "..."
+      "Degree": "...",
+      "description": "..."
     }
   ],
   "projects": [
