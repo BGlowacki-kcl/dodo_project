@@ -12,7 +12,6 @@ const createResponse = (success, message, data = null) => ({
 const handleError = (res, error, defaultMessage = "Server error") => {
     console.error(error);
     const statusCode = error.status || 500;
-    //// is this the wrong way around?
     return res.status(statusCode).json(createResponse(false, error.message || defaultMessage));
 };
 
