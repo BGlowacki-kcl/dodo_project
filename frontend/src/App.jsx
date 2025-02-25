@@ -18,9 +18,9 @@ import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAss';
+import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 
 function App() {
-
 	const routeConfig = [
 		{ path: '/signin', element: <SignInUp/>, roles: ['unLogged'] },
 		{ path: '/signup', element: <SignInUp/>, roles: ['unLogged'] },
@@ -36,30 +36,34 @@ function App() {
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
+		{ path: '/employer-login', element: <EmployerLogin />, roles: ['unLogged'] },
 		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
-		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
-	  ];
+		{ path: '/forbidden', element: <Forbidden />, dontCheck: true },
+		
 
-  return (
-    <Box className="bg-gray-100 min-h-screen">
+		//{ path: '/employer/applicant/:applicantId', element: <ViewApplicant />  , roles: ['employer'] } 
+	];
+
+	return (
+		<Box className="bg-gray-100 min-h-screen">
 			<Navbar />
 			<Routes>
-			{routeConfig.map((route) => (
-				<Route
-				key={route.path}
-				path={route.path}
-				element={
-					route.dontCheck ? (
-						route.element
-					) : (
-						<AuthGuard roles={route.roles} >{route.element}</AuthGuard>
-					)
-				}
-				/>
-			))}
+				{routeConfig.map((route) => (
+					<Route
+						key={route.path}
+						path={route.path}
+						element={
+							route.dontCheck ? (
+								route.element
+							) : (
+								<AuthGuard roles={route.roles}>{route.element}</AuthGuard>
+							)
+						}
+					/>
+				))}
 			</Routes>
 		</Box>
-  );
+	);
 }
 
 export default App;
