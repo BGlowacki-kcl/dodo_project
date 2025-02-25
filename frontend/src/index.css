@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .button {
+    @apply bg-secondary text-ltext p-3 rounded-lg shadow-md hover:scale-105;
+  }
+
+  .box {
+    @apply bg-primary text-dtext p-3 rounded-lg shadow-md;
+  }
+}
