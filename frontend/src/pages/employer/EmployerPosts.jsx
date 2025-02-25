@@ -24,6 +24,10 @@ const EmployerPostsPage = () => {
     navigate(`/posts/edit/${jobId}`);
   };
 
+  const handleAddJob = () => {
+    navigate("/posts/new");
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar with fixed width */}
@@ -63,6 +67,14 @@ const EmployerPostsPage = () => {
               <p className="text-gray-500">No job posts available.</p>
             )}
           </div>
+
+          <button
+            onClick={handleAddJob}
+            className="absolute bottom-25 left-30 px-4 py-2 bg-[#CCC9DC] text-white rounded-lg  transition duration-100"
+            
+          >
+            Add Job Post
+          </button>
 
           {/* Main Section - Metrics */}
           <div className="col-span-2 space-y-6">
