@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Metrics from "../../components/Metrics.jsx";
 import EmployerSideBar from "../../components/EmployerSideBar.jsx";
 
 const EmployerPostsPage = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("/api/job")
@@ -17,6 +19,10 @@ const EmployerPostsPage = () => {
       })
       .catch((error) => console.error("Error fetching jobs:", error));
   }, []);
+
+  const handleEdit = (jobId) => {
+    navigate(`/posts/edit/${jobId}`);
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -33,17 +39,17 @@ const EmployerPostsPage = () => {
 
         <div className="grid grid-cols-3 gap-6">
           {/* Job List Sidebar */}
-          <div className="bg-white text-[#1B2A41] p-4 rounded-lg shadow-lg">
+          <div className="bg-white text-[#1B2A41] p-4 rounded-lg shadow-lg h-96 overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Job Posts</h2>
 
             {jobs.length > 0 ? (
               <div className="space-y-4">
                 {jobs.map((job) => (
                   <div
-                    key={job.id}
+                    key={job._id}
                     onClick={() => setSelectedJob(job)}
                     className={`p-4 rounded-lg cursor-pointer shadow-md transition transform ${
-                      selectedJob?.id === job.id
+                      selectedJob?._id === job._id
                         ? "border-2 border-[#8D86C9] scale-105 bg-white"
                         : "bg-[#CCC9DC] text-[#1B2A41]"
                     }`}
@@ -60,9 +66,17 @@ const EmployerPostsPage = () => {
 
           {/* Main Section - Metrics */}
           <div className="col-span-2 space-y-6">
-            <div className="bg-[#CCC9DC] p-6 rounded-lg shadow-lg">
+            <div className="bg-[#CCC9DC] p-6 rounded-lg shadow-lg relative">
               {selectedJob ? (
-                <Metrics selectedJob={selectedJob} />
+                <>
+                  <button
+                    onClick={() => handleEdit(selectedJob._id)}
+                    className="absolute top-8 right-10 px-4 py-2 bg-[#CCC9DC] text-white rounded-lg  transition duration-100"
+                  >
+                    Edit Job
+                  </button>
+                  <Metrics selectedJob={selectedJob} />
+                </>
               ) : (
                 <p className="text-gray-700">Select a job to view metrics.</p>
               )}
