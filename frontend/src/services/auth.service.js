@@ -13,7 +13,6 @@ export const authService = {
             throw new Error('Email and password are required');
         }
         const role = isEmployer ? 'employer' : 'jobSeeker';
-        console.log("role: ",role, ", isEmployer: ",isEmployer);
         const auth = getAuth();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const idToken = await userCredential.user.getIdToken();
@@ -115,7 +114,6 @@ export const authService = {
             }
 
             const data = await response.json();
-            console.log("Profile completion check:", data);
 
             if (data.redirect) {
                 navigate(data.redirect);  // Ensures navigation works

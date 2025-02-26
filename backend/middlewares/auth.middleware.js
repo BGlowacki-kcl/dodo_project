@@ -23,22 +23,17 @@ export const checkRole = (roles) => async (req, res, next) => {
                 return;
             }
 
-            if(roles.includes("signUp")){
-                console.log("SIGNUP!!!!---------");
+            if(roles.includes("signUp") || roles.length == 0 ){
                 req.uid = uid;
                 next();
                 return;
             }
-            console.log("After signup SHOULD NOT BE VISIBLE!!!!---------");
             const user = await User.findOne({ uid: uid });
-            console.log(user);
-            console.log(uid);
             const userRole = user.role;
 
-            // if (roles.length() == 0 || !roles.includes(userRole)) {
-            //     return res.status(403).json({ message: 'Forbidden' });
-            
-            // } 
+            if (!roles.includes(userRole)) {
+                return res.status(403).json({ message: 'Forbidden' });
+            } 
             
             req.uid = uid; // Attach user ID to request
             next();

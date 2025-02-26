@@ -47,21 +47,18 @@ const AddDetails = () => {
             name: `${data?.personal?.name || ""} ${data?.personal?.surname || ""}`.trim(),
             location: data?.personal?.location || "",
             phoneNumber: data?.personal?.phoneNumber || "",
+            dob: data?.personal?.dateOfBirth || "",
             education: data?.education?.map((edu) => ({
                 institution: edu?.University || "",
                 degree: edu?.Degree || "",
                 fieldOfStudy: edu?.Major || "",
                 description: edu?.description || "",
-                startDate: edu?.["start date"] || "",
-                endDate: edu?.["end date"] || "",
             })) || [],
             experience: data?.experience?.map((exp) => ({
                 company: exp?.company || "",
                 title: exp?.position || "",
                 fieldOfWork: exp?.fieldOfWork || "",
                 description: exp?.description || "",
-                startDate: exp?.["start date"] || "",
-                endDate: exp?.["end date"] || "",
             })) || [],
             skills: data?.projects?.reduce((acc, project) => {
                 const projectSkills = project?.skills?.split(",").map(skill => skill.trim()) || [];
