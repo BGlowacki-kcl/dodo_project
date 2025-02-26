@@ -18,15 +18,14 @@ Rules:
     "phoneNumber": "...",
     "portfolio website": "...",
     "LinkedIn website": "...",
-    "GitHub website": "..."
+    "GitHub website": "...",
+    "dateOfBirth": "..." (yyyy-mm-dd)
   },
   "experience": [
     {
       "company": "...",
       "position": "...",
       "skills": "...",
-      "start date": "...",
-      "end date": "...",
       "description": "...",
       "fieldOfWork": "..."
     }
@@ -34,8 +33,6 @@ Rules:
   "education": [
     {
       "University": "...",
-      "start date": "...",
-      "end date": "...",
       "Major": "...",
       "Degree": "...",
       "description": "..."
