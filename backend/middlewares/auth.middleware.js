@@ -24,10 +24,12 @@ export const checkRole = (roles) => async (req, res, next) => {
             }
 
             if(roles.includes("signUp")){
+                console.log("SIGNUP!!!!---------");
                 req.uid = uid;
                 next();
+                return;
             }
-            
+            console.log("After signup SHOULD NOT BE VISIBLE!!!!---------");
             const user = await User.findOne({ uid: uid });
             console.log(user);
             console.log(uid);
