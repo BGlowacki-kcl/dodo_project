@@ -62,8 +62,7 @@ function App() {
 				<Route path="/user/jobs" element={<UserJobsPage />} />
 				<Route path="/user/applications" element={<UserApplicationsPage />} />
 				<Route path="/user/applications/:appId" element={<SingleApplicationPage />} />
-				<Route path="/addDetails" element={<AddDetails />} />
-				<Route path="/addPdf" element={<AddPdf />} />
+				<Route path="/addDetails" element={<AddDetails />} />				
 				<Route path="/posts/new" element={<CreateJobPost />} />
 				<Route path="/posts/edit/:id" element={<EditJobPost />} />
 				<Route path="/swipe" element={<Swiping />} />
