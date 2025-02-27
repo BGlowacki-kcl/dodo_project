@@ -6,7 +6,7 @@ import EmployerSideBar from "../../components/EmployerSideBar";
 function CreateJobPost() {
   const [jobs, setJobs] = useState([]);
   const [jobData, setJobData] = useState({
-    company: '',
+  
     title: '',
     company: '',
     description: '',

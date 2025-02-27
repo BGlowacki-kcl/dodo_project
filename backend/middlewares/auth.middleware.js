@@ -1,5 +1,5 @@
 import admin from "../config/firebase.js";
-import User from "../models/user/user.model.js";
+import {User} from "../models/user/user.model.js";
 
 export const checkRole = (roles) => async (req, res, next) => {
         try {
