@@ -33,7 +33,7 @@ const EmployerSideBar = () => {
             <div className="p-6 flex justify-between items-center">
                 <h2 className={`text-xl font-bold text-white ${isCollapsed ? 'hidden' : 'block'}`}>Employer Panel</h2>
                 <button onClick={toggleCollapse} className="text-white">
-                    {isCollapsed ? '➡️' : '⬅️'}
+                    {isCollapsed ? '>' : '<'}
                 </button>
             </div>
 
