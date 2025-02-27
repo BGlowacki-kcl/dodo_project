@@ -3,73 +3,46 @@ import JobList from "../../components/JobList.jsx";
 import Metrics from "../../components/Metrics.jsx";
 import Statistics from "../../components/Statistics.jsx";
 import { getAllJobs } from "../../services/jobService";
+import React from 'react';
+import EmployerSideBar from '../../components/EmployerSideBar';
 
 const EmployerDashboard = () => {
-    const [activeView, setActiveView] = useState("metrics");
-    const [selectedJob, setSelectedJob] = useState("");
-    const [jobs, setJobs] = useState([]);
-    const employerId = "67aa6f2ce7d1ee03803ef428"; // TEMPORARY: Replace with Auth Context
-
-    useEffect(() => {
-        async function fetchJobs() {
-            try {
-                const data = await getAllJobs(employerId);
-                const jobTitles = data.map((job) => job.title);
-                setJobs(jobTitles);
-                setSelectedJob(jobTitles[0] || "");
-            } catch (error) {
-                console.error("Error fetching jobs:", error);
-            }
-        }
-        fetchJobs();
-    }, [employerId]);
-
     return (
-        <div className="min-h-screen bg-[#0C1821] flex">
-            {/* Sidebar */}
-            <div className="w-64 bg-[#1B2A41] shadow-lg p-4 border-r border-[#324A5F] flex flex-col h-screen">
-                <nav className="space-y-2">
-                    <button
-                        onClick={() => setActiveView("metrics")}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeView === "metrics"
-                                ? "bg-[#324A5F] text-white font-medium"
-                                : "hover:bg-[#324A5F]/30 text-gray-200"
-                        }`}
-                    >
-                        Metrics
-                    </button>
-                    <button
-                        onClick={() => setActiveView("statistics")}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeView === "statistics"
-                                ? "bg-[#324A5F] text-white font-medium"
-                                : "hover:bg-[#324A5F]/30 text-gray-200"
-                        }`}
-                    >
-                        Statistics
-                    </button>
-                    <button
-                        onClick={() => setActiveView("jobs")}
-                        className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeView === "jobs"
-                                ? "bg-[#324A5F] text-white font-medium"
-                                : "hover:bg-[#324A5F]/30 text-gray-200"
-                        }`}
-                    >
-                        Job Listings
-                    </button>
-                </nav>
-            </div>
-
+        <div className="flex min-h-screen bg-gray-100">
+            <EmployerSideBar />
+            
             {/* Main Content Area */}
-            <div className="flex-1 p-8 max-w-7xl mx-auto bg-[#0C1821]">
-                {activeView === "metrics" && <Metrics selectedJob={selectedJob} />}
-                {activeView === "statistics" && <Statistics selectedJob={selectedJob} />}
-                {activeView === "jobs" && <JobList jobs={jobs} onSelectJob={setSelectedJob} />}
+            <div className="ml-64 p-8 flex-1">
+                {/* Large White Card */}
+                <div className="bg-white rounded-2xl shadow-lg p-8 min-h-[80vh] relative">
+                    {/* Example of smaller cards you can place on top */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {/* Smaller Card 1 */}
+                        <div className="bg-gray-50 rounded-xl shadow-md p-6">
+                            <h3 className="text-lg font-semibold mb-2">Total Jobs Posted</h3>
+                            <p className="text-3xl font-bold text-blue-600">12</p>
+                        </div>
+
+                        {/* Smaller Card 2 */}
+                        <div className="bg-gray-50 rounded-xl shadow-md p-6">
+                            <h3 className="text-lg font-semibold mb-2">Active Applications</h3>
+                            <p className="text-3xl font-bold text-green-600">48</p>
+                        </div>
+
+                        {/* Smaller Card 3 */}
+                        <div className="bg-gray-50 rounded-xl shadow-md p-6">
+                            <h3 className="text-lg font-semibold mb-2">Positions Filled</h3>
+                            <p className="text-3xl font-bold text-purple-600">5</p>
+                        </div>
+                    </div>
+
+                    {/* You can add more content or cards here */}
+                </div>
             </div>
         </div>
     );
 };
 
 export default EmployerDashboard;
+
+
