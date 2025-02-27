@@ -1,12 +1,13 @@
-import { Application } from "../models/application.model.js";
+import  Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User  from "../models/user/user.model.js";
 
 const createResponse = (success, message, data = null) => ({
     success,
     message,
-    ...(data && { data }),
+    ...(data && { data }), // issue here maybe with tests
 });
+
 
 const handleError = (res, error, defaultMessage = "Server error") => {
     console.error(error);

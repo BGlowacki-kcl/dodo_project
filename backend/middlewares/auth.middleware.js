@@ -7,7 +7,7 @@ export const checkRole = (roles) => async (req, res, next) => {
             if (!idToken) {
                 res.status(403).json({ 
                     success: false,
-                    message: 'No token provided1' 
+                    message: 'No token provided' 
                 });
                 return;
             }
@@ -22,13 +22,18 @@ export const checkRole = (roles) => async (req, res, next) => {
                 });
                 return;
             }
-            
-            const user = User.findOne({ uid: uid });
+
+            if(roles.includes("signUp") || roles.length == 0 ){
+                req.uid = uid;
+                next();
+                return;
+            }
+            const user = await User.findOne({ uid: uid });
             const userRole = user.role;
 
-            // if (roles.length() == 0 || !roles.includes(userRole)) {
-            //     return res.status(403).json({ message: 'Forbidden' });
-            // } 
+            if (!roles.includes(userRole)) {
+                return res.status(403).json({ message: 'Forbidden' });
+            } 
             
             req.uid = uid; // Attach user ID to request
             next();
