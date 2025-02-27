@@ -18,11 +18,36 @@ import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import EmployerSignIn from "./pages/employer/EmployerSignIn.jsx"; // Add this import
 import AddDetails from './pages/AddDetails.jsx';
-import AddPdf from './pages/addPdf.jsx';
+import Forbidden from './pages/Forbidden';
+import CodeAss from './pages/applicant/CodeAss';
+import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 
 function App() {
-  return (
-    <Box className="bg-gray-100 min-h-screen">
+	const routeConfig = [
+		{ path: '/signin', element: <SignInUp/>, roles: ['unLogged'] },
+		{ path: '/signup', element: <SignInUp/>, roles: ['unLogged'] },
+		{ path: '/', element: <LandingPage />, roles: ['unLogged'] },
+		{ path: '/dashboard', element: <Dashboard />, roles: ['jobSeeker', 'employer'] },
+		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
+		{ path: '/employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
+		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
+		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
+		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
+		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
+		{ path: '/addDetails', element: <AddDetails />, roles: ['jobSeeker', 'employer'] },
+		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
+		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
+		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
+		{ path: '/employer-login', element: <EmployerLogin />, roles: ['unLogged'] },
+		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
+		{ path: '/forbidden', element: <Forbidden />, dontCheck: true },
+		
+
+		//{ path: '/employer/applicant/:applicantId', element: <ViewApplicant />  , roles: ['employer'] } 
+	];
+
+	return (
+		<Box className="bg-gray-100 min-h-screen">
 			<Navbar />
 			<Routes>
 				<Route path='/SignIn' element={<SignInUp mode="SignIn" />} />
@@ -42,9 +67,22 @@ function App() {
 				<Route path="/posts/new" element={<CreateJobPost />} />
 				<Route path="/posts/edit/:id" element={<EditJobPost />} />
 				<Route path="/swipe" element={<Swiping />} />
+				{routeConfig.map((route) => (
+					<Route
+						key={route.path}
+						path={route.path}
+						element={
+							route.dontCheck ? (
+								route.element
+							) : (
+								<AuthGuard roles={route.roles}>{route.element}</AuthGuard>
+							)
+						}
+					/>
+				))}
 			</Routes>
 		</Box>
-  );
+	);
 }
 
 export default App;

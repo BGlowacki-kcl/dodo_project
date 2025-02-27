@@ -1,14 +1,13 @@
 import admin from "../config/firebase.js";
-import { User } from "../models/user/user.model.js";
+import User from "../models/user/user.model.js";
 
-export function checkRole(roles) {
-    return async function (req, res, next) {
+export const checkRole = (roles) => async (req, res, next) => {
         try {
             const idToken = req.headers.authorization?.split('Bearer ')[1];
             if (!idToken) {
                 res.status(403).json({ 
                     success: false,
-                    message: 'No token provided1' 
+                    message: 'No token provided' 
                 });
                 return;
             }
@@ -23,13 +22,18 @@ export function checkRole(roles) {
                 });
                 return;
             }
-            
-            const user = User.findOne({ uid: uid });
+
+            if(roles.includes("signUp") || roles.length == 0 ){
+                req.uid = uid;
+                next();
+                return;
+            }
+            const user = await User.findOne({ uid: uid });
             const userRole = user.role;
 
-            // if (roles.length() == 0 || !roles.includes(userRole)) {
-            //     return res.status(403).json({ message: 'Forbidden' });
-            // } 
+            if (!roles.includes(userRole)) {
+                return res.status(403).json({ message: 'Forbidden' });
+            } 
             
             req.uid = uid; // Attach user ID to request
             next();
@@ -41,4 +45,3 @@ export function checkRole(roles) {
             });
         }
     }
-}

@@ -1,3 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import SearchBar from '../../components/SearchBar';
+import { getAllJobs, deleteJob } from '../../services/jobService';
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Metrics from "../../components/Metrics.jsx";
@@ -7,6 +11,9 @@ const EmployerPostsPage = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
   const navigate = useNavigate();
+
+
+  const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMP ID FOR NOW WILL CHANGE!!!
 
   useEffect(() => {
     fetch("/api/job")

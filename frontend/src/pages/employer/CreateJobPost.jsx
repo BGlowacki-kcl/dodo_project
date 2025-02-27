@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createJob } from '../../services/jobService';
 import EmployerSideBar from "../../components/EmployerSideBar";
 
 function CreateJobPost() {
   const [jobs, setJobs] = useState([]);
   const [jobData, setJobData] = useState({
+    company: '',
     title: '',
     company: '',
     description: '',

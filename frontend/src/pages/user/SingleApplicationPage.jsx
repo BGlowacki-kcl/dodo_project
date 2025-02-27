@@ -1,8 +1,6 @@
-
-import React, {useEffect, useState} from "react";
-import {useParams, useNavigate} from "react-router-dom";
-import {getApplicationById,withdrawApplication,} from "../../services/applicationService";
-
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getApplicationById, withdrawApplication } from "../../services/applicationService";
 function SingleApplicationPage() {
     const { appId } = useParams();
     const navigate = useNavigate();

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import SearchBar from "../../components/SearchBar";
+import { getAllJobs } from "../../services/jobService";
 
 function EmployerPosts() {
     const [jobs, setJobs] = useState([]);
@@ -38,6 +40,9 @@ function EmployerPosts() {
 
     const filteredJobs = jobs.filter(applyFilters);
 
+    if (loading) {
+        return <div className="p-4">Loading jobs...</div>;
+      }
     return (
         <div className="min-h-screen bg-[#0C1821] text-white flex flex-col">
             <div className="flex flex-1">
