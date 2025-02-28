@@ -21,6 +21,8 @@ import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAss';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
+import SearchResults from './pages/SearchResults'
+import AddPdf from './pages/addPdf.jsx';
 
 function App() {
 	const routeConfig = [
@@ -47,7 +49,7 @@ function App() {
 	];
 
 	return (
-		<Box className="bg-gray-100 min-h-screen">
+		<Box className="bg-background min-h-screen">
 			<Navbar />
 			<Routes>
 				<Route path='/SignIn' element={<SignInUp mode="SignIn" />} />
@@ -79,6 +81,8 @@ function App() {
 						}
 					/>
 				))}
+				<Route path="/search-results" element={<SearchResults />} />
+				<Route path="/addPdf" element={<AddPdf />} />
 			</Routes>
 		</Box>
 	);
