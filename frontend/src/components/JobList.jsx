@@ -1,22 +1,24 @@
 import React from 'react';
 
 const JobList = ({ jobs, onSelectJob }) => {
-    return (
-        <div className="bg-white p-4 shadow rounded">
-            <h2 className="text-xl font-bold mb-4">Your Job Posts</h2>
-            <ul>
-                {jobs.map((job, index) => (
-                    <li
-                        key={index}
-                        onClick={() => onSelectJob(job)}
-                        className="cursor-pointer mb-2 p-2 border rounded hover:bg-gray-200"
-                    >
-                        {job}
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
+  return (
+    <div className="bg-white shadow rounded-lg p-4">
+      <h2 className="text-xl font-semibold mb-4">Posted Jobs</h2>
+      <div className="space-y-4">
+        {jobs && jobs.map((job) => (
+          <div
+            key={job._id}
+            onClick={() => onSelectJob(job)}
+            className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+          >
+            <h3 className="font-medium">{job.title}</h3>
+            <p className="text-sm text-gray-600">{job.company}</p>
+            <p className="text-sm text-gray-500">{job.location}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default JobList;

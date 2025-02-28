@@ -1,4 +1,4 @@
-import User from "../models/user/user.model.js"; 
+import {User} from "../models/user/user.model.js"; 
 import { JobSeeker } from "../models/user/jobSeeker.model.js";
 import { Employer } from "../models/user/Employer.model.js"; 
 
@@ -44,6 +44,7 @@ export const userController = {
 
     async checkProfileCompletion(req, res) {
         try {
+            console.log(req);
             const { uid } = req;
             if (!uid) {
                 return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -58,8 +59,8 @@ export const userController = {
             const missingFields = requiredFields.filter(field => !user[field]);
 
             if (missingFields.length > 0) {
-                return res.status(403).json({ 
-                    success: true, 
+                return res.status(200).json({ 
+                    success: true,
                     message: "Profile incomplete, redirecting to addDetails",
                     redirect: "/addDetails",
                     missingFields 
@@ -101,11 +102,12 @@ export const userController = {
             }
 
             await newUser.save();
-            res.status(201).json({ success: true, message: "User created successfully" });
+            return res.status(201).json({ success: true, message: "User created successfully" });
 
         } catch (err) {
             console.error("Error creating user:", err);
-            res.status(500).json({ success: false, message: "Server error" });
+            return res.status(500).json({ success: false, message: "Server error" });
+            
         }
     },
 

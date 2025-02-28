@@ -3,187 +3,120 @@ import React, { useState } from "react";
 const CVTabs = () => {
   const [activeTab, setActiveTab] = useState("Personal");
 
-  const [personalInfo, setPersonalInfo] = useState({
-    name: "",
-    location: "",
-    linkedin: "",
-    github: "",
-    portfolio: "",
-    email: "",
-    phone: "",
+  const [entries, setEntries] = useState({
+    Education: [{ id: 1, institute: "", duration: "", course: "", grade: "" }],
+    Experience: [{ id: 1, company: "", position: "", duration: "", description: "" }],
+    Projects: [{ id: 1, title: "", description: "", technologies: "" }],
   });
 
-  const [educationEntries, setEducationEntries] = useState([
-    { id: 1, institute: "", duration: "", course: "", grade: "" }
-  ]);
-
-  const [experienceEntries, setExperienceEntries] = useState([
-    { id: 1, company: "", position: "", duration: "", description: "" }
-  ]);
-
-  const [projectEntries, setProjectEntries] = useState([
-    { id: 1, title: "", description: "", technologies: "" }
-  ]);
-
-  const handleInputChange = (e, index = null, section = null) => {
-    const { name, value } = e.target;
-
-    if (section) {
-      const setEntries =
-        section === "Education"
-          ? setEducationEntries
-          : section === "Experience"
-          ? setExperienceEntries
-          : setProjectEntries;
-
-      setEntries((prevEntries) =>
-        prevEntries.map((entry, i) =>
-          i === index ? { ...entry, [name]: value } : entry
-        )
-      );
-    } else {
-      setPersonalInfo((prevInfo) => ({
-        ...prevInfo,
-        [name]: value
-      }));
-    }
-  };
-
-  const handleAddEntry = (section) => {
-    if (section === "Education") {
-      setEducationEntries((prevEntries) => [
-        ...prevEntries,
-        { id: prevEntries.length + 1, institute: "", duration: "", course: "", grade: "" }
-      ]);
-    } else if (section === "Experience") {
-      setExperienceEntries((prevEntries) => [
-        ...prevEntries,
-        { id: prevEntries.length + 1, company: "", position: "", duration: "" }
-      ]);
-    } else if (section === "Projects") {
-      setProjectEntries((prevEntries) => [
-        ...prevEntries,
-        { id: prevEntries.length + 1, title: "", description: "", technologies: "", description: ""}
-      ]);
-    }
-  };
-
-  const handleRemoveEntry = (index, section) => {
-    if (section === "Education") {
-      setEducationEntries((prevEntries) => prevEntries.filter((_, i) => i !== index));
-    } else if (section === "Experience") {
-      setExperienceEntries((prevEntries) => prevEntries.filter((_, i) => i !== index));
-    } else if (section === "Projects") {
-      setProjectEntries((prevEntries) => prevEntries.filter((_, i) => i !== index));
-    }
-  };
+  const [personalInfo, setPersonalInfo] = useState({
+    name: "", email: "", phone: "", location: "", linkedin: "", github: "", portfolio: ""
+  });
 
   const sections = {
     Personal: [
-      { label: "Name", name: "name", need: true },
-      { label: "Email", name: "email", need: true },
-      { label: "Phone Number", name: "phone", need: false },
-      { label: "Location", name: "location", need: false },
-      { label: "LinkedIn", name: "linkedin", need: false },
-      { label: "GitHub", name: "github", need: false },
-      { label: "Portfolio", name: "portfolio", need: false }
+      { label: "Name", name: "name", required: true },
+      { label: "Email", name: "email", required: true },
+      { label: "Phone", name: "phone" },
+      { label: "Location", name: "location" },
+      { label: "LinkedIn", name: "linkedin" },
+      { label: "GitHub", name: "github" },
+      { label: "Portfolio", name: "portfolio" }
     ],
+    Education: [
+      { label: "Institute", name: "institute" },
+      { label: "Duration", name: "duration" },
+      { label: "Course", name: "course" },
+      { label: "Grade", name: "grade" }
+    ],
+    Experience: [
+      { label: "Company", name: "company" },
+      { label: "Position", name: "position" },
+      { label: "Duration", name: "duration" },
+      { label: "Description", name: "description" }
+    ],
+    Projects: [
+      { label: "Project Title", name: "title" },
+      { label: "Description", name: "description" },
+      { label: "Technologies Used", name: "technologies" }
+    ]
   };
 
-  const tabData = [
-    { id: "Personal", label: "Personal" },
-    { id: "Education", label: "Education" },
-    { id: "Experience", label: "Experience" },
-    { id: "Projects", label: "Projects" }
-  ];
+  const handleInputChange = (e, index = null) => {
+    const { name, value } = e.target;
+    if (index !== null) {
+      setEntries(prev => ({
+        ...prev,
+        [activeTab]: prev[activeTab].map((entry, i) =>
+          i === index ? { ...entry, [name]: value } : entry
+        )
+      }));
+    } else {
+      setPersonalInfo(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleAddEntry = () => {
+    setEntries(prev => ({
+      ...prev,
+      [activeTab]: [...prev[activeTab], { id: prev[activeTab].length + 1, ...Object.fromEntries(sections[activeTab].map(f => [f.name, ""])) }]
+    }));
+  };
+
+  const handleRemoveEntry = (index) => {
+    setEntries(prev => ({
+      ...prev,
+      [activeTab]: prev[activeTab].filter((_, i) => i !== index)
+    }));
+  };
 
   return (
     <div>
+      {/* Tab Buttons */}
       <div className="flex bg-[#1b2a41] justify-center py-5">
-        {tabData.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`tablink px-4 py-2 ${
-              activeTab === tab.id ? "text-white" : "text-gray-500"
-            }`}
-          >
-            {tab.label}
+        {Object.keys(sections).map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className={`tablink px-4 py-2 ${activeTab === tab ? "text-ltext" : "text-gray-500"}`}>
+            {tab}
           </button>
         ))}
       </div>
 
-      <div className="p-5 bg-[#324a5f] px-60 py-10 h-full">
+      {/* Tab Content */}
+      <div className="p-5 bg-background px-60 py-10">
         <h3 className="text-xl font-bold text-white">{activeTab} Information</h3>
         <div className="space-y-4 mt-3">
-          {["Education", "Experience", "Projects"].includes(activeTab) ? (
+          {activeTab === "Personal" ? (
+            <div className="bg-white p-6 rounded-lg shadow-md">
+              {sections.Personal.map(({ label, name, required }) => (
+                <div key={name} className="flex items-center mb-4">
+                  <label className="w-48 text-gray-700">{label}{required && <span className="text-red-500 ml-1">*</span>}</label>
+                  <input type="text" name={name} value={personalInfo[name] || ""}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 rounded-md bg-gray-100 text-gray-700 border border-gray-300 focus:ring-2 focus:ring-red-700" />
+                </div>
+              ))}
+            </div>
+          ) : (
             <>
-              {(activeTab === "Education" ? educationEntries :
-                activeTab === "Experience" ? experienceEntries : projectEntries
-              ).map((entry, index) => (
-                <div key={entry.id} className="bg-[#1b2a41] p-4 rounded-md relative">
-                  <button
-                    className="absolute right-0 top-0"
-                    onClick={() => handleRemoveEntry(index, activeTab)}
-                  >
-                    ✖
-                  </button>
-                  {(activeTab === "Education"
-                    ? [
-                        { label: "Institute", name: "institute" },
-                        { label: "Duration", name: "duration" },
-                        { label: "Course", name: "course" },
-                        { label: "Grade", name: "grade" }
-                      ]
-                    : activeTab === "Experience"
-                    ? [
-                        { label: "Company", name: "company" },
-                        { label: "Position", name: "position" },
-                        { label: "Duration", name: "duration" },
-                        { label: "Description", name: "description" }
-                      ]
-                    : [
-                        { label: "Project Title", name: "title" },
-                        { label: "Description", name: "description" },
-                        { label: "Technologies Used", name: "technologies" }
-                      ]
-                  ).map(({ label, name }) => (
+              {entries[activeTab].map((entry, index) => (
+                <div key={entry.id} className="bg-white p-6 rounded-lg shadow-md relative">
+                  <button className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                    onClick={() => handleRemoveEntry(index)}>✖</button>
+                  {sections[activeTab].map(({ label, name }) => (
                     <div key={name} className="flex items-center mb-3">
-                      <label className="w-48 text-white flex items-center">{label}</label>
-                      <input
-                        type="text"
-                        name={name}
-                        value={entry[name] || ""}
-                        onChange={(e) => handleInputChange(e, index, activeTab)}
-                        className="w-full px-4 py-2 rounded-md text-black text-sm"
-                      />
+                      <label className="w-48 text-gray-700">{label}</label>
+                      <input type="text" name={name} value={entry[name] || ""}
+                        onChange={(e) => handleInputChange(e, index)}
+                        className="w-full px-4 py-2 rounded-md bg-gray-100 text-gray-700 border border-gray-300 focus:ring-2 focus:ring-red-700" />
                     </div>
                   ))}
                 </div>
               ))}
-              <button
-                onClick={() => handleAddEntry(activeTab)}
-                className="mt-4 bg-[#ccc9dc] text-black py-2 px-4 rounded-md hover:scale-105"
-              >
+              <button onClick={() => handleAddEntry(activeTab)} className="button">
                 + Add {activeTab}
               </button>
             </>
-          ) : (
-            sections[activeTab]?.map(({ label, name, need }) => (
-              <div key={name} className="flex items-center">
-                <label className="w-48 text-white flex items-center">
-                  {label}
-                  {need && <p className="text-red-500 ml-1">*</p>}
-                </label>
-                <input
-                  type="text"
-                  name={name}
-                  value={personalInfo[name] || ""}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded-md text-black text-sm"
-                />
-              </div>
-            ))
           )}
         </div>
       </div>
@@ -192,4 +125,3 @@ const CVTabs = () => {
 };
 
 export default CVTabs;
-

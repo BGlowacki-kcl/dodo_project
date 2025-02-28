@@ -8,7 +8,7 @@ const ApplicantDashboard = () => {
     const [activeView, setActiveView] = useState("activity");
 
     return (
-        <div className="min-h-screen bg-[#0C1821] flex">
+        <div className="min-h-screen bg-gray flex">
             {/* Sidebar */}
             <div className="w-64 bg-[#1B2A41] shadow-lg p-4 border-r border-[#324A5F] flex flex-col h-screen">
                 <nav className="space-y-2">
@@ -56,7 +56,7 @@ const ApplicantDashboard = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 p-8 max-w-7xl mx-auto bg-[#0C1821]">
+            <div className="flex-1 p-8 max-w-7xl mx-auto ">
                 {activeView === "activity" && <ApplicantActivity />}
                 {activeView === "shortlist" && <ApplicantShortlist />}
                 {activeView === "profile" && <ApplicantProfile />}

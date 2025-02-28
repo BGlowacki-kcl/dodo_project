@@ -6,6 +6,7 @@ import jobRoutes from './routes/job.route.js';
 import applicationRoutes from './routes/application.route.js';
 import matcherRoutes from './routes/matcher.route.js'
 import chat from "./api/chat.api.js";
+import code from "./api/code.api.js";
 import { checkRole } from './middlewares/auth.middleware.js';
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use('/api/application', applicationRoutes);
 app.use('/api/matcher', matcherRoutes);
 
 app.post('/api/chat', chat); //add auth middleware
+app.post('/api/code', code);
 
 export { app };
 
