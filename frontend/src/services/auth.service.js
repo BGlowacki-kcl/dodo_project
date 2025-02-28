@@ -118,7 +118,7 @@ export const authService = {
             if (data.redirect) {
                 navigate(data.redirect);  // Ensures navigation works
             } else {
-                navigate('/dashboard');
+                navigate('/');
             }
 
         } catch (err) {
