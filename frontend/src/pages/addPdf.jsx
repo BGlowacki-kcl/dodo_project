@@ -53,11 +53,11 @@ function addPdf() {
   ];
 
   return (
-    <div className="bg-[#1b2a41] min-h-full">
-      <div className="items-center justify-center text-left px-60 py-5 text-white bg-[#1b2a41] ">
-        <h1 className="text-2xl font-semibold mb-4 text-white">Complete Your Profile</h1>
-        <h2 className="text-xl font-semibold mb-4 text-white">Manually type or autofill with your CV</h2>
-        <label htmlFor="pdfInput" className="bg-[#ccc9dc] text-white py-2 px-3 rounded-lg hover:bg-[#ccc9dcbb]">
+    <div>
+      <div className="items-center justify-center text-left px-60 py-5 bg-component ">
+        <h1 className="text-2xl font-semibold mb-4 text-dtext">Complete Your Profile</h1>
+        <h2 className="text-xl font-semibold mb-4 text-dtext">Manually type or autofill with your CV</h2>
+        <label htmlFor="pdfInput" className="bg-secondary text-white py-2 px-3 rounded-lg">
           Choose a PDF File
         </label>
         <input 
@@ -73,7 +73,7 @@ function addPdf() {
         {text && <div className="mt-4">{renderData(text)}</div>}
       </div>
 
-      <div className= "bg-[#1b2a41]">
+      <div>
         <CVTabs/>
       </div>
     </div>
