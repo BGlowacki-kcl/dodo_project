@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import ComboBox from "../../components/ComboBox";
 import Dropdown from "../../components/Dropdown";
 import Box from "../../components/Box";
-import internship from "../../assets/intern.jpg";
-import job from "../../assets/job.jpg";
-import placement from "../../assets/placement.jpg";
+import internship from "../../assets/intern.jpg"
+import job from "../../assets/job.jpg"
+import placement from "../../assets/placement.jpg"
+import { getAllJobs } from "../../services/jobService";
 
 const Landing = () => {
     const navigate = useNavigate();

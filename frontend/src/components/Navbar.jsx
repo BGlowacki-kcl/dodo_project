@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { authService } from '../services/auth.service';
 
 // ProfileDropdown component used only for employers
 const ProfileDropdown = ({ isDropdownOpen, toggleDropdown }) => (
@@ -53,11 +54,41 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Check session storage for role and token when the component mounts
-  useEffect(() => {
-    const role = sessionStorage.getItem('role');
-    setIsEmployer(role === 'employer');
-    setIsLoggedIn(!!sessionStorage.getItem('token'));
-  }, []);
+  // useEffect(() => {
+  //   const role = sessionStorage.getItem('role');
+  //   setIsEmployer(role === 'employer');
+  //   setIsLoggedIn(!!sessionStorage.getItem('token'));
+  // }, []);
+    // Create a function to check auth status
+    const checkAuthStatus = () => {
+      const token = sessionStorage.getItem('token');
+      const role = sessionStorage.getItem('role');
+      setIsEmployer(role === 'employer');
+      setIsLoggedIn(!!token);
+    };
+  
+    // Listen for auth changes
+    useEffect(() => {
+      checkAuthStatus();
+      
+      // Add event listener for storage changes
+      window.addEventListener('storage', checkAuthStatus);
+      
+      // Create a custom event listener for auth changes
+      window.addEventListener('authChange', checkAuthStatus);
+      
+      return () => {
+        window.removeEventListener('storage', checkAuthStatus);
+        window.removeEventListener('authChange', checkAuthStatus);
+      };
+    }, []);
+
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await authService.signOut();
+    navigate('/');
+  }
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
@@ -72,6 +103,7 @@ const Navbar = () => {
             alt="Logo"
           />
         </Link>
+        <button onClick={handleSignOut} >Sign out</button>
 
         {isEmployer ? (
           // Employer Navigation: Shows the ProfileDropdown

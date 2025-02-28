@@ -6,12 +6,15 @@ export default defineConfig({
   plugins: [react()],
   server:{
     proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-      }
+      '/api': 'http://localhost:5001',
     }
   },
   define: {
     'process.env': {}
-  }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/tests/setupTests.js',
+  },
 })

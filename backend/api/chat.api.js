@@ -15,27 +15,27 @@ Rules:
     "location": "...",
     "name": "...",
     "surname": "...",
+    "phoneNumber": "...",
     "portfolio website": "...",
     "LinkedIn website": "...",
-    "GitHub website": "..."
+    "GitHub website": "...",
+    "dateOfBirth": "..." (yyyy-mm-dd)
   },
   "experience": [
     {
       "company": "...",
       "position": "...",
       "skills": "...",
-      "start date": "...",
-      "end date": "...",
-      "description": "..."
+      "description": "...",
+      "fieldOfWork": "..."
     }
   ],
   "education": [
     {
       "University": "...",
-      "start date": "...",
-      "end date": "...",
       "Major": "...",
-      "Degree": "..."
+      "Degree": "...",
+      "description": "..."
     }
   ],
   "projects": [

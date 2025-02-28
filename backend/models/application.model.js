@@ -16,7 +16,7 @@ const jobApplicationSchema = new Schema({
 
   status: {
     type: String,
-    enum: ['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'hired'],
+    enum: ['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'accepted'],
     default: 'applying'
   },
 
@@ -29,4 +29,4 @@ const jobApplicationSchema = new Schema({
   }
 });
 
-export const Application = mongoose.model('Application', jobApplicationSchema);
+export default mongoose.model('Application', jobApplicationSchema);

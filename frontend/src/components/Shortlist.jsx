@@ -1,17 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getAllJobs } from "../services/jobService";
 
 function ApplicantShortlist() {
-    const jobs = [
-        { id: 1, title: "Software Engineer", company: "Tech Corp", location: "San Francisco", type: "Full-time" },
-        { id: 2, title: "Data Analyst", company: "Data Inc", location: "Remote", type: "Part-time" },
-        { id: 3, title: "Frontend Developer", company: "Web Solutions", location: "New York", type: "Full-time" },
-        { id: 4, title: "Backend Developer", company: "Code Masters", location: "Remote", type: "Contract" },
-    ];
+    // const jobs = [
+    //     { id: 1, title: "Software Engineer", company: "Tech Corp", location: "San Francisco", type: "Full-time" },
+    //     { id: 2, title: "Data Analyst", company: "Data Inc", location: "Remote", type: "Part-time" },
+    //     { id: 3, title: "Frontend Developer", company: "Web Solutions", location: "New York", type: "Full-time" },
+    //     { id: 4, title: "Backend Developer", company: "Code Masters", location: "Remote", type: "Contract" },
+    // ];
+    const [jobs, setJobs] = useState([]);
 
     const [filters, setFilters] = useState({
         location: "",
         jobType: "",
     });
+
+    useEffect(() => {
+        async function fetchJobs() {
+          try {
+            const data = await getAllJobs();
+            setJobs(data);
+          } 
+          catch (err) {
+            console.error("Failed to fetch jobs:", err);
+          }
+        }
+        fetchJobs();
+      }, []);
 
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
@@ -66,7 +81,7 @@ function ApplicantShortlist() {
                     <h2 className="text-3xl font-bold mb-8 text-white">Job Listings</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredJobs.map((job) => (
-                            <div key={job.id} className="bg-gray-700 p-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl border border-gray-600">
+                            <div key={job._id} className="bg-gray-700 p-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl border border-gray-600">
                                 <h3 className="text-2xl font-semibold text-white">{job.title}</h3>
                                 <p className="text-gray-300 mt-2">{job.company} - {job.location}</p>
                                 <p className="text-gray-300 mt-2">{job.type}</p>  {/* Updated: No bubble, just plain text */}
