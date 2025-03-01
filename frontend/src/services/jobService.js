@@ -46,3 +46,8 @@ export const deleteJob = async (id) => {
   const response = await axios.delete(`/api/job/${id}`);
   return response.data;
 };
+
+export const getJobCountByType = async (jobType) => {
+  const response = await api.get(`/job/count/type?type=${jobType}`);
+  return response.data.count;
+};

@@ -5,7 +5,8 @@ import {
     getJobs,
     getJobById,
     updateJob,
-    deleteJob
+    deleteJob,
+    getJobCountByType,
 } from '../controllers/job.controller.js';
 
 const router = express.Router();
@@ -24,5 +25,7 @@ router.put('/:id', updateJob);
 
 // Delete a job post
 router.delete('/:id', deleteJob);
+
+router.get('/count/type', getJobCountByType);
 
 export default router;

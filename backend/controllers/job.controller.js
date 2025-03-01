@@ -96,3 +96,13 @@ export const deleteJob = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const getJobCountByType = async (req, res) => {
+    try {
+        const { type } = req.query;
+        const count = await Job.countDocuments({ employmentType: type });
+        res.status(200).json({ count });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

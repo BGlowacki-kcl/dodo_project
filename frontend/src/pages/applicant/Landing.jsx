@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ComboBox from "../../components/ComboBox";
 import Dropdown from "../../components/Dropdown";
@@ -6,7 +6,8 @@ import Box from "../../components/Box";
 import internship from "../../assets/intern.jpg"
 import job from "../../assets/job.jpg"
 import placement from "../../assets/placement.jpg"
-import { getAllJobs } from "../../services/jobService";
+import { getAllJobs, getJobCountByType } from "../../services/jobService";
+
 
 const Landing = () => {
     const navigate = useNavigate();
@@ -14,6 +15,7 @@ const Landing = () => {
     const [jobType, setJobType] = useState("");
     const [role, setRole] = useState("");
     const [region, setRegion] = useState("");
+    const [internshipCounter, setInternshipCount] = useState(0);
 
     const handleSearch = () => {
         const queryParams = new URLSearchParams({
@@ -23,6 +25,19 @@ const Landing = () => {
         }).toString();
         navigate(`/search-results?${queryParams}`);
     };
+
+    useEffect(() => {
+        const fetchInternshipCount = async () => {
+          try {
+            const count = await getJobCountByType("internship");
+            setInternshipCount(count);
+          } catch (error) {
+            console.error("Failed to fetch internship count", error);
+          }
+        };
+    
+        fetchInternshipCount();
+    }, []);
 
     return (
         <div className="bg-cover bg-center h-full w-full bg-primary flex flex-col items-center">
@@ -53,7 +68,7 @@ const Landing = () => {
                 <button onClick={handleSearch} className="button w-48">Search</button>
             </div>
             <div className="p-10 flex flex-row gap-10">
-                <Box image={internship} text={"Internships"} counter={256} />
+                <Box image={internship} text={"Internships"} counter={internshipCounter} />
                 <Box image={placement} text={"Placements"} counter={256} />
                 <Box image={job} text={"Jobs"} counter={256} />
             </div>
