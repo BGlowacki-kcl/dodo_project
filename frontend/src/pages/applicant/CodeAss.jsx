@@ -13,6 +13,40 @@ def func(x, y):
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
+
+  const handleLanguageChange = (e) => {
+    setLanguage(e.target.value);
+    let defText = "";
+    if (e.target.value === "python") {
+      defText = `# Write a function that takes number x and y, then returns the sum of x and y
+
+def func(x, y):
+  # Write your code here`;
+    } else if (e.target.value === "javascript") {
+      defText = `// Write a function that takes number x and y, then returns the sum of x and y
+
+function func(x, y) {
+  // Write your code here
+
+}`;
+    } else if (e.target.value === "cpp") {
+      defText = `// Write a function that takes number x and y, then returns the sum of x and y
+
+#include <vector>
+#include <iostream>
+#include <utility>
+#include <string>
+
+using namespace std;
+
+int func(int x, int y) {
+  // Write your code here
+
+  return 0;
+}`;
+    }
+    setCode(defText);
+  }
   
   const runCode = async () => {
     setLoading(true);
@@ -52,7 +86,7 @@ def func(x, y):
       <div className='flex flex-row items-center justify-center'>
         <div className='flex flex-col items-center justify-center w-full p-4 space-y-20'>
           <select
-            onChange={(e) => setLanguage(e.target.value)}
+            onChange={handleLanguageChange}
             className="px-4 py-2 border-white border bg-gray-900 text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
             <option value="python">Python</option>

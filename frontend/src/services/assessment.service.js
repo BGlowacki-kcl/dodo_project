@@ -96,28 +96,29 @@ export const assessmentService = {
         if(testCases === "") {
             return {data: {stderr: "Failed to generate test cases"}};
         }
-        const addToCode = `
-for index, testCase in enumerate(testCases):
-    args = testCase["input"]
-    expected_output = testCase["output"]
-    actual_output = func(*args)
+        const executeTestsCode = generateExecuteTestsCode(language);
+//         const addToCode = `
+// for index, testCase in enumerate(testCases):
+//     args = testCase["input"]
+//     expected_output = testCase["output"]
+//     actual_output = func(*args)
 
-    if actual_output == expected_output:
-        print("Test " + str(index + 1) + ": Test PASSED")
-    else:
-        print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {}".format(index + 1, testCase['input'], expected_output, actual_output))
+//     if actual_output == expected_output:
+//         print("Test " + str(index + 1) + ": Test PASSED")
+//     else:
+//         print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {}".format(index + 1, testCase['input'], expected_output, actual_output))
 
-for index, testCase in enumerate(hidden_testCases):
-    args = testCase["input"]
-    expected_output = testCase["output"]
-    actual_output = func(*args)
+// for index, testCase in enumerate(hidden_testCases):
+//     args = testCase["input"]
+//     expected_output = testCase["output"]
+//     actual_output = func(*args)
 
-    if actual_output == expected_output:
-        print("Test " + str(index + 1) + ": Test PASSED HIDDEN")
-    else:
-        print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {} HIDDEN".format(index + 1, testCase['input'], expected_output, actual_output))
-`;
-        code += testCases + addToCode;
+//     if actual_output == expected_output:
+//         print("Test " + str(index + 1) + ": Test PASSED HIDDEN")
+//     else:
+//         print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {} HIDDEN".format(index + 1, testCase['input'], expected_output, actual_output))
+// `;
+        code += testCases + executeTestsCode;
 
         console.log("Code: ", code, "...");
         const response = await fetch('/api/code', {
@@ -140,6 +141,86 @@ for index, testCase in enumerate(hidden_testCases):
     }
 }  
 
+function generateExecuteTestsCode(language) {
+    if(language === "python") {
+        return `
+for index, testCase in enumerate(testCases):
+    args = testCase["input"]
+    expected_output = testCase["output"]
+    actual_output = func(*args)
+
+    if actual_output == expected_output:
+        print("Test " + str(index + 1) + ": Test PASSED")
+    else:
+        print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {}".format(index + 1, testCase['input'], expected_output, actual_output))
+
+for index, testCase in enumerate(hidden_testCases):
+    args = testCase["input"]
+    expected_output = testCase["output"]
+    actual_output = func(*args)
+
+    if actual_output == expected_output:
+        print("Test " + str(index + 1) + ": Test PASSED HIDDEN")
+    else:
+        print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {} HIDDEN".format(index + 1, testCase['input'], expected_output, actual_output))
+        `;
+    }
+
+    if (language === "javascript") {
+        return `
+testCases.forEach((testCase, index) => {
+    const args = testCase.input;
+    const expected_output = testCase.output;
+    const actual_output = func(...args);
+
+    if (actual_output === expected_output) {
+        console.log(\`Test \${index + 1}: Test PASSED\`);
+    } else {
+        console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output}\`);
+    }
+});
+
+hiddenTestCases.forEach((testCase, index) => {
+    const args = testCase.input;
+    const expected_output = testCase.output;
+    const actual_output = func(...args);
+
+    if (actual_output === expected_output) {
+        console.log(\`Test \${index + 1}: Test PASSED HIDDEN\`);
+    } else {
+        console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output} HIDDEN\`);
+    }
+});
+        `;
+    }
+
+    if (language === "cpp") {
+        return `
+
+void runTests(vector<pair<vector<int>, int>> testCases, string testType) {
+    for (size_t i = 0; i < testCases.size(); i++) {
+        vector<int> args = testCases[i].first;
+        int expected_output = testCases[i].second;
+        int actual_output = func(args[0], args[1]);  // Assuming 2 inputs for simplicity
+
+        if (actual_output == expected_output) {
+            cout << "Test " << i + 1 << ": Test PASSED " << testType << endl;
+        } else {
+            cout << "Test " << i + 1 << ": Test FAILED - input: [" << args[0] << ", " << args[1] << "], expected output: " << expected_output << ", output received: " << actual_output << " " << testType << endl;
+        }
+    }
+}
+
+int main() {
+    runTests(testCases, "");
+    runTests(hiddenTestCases, "HIDDEN");
+    return 0;
+}
+        `;
+    }
+
+    return "";
+}
 
 
 function generateTestCode(testCases, language) {
@@ -171,15 +252,12 @@ const hiddenTestCases = ${formattedHiddenTestCases};
     }
   
     if (language === "cpp") {
-      return `
-#include <vector>
-#include <utility>
-  
-std::vector<std::pair<std::vector<int>, int>> testCases = {
+      return ` 
+vector<pair<vector<int>, int>> testCases = {
     ${visibleTestCases.map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`).join(",\n    ")}
 };
   
-std::vector<std::pair<std::vector<int>, int>> hiddenTestCases = {
+vector<pair<vector<int>, int>> hiddenTestCases = {
     ${hiddenTestCases.map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`).join(",\n    ")}
 };
       `;
