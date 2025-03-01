@@ -16,6 +16,8 @@ const Landing = () => {
     const [role, setRole] = useState("");
     const [region, setRegion] = useState("");
     const [internshipCounter, setInternshipCount] = useState(0);
+    const [placementCounter, setPlacementCount] = useState(0);
+    const [graduateCounter, setGraduateCount] = useState(0);
 
     const handleSearch = () => {
         const queryParams = new URLSearchParams({
@@ -27,16 +29,20 @@ const Landing = () => {
     };
 
     useEffect(() => {
-        const fetchInternshipCount = async () => {
+        const fetchCount = async () => {
           try {
-            const count = await getJobCountByType("internship");
-            setInternshipCount(count);
+            const internshipCount = await getJobCountByType("internship");
+            const placementCount = await getJobCountByType("placement");
+            const graduateCount = await getJobCountByType("graduate");
+            setPlacementCount(placementCount);
+            setGraduateCount(graduateCount);
+            setInternshipCount(internshipCount);
           } catch (error) {
             console.error("Failed to fetch internship count", error);
           }
         };
     
-        fetchInternshipCount();
+        fetchCount();
     }, []);
 
     return (
@@ -69,8 +75,8 @@ const Landing = () => {
             </div>
             <div className="p-10 flex flex-row gap-10">
                 <Box image={internship} text={"Internships"} counter={internshipCounter} />
-                <Box image={placement} text={"Placements"} counter={256} />
-                <Box image={job} text={"Jobs"} counter={256} />
+                <Box image={placement} text={"Placements"} counter={placementCounter} />
+                <Box image={job} text={"Graduate"} counter={graduateCounter} />
             </div>
         </div>
     );
