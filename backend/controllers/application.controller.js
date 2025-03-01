@@ -19,6 +19,10 @@ export const applicationController = {
         try {
             const { jobId, coverLetter } = req.body;
 
+            if (!jobId) {
+                return res.status(400).json(createResponse(false, "Job ID is required"));
+            }
+
             const application = await Application.create({
                 job: jobId,
                 applicant: req.uid, // Extracted from Firebase auth
@@ -104,6 +108,7 @@ export const applicationController = {
         try {
             const { jobId } = req.params;
 
+            // Ensure only the employer who posted the job can view applicants
             const job = await Job.findById(jobId);
             if (!job || job.postedBy.toString() !== req.uid) {
                 return res.status(403).json(createResponse(false, "Unauthorized to view applicants for this job"));
