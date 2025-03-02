@@ -48,6 +48,11 @@ export const deleteJob = async (id) => {
 };
 
 export const getJobCountByType = async (jobType) => {
-  const response = await axios.get(`api/job/count/type?type=${jobType}`);
+  const response = await axios.get(`/api/job/count/type?type=${jobType}`);
   return response.data.count;
+};
+
+export const getAllJobRoles = async () => {
+  const response = await axios.get(`api/job/roles`);
+  return response.data;
 };

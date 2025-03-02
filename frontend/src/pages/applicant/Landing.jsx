@@ -6,14 +6,14 @@ import Box from "../../components/Box";
 import internship from "../../assets/intern.jpg"
 import job from "../../assets/job.jpg"
 import placement from "../../assets/placement.jpg"
-import { getAllJobs, getJobCountByType } from "../../services/jobService";
+import { getAllJobs, getJobCountByType, getAllJobRoles} from "../../services/jobService";
 
 
 const Landing = () => {
     const navigate = useNavigate();
     
     const [jobType, setJobType] = useState("");
-    const [role, setRole] = useState("");
+    const [roles, setRoles] = useState([]);
     const [region, setRegion] = useState("");
     const [internshipCounter, setInternshipCount] = useState(0);
     const [placementCounter, setPlacementCount] = useState(0);
@@ -22,7 +22,7 @@ const Landing = () => {
     const handleSearch = () => {
         const queryParams = new URLSearchParams({
             jobType,
-            role,
+            roles,
             region
         }).toString();
         navigate(`/search-results?${queryParams}`);
@@ -41,8 +41,18 @@ const Landing = () => {
             console.error("Failed to fetch internship count", error);
           }
         };
+
+        const fetchRoles = async () => {
+          try {
+            const roles = await getAllJobRoles();
+            setRoles(roles);
+          } catch (error) {
+            console.error("Failed to fetch job titles", error);
+          }
+        };
     
         fetchCount();
+        fetchRoles();
     }, []);
 
     return (
@@ -61,8 +71,8 @@ const Landing = () => {
                 />
                 <ComboBox
                     label="Role"
-                    options={["Software Engineer", "Frontend Developer", "Backend Developer", "Fullstack Developer"]}
-                    onSelect={setRole}
+                    options={roles}
+                    onSelect={setRoles}
                 />
                 <ComboBox
                     label="Region"

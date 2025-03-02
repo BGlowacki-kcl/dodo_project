@@ -106,3 +106,18 @@ export const getJobCountByType = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const getAllJobRoles = async (req, res) => {
+    try {
+      console.log("Fetching all job roles");
+      const titles = await Job.distinct('title');
+      console.log("Found titles:", titles);
+      res.status(200).json(titles);
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch job roles",
+        error: error.message 
+      });
+    }
+  };
