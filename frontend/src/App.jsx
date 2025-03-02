@@ -1,15 +1,17 @@
 import './App.css';
 import Box from '@mui/material/Box';
-import SignInUp from './pages/SignInUp';
+import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import AuthGuard from './guards/auth.guard';
+
+// Pages
+import SignInUp from './pages/SignInUp';
 import LandingPage from './pages/applicant/Landing.jsx';
 import ApplicantDashboard from "./pages/applicant/ApplicantDashboard.jsx";
 import EmployerDashboard from "./pages/employer/EmployerDashboard.jsx";
-import { Routes, Route } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import AuthGuard from './guards/auth.guard';
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
 import EmployerPostsPage from './pages/employer/EmployerPostsPage.jsx';
+import EmployerApplicants from "./pages/employer/EmployerApplicants.jsx";
 import Swiping from './pages/applicant/Swiping.jsx';
 import CreateJobPost from './pages/employer/CreateJobPost.jsx';
 import EditJobPost from './pages/employer/EditJobPost.jsx';
@@ -17,13 +19,13 @@ import UserJobsPage from './pages/user/UserJobsPage.jsx';
 import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import EmployerSignIn from "./pages/employer/EmployerSignIn.jsx";
+import EmployerLogin from './pages/employer/EmployerLogin.jsx';
+import Dashboard from './pages/Dashboard';
 import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAss';
-import EmployerLogin from './pages/employer/EmployerLogin.jsx';
-import SearchResults from './pages/SearchResults'
+import SearchResults from './pages/SearchResults';
 import AddPdf from './pages/addPdf.jsx';
-import EmployerApplicants from "./pages/employer/EmployerApplicants.jsx"; 
 
 function App() {
 	const routeConfig = [
@@ -44,30 +46,13 @@ function App() {
 		{ path: '/employer-login', element: <EmployerLogin />, roles: ['unLogged'] },
 		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true },
-		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] }, 
+		{ path: '/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] }, 
 	];
 
 	return (
 		<Box className="bg-background min-h-screen">
 			<Navbar />
 			<Routes>
-				<Route path='/SignIn' element={<SignInUp mode="SignIn" />} />
-				<Route path='/SignUp' element={<SignInUp mode="SignUp" />} />
-				<Route path="/dashboard" element={<AuthGuard> <Dashboard /> </AuthGuard>} />
-				<Route path="/" element={<LandingPage />} />
-				<Route path="/applicant-dashboard" element={<ApplicantDashboard />} />
-				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
-				<Route path = "/employer-login" element={<EmployerSignIn />} />
-				<Route path="/employer/posts" element={<EmployerPosts />} />
-				<Route path="/postspage" element={<EmployerPostsPage />} />
-				<Route path="/user/jobs" element={<UserJobsPage />} />
-				<Route path="/user/applications" element={<UserApplicationsPage />} />
-				<Route path="/user/applications/:appId" element={<SingleApplicationPage />} />
-				<Route path="/addDetails" element={<AddDetails />} />				
-				<Route path="/posts/new" element={<CreateJobPost />} />
-				<Route path="/posts/edit/:id" element={<EditJobPost />} />
-				<Route path="/swipe" element={<Swiping />} />
-				<Route path="/applicants" element={<AuthGuard roles={['employer']}><EmployerApplicants /></AuthGuard>} />
 				{routeConfig.map((route) => (
 					<Route
 						key={route.path}
