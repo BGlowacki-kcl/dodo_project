@@ -21,6 +21,7 @@
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.9",
     "crypto-js": "^4.2.0",
+    "firebase": "^11.4.0",
     "firebase-admin": "^13.0.2",
     "pdfjs-dist": "^3.4.120",
     "postcss": "^8.5.1",
