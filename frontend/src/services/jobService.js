@@ -56,3 +56,8 @@ export const getAllJobRoles = async () => {
   const response = await axios.get(`api/job/roles`);
   return response.data;
 };
+
+export const getAllJobLocations = async () => {
+  const response = await axios.get(`api/job/locations`);
+  return response.data;
+}

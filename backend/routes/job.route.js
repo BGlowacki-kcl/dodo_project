@@ -8,6 +8,7 @@ import {
     deleteJob,
     getJobCountByType,
     getAllJobRoles,
+    getAllJobLocations,
 } from '../controllers/job.controller.js';
 
 const router = express.Router();
@@ -15,6 +16,8 @@ const router = express.Router();
 router.get('/count/type', getJobCountByType);
 
 router.get('/roles', getAllJobRoles);
+
+router.get('/locations', getAllJobLocations);
 
 // Create a job post
 router.post('/', createJob);

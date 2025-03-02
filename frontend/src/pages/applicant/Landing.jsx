@@ -6,7 +6,7 @@ import Box from "../../components/Box";
 import internship from "../../assets/intern.jpg"
 import job from "../../assets/job.jpg"
 import placement from "../../assets/placement.jpg"
-import { getAllJobs, getJobCountByType, getAllJobRoles} from "../../services/jobService";
+import { getAllJobs, getJobCountByType, getAllJobRoles, getAllJobLocations } from "../../services/jobService";
 
 
 const Landing = () => {
@@ -14,7 +14,7 @@ const Landing = () => {
     
     const [jobType, setJobType] = useState("");
     const [roles, setRoles] = useState([]);
-    const [region, setRegion] = useState("");
+    const [locations, setLocations] = useState([]);
     const [internshipCounter, setInternshipCount] = useState(0);
     const [placementCounter, setPlacementCount] = useState(0);
     const [graduateCounter, setGraduateCount] = useState(0);
@@ -23,7 +23,7 @@ const Landing = () => {
         const queryParams = new URLSearchParams({
             jobType,
             roles,
-            region
+            locations,
         }).toString();
         navigate(`/search-results?${queryParams}`);
     };
@@ -50,9 +50,19 @@ const Landing = () => {
             console.error("Failed to fetch job titles", error);
           }
         };
+
+        const fetchLocations = async () => {
+            try {
+                const locations = await getAllJobLocations();
+                setLocations(locations);
+            } catch (error) {
+                console.error("Failed to fetch job locations", error);
+            }
+            };
     
         fetchCount();
         fetchRoles();
+        fetchLocations();
     }, []);
 
     return (
@@ -75,9 +85,9 @@ const Landing = () => {
                     onSelect={setRoles}
                 />
                 <ComboBox
-                    label="Region"
-                    options={["England", "Scotland", "Wales", "Northern Ireland"]}
-                    onSelect={setRegion}
+                    label="Location"
+                    options={locations}
+                    onSelect={setLocations}
                 />
             </div>
             <div className="bg-center">

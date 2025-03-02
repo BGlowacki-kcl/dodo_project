@@ -121,3 +121,18 @@ export const getAllJobRoles = async (req, res) => {
       });
     }
   };
+
+export const getAllJobLocations = async (req, res) => {
+    try {
+      console.log("Fetching all job locations");
+      const locations = await Job.distinct('location');
+      console.log("Found locations:", locations);
+      res.status(200).json(locations);
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch job locations",
+        error: error.message 
+      });
+    }
+  };
