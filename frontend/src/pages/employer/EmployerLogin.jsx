@@ -11,11 +11,16 @@ const EmployerLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/employer/login', { email, password });
+      // Ensure the correct endpoint
+      const response = await axios.post('/api/user/login', { email, password });
+
+      if (!response.data.token) {
+        throw new Error("Token not received from backend");
+      }
 
       // Save employer session
       sessionStorage.setItem('token', response.data.token);
-      sessionStorage.setItem('role', 'employer');
+      sessionStorage.setItem('role', response.data.role || 'employer');
 
       // Notify other components
       window.dispatchEvent(new Event('authChange'));
@@ -23,7 +28,8 @@ const EmployerLogin = () => {
       // Redirect to employer dashboard
       navigate('/employer-dashboard');
     } catch (err) {
-      setError('Invalid login credentials');
+      console.error("Login error:", err.response?.data || err.message);
+      setError(err.response?.data?.message || 'Invalid login credentials');
     }
   };
 

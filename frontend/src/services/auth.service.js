@@ -8,17 +8,20 @@ import { auth } from "../firebase";
 
 export const authService = {
     
-    async signUp(email, password, isEmployer, navigate){
+    async signUp(email, password, isEmployer, navigate) {
         if (!email || !password) {
             throw new Error('Email and password are required');
         }
+
         const role = isEmployer ? 'employer' : 'jobSeeker';
         const auth = getAuth();
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const idToken = await userCredential.user.getIdToken();
-        sessionStorage.setItem('token', idToken);
-        window.dispatchEvent(new Event('authChange'));
+        
         try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const idToken = await userCredential.user.getIdToken();
+            sessionStorage.setItem('token', idToken);
+            window.dispatchEvent(new Event('authChange'));
+
             const response = await fetch('/api/user/basic', {
                 method: 'POST',
                 headers: {
@@ -37,8 +40,12 @@ export const authService = {
 
             sessionStorage.setItem('role', role);
 
-            //  Check if profile is complete
-            await this.checkIfProfileCompleted(navigate);
+            // Ensure navigate is a function before calling it
+            if (typeof navigate === "function") {
+                await this.checkIfProfileCompleted(navigate);
+            } else {
+                console.error("⚠️ Navigate is not a function in signUp.");
+            }
 
         } catch (error) {
             console.error("SignUp error: ", error);
@@ -46,7 +53,7 @@ export const authService = {
         }
     },
 
-    async signIn(email, password, navigate){
+    async signIn(email, password, navigate) {
         if (!email || !password) {
             throw new Error('Email and password are required');
         }
@@ -57,10 +64,10 @@ export const authService = {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const idToken = await userCredential.user.getIdToken();
             sessionStorage.setItem('token', idToken);
-            console.log("Token: "+idToken);
+            console.log("Token: ", idToken);
             window.dispatchEvent(new Event('authChange'));
 
-            //  Fetch role from backend
+            // Fetch role from backend
             const roleResponse = await fetch('/api/user/role', {
                 method: 'GET',
                 headers: {
@@ -76,8 +83,12 @@ export const authService = {
             const roleData = await roleResponse.json();
             sessionStorage.setItem('role', roleData.data);  // Ensure correct storage
 
-            //  Check if profile is complete
-            await this.checkIfProfileCompleted(navigate);
+            // Ensure navigate is a function before calling it
+            if (typeof navigate === "function") {
+                await this.checkIfProfileCompleted(navigate);
+            } else {
+                console.error("⚠️ Navigate is not a function in signIn.");
+            }
 
         } catch (error) {
             console.error("SignIn error: ", error);
@@ -85,7 +96,7 @@ export const authService = {
         }
     },
 
-    async signOut(){
+    async signOut() {
         const auth = getAuth();
         
         try {
@@ -99,7 +110,7 @@ export const authService = {
         }
     },
 
-    async checkIfProfileCompleted(navigate){
+    async checkIfProfileCompleted(navigate) {
         try {
             const response = await fetch('/api/user/completed', {
                 method: 'GET',
@@ -115,15 +126,21 @@ export const authService = {
 
             const data = await response.json();
 
-            if (data.redirect) {
-                navigate(data.redirect);  // Ensures navigation works
+            if (typeof navigate === "function") {  
+                if (data.redirect) {
+                    navigate(data.redirect);
+                } else {
+                    navigate('/dashboard');
+                }
             } else {
-                navigate('/dashboard');
+                console.error("⚠️ Navigate is not a function in checkIfProfileCompleted.");
             }
 
         } catch (err) {
             console.error("Error while checking profile completion: ", err);
-            navigate('/addDetails');  //  Fallback redirection
+            if (typeof navigate === "function") {
+                navigate('/addDetails');  //  Fallback redirection
+            }
         }
     }
 };
