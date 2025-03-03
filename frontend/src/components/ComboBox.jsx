@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
 const ComboBox = ({ label, options, onSelect }) => {
-  const [inputValue, setInputValue] = useState([]);
+  const [inputValue, setInputValue] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleOptionClick = (option) => {
-    setInputValue([option]);
+    setInputValue(option);
     setDropdownOpen(false);
     if (onSelect) {
       onSelect(option);
@@ -18,20 +18,20 @@ const ComboBox = ({ label, options, onSelect }) => {
       <div className="relative">
         <input
           type="text"
-          value={inputValue.join('')}
-          onChange={(e) => setInputValue([e.target.value])}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
           placeholder={`Select a ${label}...`}
           className="w-48 rounded-lg bg-secondary py-2 px-4 focus:outline-none placeholder-ltext text-ltext"
           onFocus={() => setDropdownOpen(true)}
           onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
         />
 
-        {/* Dropdown options */}
+        {/* Dropdown options with scrolling and max 5 visible */}
         {dropdownOpen && (
-          <ul className="absolute z-10 mt-1 bg-primary rounded-sm shadow-lg w-full">
+          <ul className="absolute z-10 mt-1 bg-primary rounded-sm shadow-lg w-48 max-h-60 overflow-y-auto border border-gray-300">
             {options
               .filter((option) =>
-                option.toLowerCase().includes(inputValue.join('').toLowerCase())
+                option.toLowerCase().includes(inputValue.toLowerCase())
               )
               .map((option) => (
                 <li
