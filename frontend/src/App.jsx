@@ -23,7 +23,7 @@ import CodeAss from './pages/applicant/CodeAss';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 import SearchResults from './pages/SearchResults'
 import AddPdf from './pages/addPdf.jsx';
-import EmployerApplicants from "./pages/employer/EmployerApplicants.jsx"; 
+import EmployerApplicants from './pages/employer/EmployerApplicants';
 
 function App() {
 	const routeConfig = [
@@ -67,7 +67,7 @@ function App() {
 				<Route path="/posts/new" element={<CreateJobPost />} />
 				<Route path="/posts/edit/:id" element={<EditJobPost />} />
 				<Route path="/swipe" element={<Swiping />} />
-				<Route path="/applicants" element={<AuthGuard roles={['employer']}><EmployerApplicants /></AuthGuard>} />
+				<Route path="/employer/applicants/:jobId" element={<EmployerApplicants />} />
 				{routeConfig.map((route) => (
 					<Route
 						key={route.path}

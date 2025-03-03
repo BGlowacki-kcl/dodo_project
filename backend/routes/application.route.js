@@ -16,7 +16,7 @@ router.delete("/cancel/:applicationId", checkRole(["jobSeeker"]), applicationCon
 router.put("/:id/status", checkRole(["employer"]), applicationController.updateApplicationStatus);
 
 
-router.get("/job/:jobId/applicants", checkRole(["employer"]), applicationController.getApplicants);
+router.get("/job/:jobId/applicants", applicationController.getApplicants);
 
 
 router.get("/", checkRole(["jobSeeker", "employer"]), applicationController.getAllApplications);
