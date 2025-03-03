@@ -1,6 +1,6 @@
 import express from "express";
 import { applicationController } from "../controllers/application.controller.js";
-import { checkRole } from "../middleware/auth.middleware.js"; 
+import { checkRole } from "../middlewares/auth.middleware.js"; 
 
 const router = express.Router();
 
