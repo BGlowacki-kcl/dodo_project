@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar';
 import { getAllJobs, deleteJob } from '../../services/jobService';
 
-
 import Metrics from "../../components/Metrics.jsx";
 import EmployerSideBar from "../../components/EmployerSideBar.jsx";
 
@@ -11,7 +10,6 @@ const EmployerPostsPage = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
   const navigate = useNavigate();
-
 
   const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMP ID FOR NOW WILL CHANGE!!!
 
@@ -33,6 +31,22 @@ const EmployerPostsPage = () => {
 
   const handleAddJob = () => {
     navigate("/posts/new");
+  };
+
+  const handleViewApplicants = (jobId) => {
+    navigate(`/employer/applicants/${jobId}`);
+  };
+
+  const handleDelete = async (jobId) => {
+    try {
+      await deleteJob(jobId);
+      setJobs(jobs.filter(job => job._id !== jobId));
+      setSelectedJob(null);
+      alert("Job post deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete job post:", error);
+      alert("Failed to delete job post");
+    }
   };
 
   return (
@@ -78,7 +92,6 @@ const EmployerPostsPage = () => {
           <button
             onClick={handleAddJob}
             className="absolute bottom-25 left-30 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
-            
           >
             Add Job Post
           </button>
@@ -93,6 +106,18 @@ const EmployerPostsPage = () => {
                     className="absolute top-8 right-10 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
                   >
                     Edit Job
+                  </button>
+                  <button
+                    onClick={() => handleViewApplicants(selectedJob._id)}
+                    className="absolute top-8 right-40 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
+                  >
+                    View Applicants
+                  </button>
+                  <button
+                    onClick={() => handleDelete(selectedJob._id)}
+                    className="absolute top-8 left-60 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
+                  >
+                    Delete Job
                   </button>
                   <Metrics selectedJob={selectedJob} />
                 </>

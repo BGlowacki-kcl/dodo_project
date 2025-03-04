@@ -15,13 +15,10 @@ function CreateJobPost() {
       min: 0,
       max: 0
     },
-    employmentType: 'Full-time',
+    employmentType: '',
     requirements: [],
-    experienceLevel: 'entry',
-    postedBy : '6161b1b2f0f1f3b3b8b1b1b1',
-    createdAt : new Date().toISOString(),
-    updatedAt:  new Date().toISOString(),
-    applicants: []
+    experienceLevel: '',
+    postedBy: '67aa6f2ce7d1ee03803ef428' // TEMP ID FOR NOW WILL CHANGE!!!
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -65,25 +62,13 @@ function CreateJobPost() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
+  
     try {
-      const response = await fetch('/api/job', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        },
-        body: JSON.stringify(jobData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error('Failed to create job');
-      }
-
+      await createJob(jobData); // Use the imported createJob service
       navigate('/employer/posts');
     } catch (err) {
-      setError(err.message);
+      console.error('Error creating job:', err);
+      setError(err.response?.data?.message || 'Failed to create job');
     } finally {
       setLoading(false);
     }
@@ -148,6 +133,23 @@ function CreateJobPost() {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Employment Type</label>
+                  <select
+                    name="employmentType"
+                    value={jobData.employmentType}
+                    onChange={handleChange}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                    required
+                  >
+                    <option value="">Select Employment Type</option>
+                    <option value="full-time">Full-Time</option>
+                    <option value="part-time">Part-Time</option>
+                    <option value="internship">Internship</option>
+                    <option value="contract">Contract</option>
+                  </select>
                 </div>
 
                 <div>
