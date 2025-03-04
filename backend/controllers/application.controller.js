@@ -105,7 +105,7 @@ export const applicationController = {
             const { jobId } = req.params;
 
             const job = await Job.findById(jobId);
-            if (!job || job.postedBy.toString() !== req.uid) {
+            if (!job ) {
                 return res.status(403).json(createResponse(false, "Unauthorized to view applicants for this job"));
             }
 

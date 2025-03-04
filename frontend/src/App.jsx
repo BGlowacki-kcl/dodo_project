@@ -24,6 +24,7 @@ import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 import SearchResults from './pages/SearchResults'
 import AddPdf from './pages/addPdf.jsx';
 import EmployerApplicants from './pages/employer/EmployerApplicants';
+import ApplicantDetails from './pages/employer/ApplicantDetails';
 
 function App() {
 	const routeConfig = [
@@ -68,6 +69,7 @@ function App() {
 				<Route path="/posts/edit/:id" element={<EditJobPost />} />
 				<Route path="/swipe" element={<Swiping />} />
 				<Route path="/employer/applicants/:jobId" element={<EmployerApplicants />} />
+				<Route path="/applicant/:applicantId" element={<ApplicantDetails />} />
 				{routeConfig.map((route) => (
 					<Route
 						key={route.path}
