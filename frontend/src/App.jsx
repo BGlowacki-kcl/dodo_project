@@ -9,7 +9,6 @@ import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import AuthGuard from './guards/auth.guard';
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
-import EmployerPostsPage from './pages/employer/EmployerPostsPage.jsx';
 import Swiping from './pages/applicant/Swiping.jsx';
 import CreateJobPost from './pages/employer/CreateJobPost.jsx';
 import EditJobPost from './pages/employer/EditJobPost.jsx';
@@ -60,7 +59,6 @@ function App() {
 				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
 				<Route path = "/employer-login" element={<EmployerSignIn />} />
 				<Route path="/employer/posts" element={<EmployerPosts />} />
-				<Route path="/postspage" element={<EmployerPostsPage />} />
 				<Route path="/user/jobs" element={<UserJobsPage />} />
 				<Route path="/user/applications" element={<UserApplicationsPage />} />
 				<Route path="/user/applications/:appId" element={<SingleApplicationPage />} />
