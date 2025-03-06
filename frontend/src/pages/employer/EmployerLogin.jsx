@@ -24,7 +24,7 @@ const EmployerLogin = () => {
         const userRole = sessionStorage.getItem('role');
         if (userRole === 'employer') {
           showNotification('Successfully logged in!', 'success');
-          navigate('/employer/posts'); // Navigate to employer dashboard
+          navigate('/employer-dashboard'); // Navigate to employer dashboard
         } else {
           throw new Error('Unauthorized. Employer access only.');
         }
