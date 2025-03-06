@@ -1,3 +1,4 @@
+import { checkTokenExpiration } from './auth.service';
 
 export const assessmentService = {
     async runCode(code, language){
@@ -12,9 +13,11 @@ export const assessmentService = {
                 language: language,
             })
         });
+        const responseJson = await response.json();
+        checkTokenExpiration(responseJson);
         if (!response.ok) {
             throw new Error("Failed to run code");
         }
-        return response.json();
+        return responseJson;
     }
 }  
