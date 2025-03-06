@@ -1,55 +1,9 @@
 
 export const assessmentService = {
     async runCode(code, language){
-        if(code.includes("print")){
+        if(code.includes("print") && language === "python" || code.includes("console.log") && language === "javascript" || code.includes("cout") && language === "cpp") {
             return {data: {stderr: "You cannot use print statement in your code"}};
         }
-//         const testCases = `
-// testCases = [
-//     {
-//         "input": [1, 2],
-//         "output": 3,
-//     },
-//     {
-//         "input": [3, 4],
-//         "output": 7,
-//     },
-//     {
-//         "input": [5, 6],
-//         "output": 11,
-//     },
-//     {
-//         "input": [10, 6],
-//         "output": 16,
-//     },
-//     {
-//         "input": [11, 6],
-//         "output": 17,
-//     },
-// ]
-// hidden_testCases = [
-//     {
-//         "input": [0, 2],
-//         "output": 2,
-//     },
-//     {
-//         "input": [31, 4],
-//         "output": 35,
-//     },
-//     {
-//         "input": [51, 6],
-//         "output": 57,
-//     },
-//     {
-//         "input": [15, 16],
-//         "output": 31,
-//     },
-//     {
-//         "input": [5, 61],
-//         "output": 66,
-//     },
-// ]
-// `;
         const tests = [
             {
                 input: [1, 2],
@@ -97,27 +51,6 @@ export const assessmentService = {
             return {data: {stderr: "Failed to generate test cases"}};
         }
         const executeTestsCode = generateExecuteTestsCode(language);
-//         const addToCode = `
-// for index, testCase in enumerate(testCases):
-//     args = testCase["input"]
-//     expected_output = testCase["output"]
-//     actual_output = func(*args)
-
-//     if actual_output == expected_output:
-//         print("Test " + str(index + 1) + ": Test PASSED")
-//     else:
-//         print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {}".format(index + 1, testCase['input'], expected_output, actual_output))
-
-// for index, testCase in enumerate(hidden_testCases):
-//     args = testCase["input"]
-//     expected_output = testCase["output"]
-//     actual_output = func(*args)
-
-//     if actual_output == expected_output:
-//         print("Test " + str(index + 1) + ": Test PASSED HIDDEN")
-//     else:
-//         print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {} HIDDEN".format(index + 1, testCase['input'], expected_output, actual_output))
-// `;
         code += testCases + executeTestsCode;
 
         console.log("Code: ", code, "...");
@@ -137,9 +70,39 @@ export const assessmentService = {
         }
         const data = await response.json();
         console.log("Code: ",data);
+        if(data.data.status === "running") {
+            const executionDetails = await getExecutionDetails(data.data.id);
+            console.log("--------------",executionDetails);
+            return { data : executionDetails};
+        }
         return data;
     }
 }  
+
+async function getExecutionDetails(id) {
+    const url = `https://paiza-io.p.rapidapi.com/runners/get_details?id=${id}`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-host': 'paiza-io.p.rapidapi.com',
+                'x-rapidapi-key': '4681e248b1msh30ecf173f9bcb36p1b67aejsnb530c30fe769'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch execution details");
+        }
+
+        const data = await response.json();
+        console.log("Execution Details: ", data);
+        return data;
+    } catch (error) {
+        console.error("Error:", error);
+        return { error: error.message };
+    }
+}
 
 function generateExecuteTestsCode(language) {
     if(language === "python") {
