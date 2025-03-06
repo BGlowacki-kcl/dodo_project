@@ -117,7 +117,6 @@ export const applicationController = {
         try {
             const { uid } = req;
             const user = await User.findOne({ uid: uid });
-            console.log("User: ", user);
             const filter = { applicant: user._id };
             const apps = await Application.find(filter).populate("job");
             res.json(createResponse(true, "Applications fetched", apps));
@@ -131,10 +130,15 @@ export const applicationController = {
     //GET AN APPLICATION BY ITS ID!!!
     async getOneApplication(req, res) {
         try {
-            const { id } = req.params;
+            const { id } = req.query;
+            const { uid } = req;
+            const user = await User.findOne({ uid: uid });
             const app = await Application.findById(id).populate("job");
             if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
+            }
+            if(app.applicant.equals(user._id) == false) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
             }
             res.json(createResponse(true, "Application found", app));
         } 

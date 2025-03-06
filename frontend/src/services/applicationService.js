@@ -20,10 +20,8 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-
-
 export async function getAllUserApplications() {
-  const response = await api.get(`/application`);
+  const response = await api.get(`/application/all`);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
   }
@@ -31,7 +29,7 @@ export async function getAllUserApplications() {
 }
 
 export async function getApplicationById(appId) {
-  const response = await axios.get(`/api/application/${appId}`);
+  const response = await api.get(`/application/byId?id=${appId}`);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch application");
   }
