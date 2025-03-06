@@ -1,11 +1,12 @@
 import axios from "axios";
+import { checkTokenExpiration } from "./auth.service.js";
 
 const api = axios.create({
   baseURL: "/api", /// CHECK IF HERE
 });
 
 function getAuthToken() {
-  return localStorage.getItem("token");
+  return sessoinStorage.getItem("token");
 }
 
 api.interceptors.request.use(
@@ -23,6 +24,7 @@ api.interceptors.request.use(
 
 export async function getAllUserApplications(userId) {
   const response = await axios.get(`/api/application?applicant=${userId}`);
+  checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
   }
@@ -31,6 +33,7 @@ export async function getAllUserApplications(userId) {
 
 export async function getApplicationById(appId) {
   const response = await axios.get(`/api/application/${appId}`);
+  checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch application");
   }
@@ -43,6 +46,7 @@ export async function applyToJob({ jobId, userId, coverLetter }) {
     applicant: userId, 
     coverLetter
   });
+  checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to apply");
   }
@@ -51,6 +55,7 @@ export async function applyToJob({ jobId, userId, coverLetter }) {
 
 export async function withdrawApplication(appId) {
   const response = await axios.delete(`/api/application/${appId}`);
+  checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to withdraw");
   }

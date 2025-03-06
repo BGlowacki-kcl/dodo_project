@@ -15,8 +15,9 @@ export const userService = {
             if (!response.ok) {
                 throw new Error("Failed to update user profile");
             }
-
-            return await response.json();
+            const responseJSON = await response.json();
+            checkTokenExpiration(responseJSON);
+            return responseJSON;
         } catch (error) {
             console.error("Error updating user:", error);
             throw error;
@@ -36,8 +37,9 @@ export const userService = {
             if (!response.ok) {
                 throw new Error("Failed to fetch user profile");
             }
-
-            return await response.json();
+            const responseJSON = await response.json();
+            checkTokenExpiration(responseJSON);
+            return responseJSON;
         } catch (error) {
             console.error("Error fetching user profile:", error);
             throw error;
@@ -62,6 +64,7 @@ export const userService = {
             }
 
             const responseJson =  await response.json();
+            checkTokenExpiration(responseJson);
             const role = responseJson.data;
             return role;
         } catch (error) {
