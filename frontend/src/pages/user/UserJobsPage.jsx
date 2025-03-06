@@ -6,7 +6,7 @@ import Dropdown from "../../components/Dropdown";
 
 function UserJobsPage() {
     const [jobs, setJobs] = useState([]);
-    const [viewMode, setViewMode] = useState("grid"); //// TRYING OUT GRID AND LIST FORMATS
+    const [viewMode, setViewMode] = useState("grid"); // "grid" or "list" - MAKE TOGGLE OPTION TODO 40-RREFINING
     const userId = "67b0ea901bfe9921052c6d2d"; ///replace with acc user HERE!!!
 
     useEffect(() => {
@@ -22,18 +22,6 @@ function UserJobsPage() {
       fetchJobs();
     }, []);
 
-    // const handleApply = async (jobId) => {
-    //     const coverLetter = "HELLO I AM THE COVER LETTER COVER LETTER COVER LETTER"; /// add cover letter here
-    //     try {
-    //         const newApp = await applyToJob({ jobId, userId, coverLetter });
-    //         console.log("Application successful!", newApp);
-    //         alert("Applied successfully!");
-    //     } 
-    //     catch (err) {
-    //         console.error(err);
-    //         alert("Failed to apply.");
-    //     }
-    // };
     const handleApply = async (jobId) => {
       const coverLetter = "HELLO I AM THE COVER LETTER COVER LETTER COVER LETTER IF YOU SEE THIS IT MEANS THAT USERJOBSPAGE WAS NOT LINKED TO A COVER LETTER YET!!! :(";
       try {

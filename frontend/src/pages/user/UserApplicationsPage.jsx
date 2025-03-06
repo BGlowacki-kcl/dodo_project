@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { getAllUserApplications } from "../../services/applicationService"; //// any functions using applicationservice are filled with fake details for now!!!
+import { getAllUserApplications } from "../../services/applicationService";
 
 function UserApplicationsPage() {
     const [applications, setApplications] = useState([]);
-    const [viewMode, setViewMode] = useState("list"); //LIST OR GRID!!
+    const [viewMode, setViewMode] = useState("list"); // "list" or "grid"
     const [statusFilter, setStatusFilter] = useState("all"); //// update when backend
     const userId = "67b0ea901bfe9921052c6d2d"; ////// REPLACEHERERERE
 

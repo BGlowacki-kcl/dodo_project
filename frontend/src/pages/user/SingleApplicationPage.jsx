@@ -56,7 +56,6 @@ function SingleApplicationPage() {
 
     const { job, status, coverLetter, submittedAt } = application;
     const formattedDate = new Date(submittedAt).toLocaleString();
-        ////////// fill in stuff here with real stuff from backend
     return (
         <div className="bg-slate-900 min-h-screen w-full flex flex-col items-center px-4 py-8">
             <div className="max-w-xl w-full bg-white p-6 rounded-md shadow-md">
