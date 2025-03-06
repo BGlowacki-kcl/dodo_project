@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Application } from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User  from "../models/user/user.model.js";
@@ -114,8 +115,10 @@ export const applicationController = {
     //GET ALL APPLICATIONS (CAN BE FILTERED BY APPLICANT)
     async getAllApplications(req, res) {
         try {
-            const { applicant } = req.query;
-            const filter = applicant ? { applicant } : {}; // filter if user
+            const { uid } = req;
+            const user = await User.findOne({ uid: uid });
+            console.log("User: ", user);
+            const filter = { applicant: user._id };
             const apps = await Application.find(filter).populate("job");
             res.json(createResponse(true, "Applications fetched", apps));
         } 

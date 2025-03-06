@@ -5,7 +5,8 @@ const api = axios.create({
 });
 
 function getAuthToken() {
-  return localStorage.getItem("token");
+  console.log(sessionStorage.getItem("token"));
+  return sessionStorage.getItem("token");
 }
 
 api.interceptors.request.use(
@@ -21,8 +22,8 @@ api.interceptors.request.use(
 
 
 
-export async function getAllUserApplications(userId) {
-  const response = await axios.get(`/api/application?applicant=${userId}`);
+export async function getAllUserApplications() {
+  const response = await api.get(`/application`);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
   }

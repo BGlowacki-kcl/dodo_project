@@ -1,8 +1,7 @@
-
 export const assessmentService = {
     async runCode(code, language){
         if(code.includes("print") && language === "python" || code.includes("console.log") && language === "javascript" || code.includes("cout") && language === "cpp") {
-            return {data: {stderr: "You cannot use print statement in your code"}};
+            return {data: {stderr: "You cannot use output statement in your code"}};
         }
         const tests = [
             {
@@ -76,6 +75,13 @@ export const assessmentService = {
             return { data : executionDetails};
         }
         return data;
+    },
+
+    async getTask() {
+        
+    },
+    async getTests() {
+
     }
 }  
 

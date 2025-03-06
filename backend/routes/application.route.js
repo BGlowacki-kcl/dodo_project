@@ -1,5 +1,6 @@
 import express from "express";
 import { applicationController } from "../controllers/application.controller.js";
+import { checkRole } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -10,8 +11,8 @@ router.put("/:id/status", applicationController.updateApplicationStatus);
 router.get("/job/:jobId/applicants", applicationController.getApplicants);
 
 
-router.get("/", applicationController.getAllApplications);
-router.get("/:id", applicationController.getOneApplication);
+router.get("/", checkRole(["jobSeeker"]),applicationController.getAllApplications);
+router.get("/application/:id", applicationController.getOneApplication);
 router.post("/", applicationController.createApplication);
 router.delete("/:id", applicationController.withdrawApplication);
 export default router;

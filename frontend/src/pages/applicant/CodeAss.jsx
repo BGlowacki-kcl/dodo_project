@@ -13,8 +13,19 @@ def func(x, y):
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
+  const [task, setTask] = useState("");
+
+  useState(() => {
+    const response = assessmentService.getTask();
+    setTask(response.data);
+  }, []);
 
   const handleLanguageChange = (e) => {
+    const userConfirmed = window.confirm("The current progress will not be saved. Do you wish to proceed?");
+    if(!userConfirmed) {
+      e.target.value = language;
+      return;
+    }
     setLanguage(e.target.value);
     let defText = "";
     if (e.target.value === "python") {
