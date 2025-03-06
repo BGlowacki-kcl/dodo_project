@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { Link } from 'react-router-dom';
-import { Checkbox, FormControlLabel } from '@mui/material';
 import { useNotification } from '../context/notification.context';
 
 const AuthForm = (mode) => {
@@ -13,7 +12,6 @@ const AuthForm = (mode) => {
   const isLogin = location.pathname === '/signin';
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const showNotification = useNotification();
@@ -24,7 +22,6 @@ const AuthForm = (mode) => {
     setConfirmPassword('');
     setError(null);
     setShowPassword(false);
-    setIsEmployer(false);
   }, [location.pathname]);
 
   const isPasswordStrong = (password) => {
@@ -49,10 +46,10 @@ const AuthForm = (mode) => {
         }
       }
 
-      //  Redirect after checking profile completion
+      // Always sign up as job seeker
       await (isLogin 
         ? authService.signIn(email, password, navigate) 
-        : authService.signUp(email, password, isEmployer, navigate));
+        : authService.signUp(email, password, false, navigate));
       
       const successMessage = isLogin ? 'Sign in successful!' : 'Sign up successful! Please complete your profile.';
       showNotification(successMessage, 'success');
@@ -71,10 +68,10 @@ const AuthForm = (mode) => {
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-8 w-96">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">
-          {isLogin ? 'Welcome Back!' : 'Create an Account'}
+          {isLogin ? 'Welcome Back!' : 'Create Job Seeker Account'}
         </h2>
         <p className="text-sm text-gray-500 text-center mb-6">
-          {isLogin ? 'Sign in to continue' : 'Join us today!'}
+          {isLogin ? 'Sign in to continue' : 'Start your job search today!'}
         </p>
 
         {error && (
@@ -84,6 +81,7 @@ const AuthForm = (mode) => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Rest of your form fields remain the same */}
           <div>
             <label className="text-sm font-medium text-gray-700">Email</label>
             <input
@@ -126,9 +124,7 @@ const AuthForm = (mode) => {
                 required
                 className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
               />
-              <FormControlLabel control={<Checkbox onChange={(e) => setIsEmployer(e.target.value)} />} label="Is employer?" />
             </div>
-            
           )}
 
           <button 
@@ -140,18 +136,6 @@ const AuthForm = (mode) => {
           >
             {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up'}
           </button>
-
-          <div className="text-center mt-4">
-            {isLogin ? (
-              <Link to="#" className="text-sm text-blue-500 hover:text-blue-700">
-                Forgot Password?
-              </Link>
-            ) : (
-              <p className="text-sm text-gray-600">
-                Password must be at least 8 characters, contain an uppercase letter, a lowercase letter, and a number.
-              </p>
-            )}
-          </div>
         </form>
 
         <div className="text-center mt-4">
@@ -163,6 +147,12 @@ const AuthForm = (mode) => {
             className="ml-2 text-blue-500 font-medium hover:text-blue-700"
           >
             {isLogin ? 'Sign Up' : 'Sign In'}
+          </Link>
+        </div>
+
+        <div className="text-center mt-4">
+          <Link to="/employer-login" className="text-sm text-blue-500 hover:text-blue-700">
+            Are you an employer? Sign in here
           </Link>
         </div>
       </div>
