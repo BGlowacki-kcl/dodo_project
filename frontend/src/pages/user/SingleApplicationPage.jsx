@@ -7,6 +7,7 @@ function SingleApplicationPage() {
     const navigate = useNavigate();
     const [application, setApplication] = useState(null);
     const hasFetched = useRef(false);
+    const [codeChallenge, setCodeChallenge] = useState(false);
 
 
     useEffect(() => {
@@ -15,13 +16,13 @@ function SingleApplicationPage() {
           hasFetched.current = true;
           const data = await getApplicationById(appId);
           setApplication(data.data);
+          setCodeChallenge(data.data.job.codeChallenge);
           if (data.status && data.status == 403) {
               alert(data.message);
               navigate("/user/applications");
               return;
           }
           if(data.status && data.status != 200) {
-            console.log("EJ")
             alert("Failed to fetch application");
             navigate("/user/applications");
             return;
@@ -55,6 +56,8 @@ function SingleApplicationPage() {
             return "bg-purple-500";
           case "rejected":
             return "bg-red-500";
+          case "code challenge":
+            return "bg-orange-500";
           case "hired":
             return "bg-green-500";
           default:
