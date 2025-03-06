@@ -5,7 +5,6 @@ const api = axios.create({
 });
 
 function getAuthToken() {
-  console.log(sessionStorage.getItem("token"));
   return sessionStorage.getItem("token");
 }
 
@@ -29,11 +28,18 @@ export async function getAllUserApplications() {
 }
 
 export async function getApplicationById(appId) {
-  const response = await api.get(`/application/byId?id=${appId}`);
-  if (!response.data.success) {
-    throw new Error(response.data.message || "Failed to fetch application");
+  try{
+    const response = await api.get(`/application/byId?id=${appId}`);
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to fetch application");
+    }
+    return response.data;
+  } catch (error) {
+    if(error.response.status && error.response.status === 403) {
+      return {status: 403, message: "You are not authorized to view this application"};
+    } 
+    return {status: 500, message: "Failed to fetch application"};
   }
-  return response.data.data; 
 }
 
 export async function applyToJob({ jobId, userId, coverLetter }) {
@@ -49,7 +55,7 @@ export async function applyToJob({ jobId, userId, coverLetter }) {
 }
 
 export async function withdrawApplication(appId) {
-  const response = await axios.delete(`/api/application/${appId}`);
+  const response = await api.delete(`/application/withdraw?id=${appId}`);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to withdraw");
   }

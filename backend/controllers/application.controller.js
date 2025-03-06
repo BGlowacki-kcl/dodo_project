@@ -50,28 +50,6 @@ export const applicationController = {
         }
     },
     
-    async cancel(req, res) {
-        try {
-            const { applicationId } = req.params;
-            
-            const application = await Application.findById(applicationId);
-    
-            if (!application) {
-                return res.status(404).json(createResponse(false, "Application not found"));
-            }
-    
-            if (application.status !== "applying") {
-                return res.status(400).json(createResponse(false, "Only applications in 'applying' status can be canceled"));
-            }
-    
-            await Application.findByIdAndDelete(applicationId);
-    
-            return res.status(200).json(createResponse(true, "Application canceled successfully"));
-        } catch (error) {
-            return handleError(res, error, "Error canceling application");
-        }
-    },
-    
     async updateApplicationStatus(req, res) {
         try {
             const { id } = req.params;
@@ -175,14 +153,19 @@ export const applicationController = {
     //DELETE/WITHDRAW AN APPLICATION BY ITS ID
     async withdrawApplication(req, res) {
         try {
-            const { id } = req.params;
+            const { id } = req.query;
+            const { uid } = req;
+            const user = await User.findOne({ uid: uid });
             const app = await Application.findById(id);
             if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
+            if(app.applicant.equals(user._id) == false) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
             await app.deleteOne();
             res.json(createResponse(true, "Application withdrawn", null));
-        } 
+        }
         catch (err) {
             console.error("Error withdrawing application:", err);
             res.status(500).json(createResponse(false, err.message));

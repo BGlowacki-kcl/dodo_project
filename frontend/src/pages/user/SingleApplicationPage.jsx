@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById, withdrawApplication } from "../../services/applicationService";
 
@@ -6,14 +6,29 @@ function SingleApplicationPage() {
     const { appId } = useParams();
     const navigate = useNavigate();
     const [application, setApplication] = useState(null);
+    const hasFetched = useRef(false);
+
 
     useEffect(() => {
         async function fetchApp() {
-            const data = await getApplicationById(appId);
-            setApplication(data);
+          if (hasFetched.current) return;
+          hasFetched.current = true;
+          const data = await getApplicationById(appId);
+          setApplication(data.data);
+          if (data.status && data.status == 403) {
+              alert(data.message);
+              navigate("/user/applications");
+              return;
+          }
+          if(data.status && data.status != 200) {
+            console.log("EJ")
+            alert("Failed to fetch application");
+            navigate("/user/applications");
+            return;
+          }    
         }
         fetchApp();
-    }, [appId]);
+    }, [appId, navigate]);
 
     const handleWithdraw = async () => {
         if (!window.confirm("Are you sure you want to withdraw this application?")) {
