@@ -1,33 +1,34 @@
 import React, { useState } from "react";
 
-const ComboBox = ({ label, options }) => {
+const ComboBox = ({ label, options, onSelect }) => {
   const [inputValue, setInputValue] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleOptionClick = (option) => {
     setInputValue(option);
     setDropdownOpen(false);
+    if (onSelect) {
+      onSelect(option);
+    }
   };
 
   return (
     <div className="mb-4">
-      <label className="block text-white font-semibold mb-2">{label}</label>
+      <label className="text-dtext font-semibold mb-2">{label}</label>
       <div className="relative">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          placeholder={label}
-          className={`w-full rounded-sm bg-[#ccc9dc] py-2 px-4 focus:outline-none ${
-            inputValue ? "text-black" : "text-gray-500"
-          }`}
+          placeholder={`Select a ${label}...`}
+          className="w-48 rounded-lg bg-secondary py-2 px-4 focus:outline-none placeholder-ltext text-ltext"
           onFocus={() => setDropdownOpen(true)}
-          onBlur={() => setDropdownOpen(false)}
+          onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
         />
 
-        {/* Filters options based on what the user has typed */}
+        {/* Dropdown options */}
         {dropdownOpen && (
-          <ul className="absolute z-10 mt-1 bg-white rounded-sm shadow-lg w-full">
+          <ul className="absolute z-10 mt-1 bg-primary rounded-sm shadow-lg w-full">
             {options
               .filter((option) =>
                 option.toLowerCase().includes(inputValue.toLowerCase())
@@ -35,7 +36,7 @@ const ComboBox = ({ label, options }) => {
               .map((option) => (
                 <li
                   key={option}
-                  className="px-4 py-2 cursor-pointer hover:bg-[#ccc9dc]"
+                  className="px-4 py-2 cursor-pointer hover:bg-secondary hover:text-ltext"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => handleOptionClick(option)}
                 >
