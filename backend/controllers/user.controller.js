@@ -44,7 +44,6 @@ export const userController = {
 
     async checkProfileCompletion(req, res) {
         try {
-            console.log(req);
             const { uid } = req;
             if (!uid) {
                 return res.status(401).json({ success: false, message: "Unauthorized" });

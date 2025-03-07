@@ -32,6 +32,7 @@ export const checkRole = (roles) => async (req, res, next) => {
             const userRole = user.role;
 
             if (!roles.includes(userRole)) {
+                console.log('User role:', userRole, " roles: ", roles);
                 return res.status(403).json({ message: 'Forbidden' });
             } 
             
