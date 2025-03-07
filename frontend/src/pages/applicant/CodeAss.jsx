@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Editor from "@monaco-editor/react";
 import { assessmentService } from '../../services/assessment.service';
+import { useParams } from 'react-router-dom';
 
 const CodeAss = () => {
   const [code, setCode] = useState(`# Write a function that takes number x and y, then returns the sum of x and y
@@ -14,10 +15,13 @@ def func(x, y):
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
   const [task, setTask] = useState("");
+  const { appId } = useParams();
 
   useState(() => {
-    const response = assessmentService.getTask();
-    setTask(response.data);
+    const fetchTasks = async () => {
+      const response = await assessmentService.getTask(appId);
+    }
+    fetchTasks();
   }, []);
 
   const handleLanguageChange = (e) => {

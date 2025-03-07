@@ -42,7 +42,7 @@ function App() {
 		// jobSeeker accessible pages
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
 		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
-		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
+		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
 		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['jobSeeker'] },
@@ -54,8 +54,7 @@ function App() {
 		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
-		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
-		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
+
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	  ];
 
