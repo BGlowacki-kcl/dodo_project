@@ -36,7 +36,7 @@ function App() {
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
-		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
+		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	  ];
 

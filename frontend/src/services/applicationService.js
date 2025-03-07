@@ -42,10 +42,9 @@ export async function getApplicationById(appId) {
   }
 }
 
-export async function applyToJob({ jobId, userId, coverLetter }) {
-  const response = await axios.post("/api/application", {
+export async function applyToJob({ jobId, coverLetter }) {
+  const response = await api.post("/application/apply", {
     jobId,
-    applicant: userId, 
     coverLetter
   });
   if (!response.data.success) {

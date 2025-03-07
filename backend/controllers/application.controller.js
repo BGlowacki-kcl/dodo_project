@@ -17,23 +17,6 @@ const handleError = (res, error, defaultMessage = "Server error") => {
 };
 
 export const applicationController = {
-    async apply(req, res) {
-        try {
-            const { jobId, coverLetter } = req.body;
-    
-            const application = await Application.create({
-                job: jobId,
-                applicant: "65a51cc1dd997c1460cab7be", // Temporary test applicant ID
-                coverLetter,
-                status: "applying",
-                submittedAt: new Date(),
-            });
-    
-            return res.status(201).json(createResponse(true, "Application started successfully", application)); // ????
-        } catch (error) {
-            return res.status(500).json({ message: "Error submitting application", success: false }); //handleError(res, error, "Error submitting application");
-        }
-    },
     
     async getApplication(req, res) {
         try {
@@ -129,16 +112,18 @@ export const applicationController = {
     //CREATE A NEW APPLICATION
     async createApplication(req, res) {
         try {
-            const { jobId, applicant, coverLetter } = req.body;
-            if (!jobId || !applicant) {
-                return res.status(400).json(createResponse(false, "Missing jobId or applicant in body"));
+            const { jobId, coverLetter } = req.body;
+            const { uid } = req;
+            if (!jobId) {
+                return res.status(400).json(createResponse(false, "Missing jobId in body"));
             }
+            const user = await User.findOne({uid});
     
             const newApp = await Application.create({
                 job: jobId,
-                applicant,
+                applicant: user._id,
                 coverLetter,
-                status: "applied", 
+                status: "applied",
             });
     
             const populatedApp = await newApp.populate("job");

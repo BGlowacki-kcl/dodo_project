@@ -16,7 +16,10 @@ function SingleApplicationPage() {
           hasFetched.current = true;
           const data = await getApplicationById(appId);
           setApplication(data.data);
-          setCodeChallenge(data.data.job.codeChallenge);
+          console.log(data.data);
+          if(data.data.status == "code challenge") {
+            setCodeChallenge(true);
+          }
           if (data.status && data.status == 403) {
               alert(data.message);
               navigate("/user/applications");
@@ -116,6 +119,10 @@ function SingleApplicationPage() {
                     <button onClick={() => navigate(`/user/jobs/${job._id}`)} className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200" > View Job Listing </button>
                 )}
 
+                {codeChallenge && (
+                    <button onClick={() => navigate(`/codeassessment/${appId}`)} className="px-4 py-2 bg-green-300 text-gray-800 rounded hover:bg-green-500 transition duration-200" > Proceed to assessment </button>
+                )}
+
                 {/* WITHDRAW APPLICATION */}
                 <button onClick={handleWithdraw} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200" > Withdraw </button>
                 </div>
@@ -123,7 +130,7 @@ function SingleApplicationPage() {
                 {/* BACK LINK */}
                 <div className="mt-6">
                 <button onClick={() => navigate("/user/applications")} className="text-blue-600 hover:underline" > &larr; Back to My Applications </button>
-        </div>
+                </div>
       </div>
     </div>
   );
