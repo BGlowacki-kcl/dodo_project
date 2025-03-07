@@ -31,7 +31,7 @@ const jobSchema = new Schema({
     // can change if needed if we only want 1 employment type
     employmentType: {
         type: [String],
-        enum: ['full-time', 'part-time', 'internship'], // can add more employment types
+        enum: ['full-time', 'part-time', 'internship', 'contract'], // can add more employment types
         default: ['full-time']
     },
 

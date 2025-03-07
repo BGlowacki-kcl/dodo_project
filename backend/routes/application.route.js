@@ -12,4 +12,5 @@ router.get("/all", checkRole(["jobSeeker"]), applicationController.getAllApplica
 router.get("/byId", checkRole(["jobSeeker"]), applicationController.getOneApplication);
 router.post("/apply", checkRole(["jobSeeker"]), applicationController.createApplication);
 router.delete("/withdraw", checkRole(["jobSeeker", "employer"]), applicationController.withdrawApplication);
+
 export default router;

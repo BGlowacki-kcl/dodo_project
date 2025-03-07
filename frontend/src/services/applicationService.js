@@ -1,4 +1,5 @@
 import axios from "axios";
+import { checkTokenExpiration } from "./auth.service.js";
 
 const api = axios.create({
   baseURL: "/api", /// CHECK IF HERE
@@ -21,6 +22,7 @@ api.interceptors.request.use(
 
 export async function getAllUserApplications() {
   const response = await api.get(`/application/all`);
+
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
   }
@@ -47,6 +49,7 @@ export async function applyToJob({ jobId, coverLetter }) {
     jobId,
     coverLetter
   });
+  checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to apply");
   }

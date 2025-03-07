@@ -1,3 +1,4 @@
+
 export const assessmentService = {
     async runCode(code, language){
         if(code.includes("print") && language === "python" || code.includes("console.log") && language === "javascript" || code.includes("cout") && language === "cpp") {
@@ -64,9 +65,12 @@ export const assessmentService = {
                 language: language,
             })
         });
+        const responseJson = await response.json();
+        checkTokenExpiration(responseJson);
         if (!response.ok) {
             throw new Error("Failed to run code");
         }
+
         const data = await response.json();
         console.log("Code: ",data);
         if(data.data.status === "running") {
