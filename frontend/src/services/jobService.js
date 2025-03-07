@@ -6,7 +6,7 @@ const api = axios.create({
 });
  
 const getAuthToken = () => {
-  return localStorage.getItem('token');  
+  return sessionStorage.getItem('token');  
 };
  
 api.interceptors.request.use(
@@ -21,7 +21,7 @@ api.interceptors.request.use(
 ); 
 
 /// change to api.---- for header
-export const getAllJobs = async (employerId) => {
+export const getAllJobs = async () => {
   const url = employerId ? `/api/job?postedBy=${employerId}` : `/api/job`;
   const response = await axios.get(url);
   return response.data; 
@@ -33,7 +33,7 @@ export const getJobById = async (id) => {
 };
 
 export const createJob = async (jobData) => {
-  const response = await axios.post(`/api/job`, jobData);
+  const response = await api.post(`/job/create`, jobData);
   return response.data; 
 };
 

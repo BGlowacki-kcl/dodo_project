@@ -15,8 +15,6 @@ function CreateJobPost() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const userId = "67aa6f2ce7d1ee03803ef428"; //////////////////////////////////////// CONSTANT FOR NOW WILL CHANGE!!!
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setJobData(prevData => ({
@@ -45,7 +43,6 @@ function CreateJobPost() {
 
       const newJob = {
         ...jobData,
-        postedBy: userId, 
       };
 
       //await new Promise((resolve) => setTimeout(resolve, 1000)); not sure if needed before, left commented

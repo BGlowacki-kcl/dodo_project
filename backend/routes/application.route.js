@@ -4,9 +4,9 @@ import { checkRole } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/byConnection", applicationController.getApplication);
-router.put("/:id/status", applicationController.updateApplicationStatus);
-router.get("/job/:jobId/applicants", applicationController.getApplicants);
+// router.get("/byConnection", applicationController.getApplication);
+// router.put("/:id/status", applicationController.updateApplicationStatus);
+// router.get("/job/:jobId/applicants", applicationController.getApplicants);
 
 router.get("/all", checkRole(["jobSeeker"]), applicationController.getAllApplications);
 router.get("/byId", checkRole(["jobSeeker"]), applicationController.getOneApplication);

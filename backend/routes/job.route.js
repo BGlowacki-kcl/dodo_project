@@ -7,11 +7,12 @@ import {
     updateJob,
     deleteJob
 } from '../controllers/job.controller.js';
+import { checkRole } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
 // Create a job post
-router.post('/', createJob);
+router.post('/create', checkRole(["employer"]), createJob);
 
 // Get all job posts
 router.get('/', getJobs);
