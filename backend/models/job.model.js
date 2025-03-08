@@ -28,7 +28,6 @@ const jobSchema = new Schema({
         max: Number
     },
 
-    // can change if needed if we only want 1 employment type
     employmentType: {
         type: [String],
         enum: ['full-time', 'part-time', 'internship', 'contract'], // can add more employment types
@@ -37,7 +36,7 @@ const jobSchema = new Schema({
 
     requirements: [String],
 
-    experienceLevel: String, //such as entry, mid, senior
+    experienceLevel: String,
 
     postedBy: {
         type: Schema.Types.ObjectId,

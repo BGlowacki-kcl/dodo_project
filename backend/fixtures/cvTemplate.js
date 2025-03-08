@@ -1,26 +1,37 @@
-export const generateCV = (name, education, experience, email) => {
+import { faker } from "@faker-js/faker";
+import { projectList } from "./projectFixtures.js";
+
+export const generateCV = (name, education, experience, email, skills = []) => {
+    // Select 3 random projects from the fixture array
+    const selectedProjects = faker.helpers.arrayElements(projectList, 3);
+
     return `
-    ${name.toUpperCase()}
-    
-    Location: London
+${name.toUpperCase()}
 
-    Education
-    ${education.map(ed => `- ${ed.degree} in ${ed.fieldOfStudy} from ${ed.institution} (${ed.startDate.getFullYear()} - ${ed.endDate.getFullYear()})`).join("\n")}
+Location: London
 
-    Experience
-    ${experience.map(exp => `- ${exp.title} at ${exp.company} (${exp.startDate.getFullYear()} - ${exp.endDate.getFullYear()}): ${exp.description}`).join("\n")}
+Education
+${education
+        .map(
+            ed =>
+                `- ${ed.degree} in ${ed.fieldOfStudy} from ${ed.institution} (${ed.startDate.getFullYear()} - ${ed.endDate.getFullYear()})`
+        )
+        .join("\n")}
 
-    Skills
-    - JavaScript, Python, C++
-    - Cloud Computing (AWS, GCP)
-    - Machine Learning & Data Science
-    - Agile & Scrum Methodologies
+Experience
+${experience
+        .map(
+            exp =>
+                `- ${exp.title} at ${exp.company} (${exp.startDate.getFullYear()} - ${exp.endDate.getFullYear()}): ${exp.description}`
+        )
+        .join("\n")}
 
-    Projects
-    - Developed a full-stack job portal using MERN stack.
-    - Built an AI-based resume parser with Python and NLP.
-    - Contributed to open-source projects in web development.
+Skills
+${skills.map(skill => `- ${skill}`).join("\n")}
 
-    Contact: [${email}] | LinkedIn: [linkedin.com/in/example] | GitHub: [github.com/example]
-    `;
+Projects
+${selectedProjects.map(project => `- ${project}`).join("\n")}
+
+Contact: [${email}] | LinkedIn: [linkedin.com/in/example] | GitHub: [github.com/example]
+`;
 };

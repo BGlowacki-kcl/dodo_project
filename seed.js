@@ -1,16 +1,21 @@
 import mongoose from "mongoose";
 import "dotenv/config";
 import { faker } from "@faker-js/faker";
-import admin from "firebase-admin"; //  Import Firebase Admin SDK
+import admin from "firebase-admin";
 import User from "./backend/models/user/user.model.js";
 import { JobSeeker } from "./backend/models/user/jobSeeker.model.js";
 import { Employer } from "./backend/models/user/Employer.model.js";
 import Job from "./backend/models/job.model.js";
 import Application from "./backend/models/application.model.js";
 
-import { generateCV } from "./backend/fixtures/cvTemplate.js"
+import { generateCV } from "./backend/fixtures/cvTemplate.js";
+import { generateCoverLetter } from "./backend/fixtures/coverLetTemplate.js";
+import { locations } from "./backend/fixtures/locationFixtures.js";
 import { universityNames, degreeTitles, fieldsOfStudy } from "./backend/fixtures/educationFixtures.js";
 import { techCompanies, techJobDetails, techSkills } from "./backend/fixtures/companyFixtures.js";
+
+//TODO: Seed Cover letter under application, Refine CV generation, Seed sample user
+
 
 //  Initialize Firebase Admin SDK
 admin.initializeApp({
@@ -60,11 +65,12 @@ const generateJobSeekers = async (num) => {
     const jobSeekers = [];
 
     for (let i = 0; i < num; i++) {
-        const email = faker.internet.email();
         const name = faker.person.fullName();
+        const email = faker.internet.email({ fistName: name });
         const firebaseUid = await createFirebaseUser(email, PASSWORD, name);
         if (!firebaseUid) continue;
         const education = generateEducation();
+        const skills = faker.helpers.arrayElement(techSkills, 5);
         const experience = {
             company: faker.company.name(),
             title: faker.person.jobTitle(),
@@ -77,36 +83,16 @@ const generateJobSeekers = async (num) => {
             email: email,
             role: "jobSeeker",
             name: name,
-            location: faker.location.city(),
+            location: faker.helpers.arrayElement(locations),
             education: [education],
             experience: [experience],
-            skills: faker.helpers.arrayElement(techSkills),
-            resume: generateCV(name, [education], [experience], email)
+            skills: [skills],
+            resume: generateCV(name, [education], [experience], email, [skills])
         }));
     }
 
     return jobSeekers;
 };
-
-
-// Generate Random Employers
-// const generateRandomEmployers = async (num) => {
-//   const employers = [];
-//
-//   for (let i = 0; i < num; i++) {
-//     employers.push({
-//       uid: faker.string.uuid(),
-//       email: faker.internet.email(),
-//       role: "employer",
-//       name: faker.company.name(),
-//       companyName: faker.company.name(),
-//       companyWebsite: faker.internet.url(),
-//       companyDescription: faker.company.catchPhrase(),
-//     });
-//   }
-//
-//   return employers;
-// };
 
 const generateEmployers =  async () => {
     const employers = [];
@@ -148,7 +134,7 @@ const generateJobs = (num, employers) => {
             employmentType: faker.helpers.arrayElement(["full-time", "part-time", "internship", "contract"]),
             requirements: faker.helpers.arrayElement(techSkills),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
-            postedBy: employer._id, // Link to employer who posted the job
+            postedBy: employer._id,
         });
     }
 
@@ -167,7 +153,7 @@ const generateApplications = (num, jobSeekers, jobs) => {
             job: job._id,
             applicant: jobSeeker._id,
             status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'accepted']),
-            coverLetter: faker.lorem.sentences(2)
+            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, jobSeeker.skills, jobSeeker.email)
         });
     }
 
@@ -241,7 +227,7 @@ const seedDatabase = async () => {
       // Generate and insert Applications
       const applications = generateApplications(300, createdJobSeekers, createdJobs); // 300 Applications
       await Application.insertMany(applications);
-      console.log("📄 Applications added...");
+      console.log("Applications added...");
 
 
     mongoose.connection.close();
