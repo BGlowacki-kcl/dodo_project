@@ -1,18 +1,38 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById, withdrawApplication } from "../../services/applicationService";
+
 function SingleApplicationPage() {
     const { appId } = useParams();
     const navigate = useNavigate();
     const [application, setApplication] = useState(null);
+    const hasFetched = useRef(false);
+    const [codeChallenge, setCodeChallenge] = useState(false);
+
 
     useEffect(() => {
         async function fetchApp() {
-            const data = await getApplicationById(appId);
-            setApplication(data);
+          if (hasFetched.current) return;
+          hasFetched.current = true;
+          const data = await getApplicationById(appId);
+          setApplication(data.data);
+          console.log(data.data);
+          if(data.data.status == "code challenge") {
+            setCodeChallenge(true);
+          }
+          if (data.status && data.status == 403) {
+              alert(data.message);
+              navigate("/user/applications");
+              return;
+          }
+          if(data.status && data.status != 200) {
+            alert("Failed to fetch application");
+            navigate("/user/applications");
+            return;
+          }    
         }
         fetchApp();
-    }, [appId]);
+    }, [appId, navigate]);
 
     const handleWithdraw = async () => {
         if (!window.confirm("Are you sure you want to withdraw this application?")) {
@@ -39,6 +59,8 @@ function SingleApplicationPage() {
             return "bg-purple-500";
           case "rejected":
             return "bg-red-500";
+          case "code challenge":
+            return "bg-orange-500";
           case "hired":
             return "bg-green-500";
           default:
@@ -96,6 +118,10 @@ function SingleApplicationPage() {
                     <button onClick={() => navigate(`/user/jobs/${job._id}`)} className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200" > View Job Listing </button>
                 )}
 
+                {codeChallenge && (
+                    <button onClick={() => navigate(`/codeassessment/${appId}`)} className="px-4 py-2 bg-green-300 text-gray-800 rounded hover:bg-green-500 transition duration-200" > Proceed to assessment </button>
+                )}
+
                 {/* WITHDRAW APPLICATION */}
                 <button onClick={handleWithdraw} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200" > Withdraw </button>
                 </div>
@@ -103,7 +129,7 @@ function SingleApplicationPage() {
                 {/* BACK LINK */}
                 <div className="mt-6">
                 <button onClick={() => navigate("/user/applications")} className="text-blue-600 hover:underline" > &larr; Back to My Applications </button>
-        </div>
+                </div>
       </div>
     </div>
   );

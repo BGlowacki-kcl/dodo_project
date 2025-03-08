@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { Link } from 'react-router-dom';
 import { Checkbox, FormControlLabel } from '@mui/material';
+import { useNotification } from '../context/notification.context';
 
 const AuthForm = (mode) => {
   const location = useLocation();
@@ -15,6 +16,7 @@ const AuthForm = (mode) => {
   const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const showNotification = useNotification();
 
   useEffect(() => {
     setEmail('');
@@ -51,8 +53,13 @@ const AuthForm = (mode) => {
       await (isLogin 
         ? authService.signIn(email, password, navigate) 
         : authService.signUp(email, password, isEmployer, navigate));
+      
+      const successMessage = isLogin ? 'Sign in successful!' : 'Sign up successful! Please complete your profile.';
+      showNotification(successMessage, 'success');
 
     } catch (error) {
+      const errorMessage = isLogin ? 'Sign in failed. Please check your email and password.' : 'Sign up failed. Please try again.'; 
+      showNotification(errorMessage, 'error');
       console.error('Authentication error:', error.message);
       setError(error.message || 'Something went wrong. Please try again.');
     } finally {

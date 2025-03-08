@@ -20,6 +20,7 @@ export default async function getParsedResume(file){
 
 async function responseToJson(response){
     const responseJSON = await response.json();
+    checkTokenExpiration(responseJSON);
     let answer = responseJSON.data.choices[0].message.content.trim();
     if (answer.startsWith(`"data":`)) {
         answer = `{ ${answer} }`; 

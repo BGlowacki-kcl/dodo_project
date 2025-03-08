@@ -6,10 +6,10 @@ export const userController = {
 
     async getUser(req, res) {
         try {
-            if (!req || !req.query.uid) {
+            if (!req || !req.uid) {
                 return res.status(400).json({ success: false, message: "No user provided!" });
             }
-            const { uid } = req.query;
+            const { uid } = req;
             const user = await User.findOne({ uid: uid });
             
             if (!user) {
@@ -44,7 +44,6 @@ export const userController = {
 
     async checkProfileCompletion(req, res) {
         try {
-            console.log(req);
             const { uid } = req;
             if (!uid) {
                 return res.status(401).json({ success: false, message: "Unauthorized" });

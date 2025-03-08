@@ -9,65 +9,60 @@ import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import AuthGuard from './guards/auth.guard';
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
-import EmployerPostsPage from './pages/employer/EmployerPostsPage.jsx';
 import Swiping from './pages/applicant/Swiping.jsx';
 import CreateJobPost from './pages/employer/CreateJobPost.jsx';
 import EditJobPost from './pages/employer/EditJobPost.jsx';
 import UserJobsPage from './pages/user/UserJobsPage.jsx';
 import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
-import EmployerSignIn from "./pages/employer/EmployerSignIn.jsx"; // Add this import
+import EmployerSignIn from "./pages/employer/EmployerSignIn.jsx";
 import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAss';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 import SearchResults from './pages/SearchResults'
 import AddPdf from './pages/addPdf.jsx';
+import EmployerApplicants from './pages/employer/EmployerApplicants';
+import ApplicantDetails from './pages/employer/ApplicantDetails';
 
 function App() {
 	const routeConfig = [
+		// For unLogged users (landing and authorization pages)
 		{ path: '/signin', element: <SignInUp/>, roles: ['unLogged'] },
 		{ path: '/signup', element: <SignInUp/>, roles: ['unLogged'] },
-		{ path: '/', element: <LandingPage />, roles: ['unLogged'] },
-		{ path: '/dashboard', element: <Dashboard />, roles: ['jobSeeker', 'employer'] },
-		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
-		{ path: '/employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
-		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
-		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
-		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
-		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
+		{ path: '/employer-login', element: <EmployerLogin />, roles: ['unLogged'] },
+		
+		// Pages for any user
+		{ path: '/', element: <LandingPage />, roles: ['unLogged', 'employer', 'jobSeeker'] },
+		{ path: '/search-results', element: <SearchResults />, roles: ['jobSeeker', 'employer', 'unLogged'] },
+		
+		// Completing profile page, for logged users
 		{ path: '/addDetails', element: <AddDetails />, roles: ['jobSeeker', 'employer'] },
+		
+		// jobSeeker accessible pages
+		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
+		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
+		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
+		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
+		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
+		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['jobSeeker'] },
+		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
+		
+		// Employer accessible pages
+		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
+		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
+		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
-		{ path: '/employer-login', element: <EmployerLogin />, roles: ['unLogged'] },
-		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
-		{ path: '/forbidden', element: <Forbidden />, dontCheck: true },
-		
-
-		//{ path: '/employer/applicant/:applicantId', element: <ViewApplicant />  , roles: ['employer'] } 
-	];
+		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
+		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
+	  ];
 
 	return (
 		<Box className="bg-background min-h-screen">
 			<Navbar />
 			<Routes>
-				<Route path='/SignIn' element={<SignInUp mode="SignIn" />} />
-				<Route path='/SignUp' element={<SignInUp mode="SignUp" />} />
-				<Route path="/dashboard" element={<AuthGuard> <Dashboard /> </AuthGuard>} /> {/* TODO: Fix the problem about back arrow  */}
-				<Route path="/" element={<LandingPage />} />
-				<Route path="/applicant-dashboard" element={<ApplicantDashboard />} />
-				<Route path="/employer-dashboard" element={<EmployerDashboard />} />
-				<Route path = "/employer-login" element={<EmployerSignIn />} />
-				<Route path="/employer/posts" element={<EmployerPosts />} />
-				<Route path="/postspage" element={<EmployerPostsPage />} />
-				<Route path="/user/jobs" element={<UserJobsPage />} />
-				<Route path="/user/applications" element={<UserApplicationsPage />} />
-				<Route path="/user/applications/:appId" element={<SingleApplicationPage />} />
-				<Route path="/addDetails" element={<AddDetails />} />				
-				<Route path="/posts/new" element={<CreateJobPost />} />
-				<Route path="/posts/edit/:id" element={<EditJobPost />} />
-				<Route path="/swipe" element={<Swiping />} />
 				{routeConfig.map((route) => (
 					<Route
 						key={route.path}
@@ -81,8 +76,6 @@ function App() {
 						}
 					/>
 				))}
-				<Route path="/search-results" element={<SearchResults />} />
-				<Route path="/addPdf" element={<AddPdf />} />
 			</Routes>
 		</Box>
 	);
