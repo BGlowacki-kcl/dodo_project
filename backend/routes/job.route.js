@@ -10,6 +10,7 @@ import {
     getAllJobRoles,
     getAllJobLocations,
 } from '../controllers/job.controller.js';
+import { checkRole } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get('/roles', getAllJobRoles);
 router.get('/locations', getAllJobLocations);
 
 // Create a job post
-router.post('/', createJob);
+router.post('/create', checkRole(["employer"]), createJob);
 
 // Get all job posts
 router.get('/', getJobs);

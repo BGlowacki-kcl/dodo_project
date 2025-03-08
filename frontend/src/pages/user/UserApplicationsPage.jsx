@@ -5,12 +5,11 @@ function UserApplicationsPage() {
     const [applications, setApplications] = useState([]);
     const [viewMode, setViewMode] = useState("list"); //LIST OR GRID!!
     const [statusFilter, setStatusFilter] = useState("all"); //// update when backend
-    const userId = "67b0ea901bfe9921052c6d2d"; ////// REPLACEHERERERE
 
     useEffect(() => {
       async function fetchApps() {
         try {
-          const data = await getAllUserApplications(userId);
+          const data = await getAllUserApplications();
           setApplications(data);
         } 
         catch (err) {
@@ -18,7 +17,7 @@ function UserApplicationsPage() {
         }
       }
       fetchApps();
-    }, [userId]);
+    }, []);
 
     const filteredApplications = applications.filter((app) => {
         if (statusFilter === "all") return true;
