@@ -3,19 +3,21 @@ import { applyToJob } from "../../services/applicationService";
 import { getAllJobs } from "../../services/jobService";
 import ComboBox from "../../components/ComboBox";
 import Dropdown from "../../components/Dropdown";
+import SwipeFilters from "../../components/SwipeFilters"; 
 
 function UserJobsPage() {
-    const [jobs, setJobs] = useState([]);
-    const [viewMode, setViewMode] = useState("grid"); // "grid" or "list" - MAKE TOGGLE OPTION TODO 40-RREFINING
+    const [allJobs, setAllJobs] = useState([]);  // store all fetched jobs
+    const [jobs, setJobs] = useState([]);        // store filtered (displayed) jobs
+    const [viewMode, setViewMode] = useState("grid");
     const userId = "67b0ea901bfe9921052c6d2d"; ///replace with acc user HERE!!!
 
     useEffect(() => {
       async function fetchJobs() {
         try {
           const data = await getAllJobs();
+          setAllJobs(data);
           setJobs(data);
-        } 
-        catch (err) {
+        } catch (err) {
           console.error("Error fetching jobs:", err);
         }
       }
@@ -33,10 +35,31 @@ function UserJobsPage() {
         alert("Failed to apply");
       }
     };
-
+    
     const handleViewModeChange = (mode) => {
         setViewMode(mode);
       };
+
+    const handleApplyFilters = (selectedFilters) => {
+    if (!selectedFilters || selectedFilters.length === 0) {
+      setJobs(allJobs);
+      return;
+    }
+    const filterMap = {
+      graduate: "Graduate",
+      fullTime: "Full-Time",
+      partTime: "Part-Time",
+      placement: "Placement",
+      internship: "Internship",
+      apprenticeship: "Apprenticeship",
+    };
+    const wantedTypes = selectedFilters.map((id) => filterMap[id] || "");
+    const filtered = allJobs.filter((job) => {
+      return wantedTypes.includes(job.employmentType);
+    });
+
+    setJobs(filtered);
+  };
 return (
     <div className="bg-slate-900 min-h-screen w-full flex flex-col items-center">
       {/* PAGE HEADER */}
@@ -45,12 +68,7 @@ return (
         <p className="text-stone-200 text-lg mt-2"> Find the perfect opportunity for you </p>
       </div>
 
-      {/* FILTER ROW ---> CHANGE OPTIONS AND TYPES WITH UPDATED ONES*/}
-      <div className="flex items-stretch pt-4 pb-4 gap-4 justify-center">
-        <Dropdown label="Job Type (NON FUNCTIONAL!!!!)" options={["Graduate","Full-Time","Part-Time","Internship", "Apprenticeship", "Placement",]}/>
-        <ComboBox label="Role (NON FUNCTIONAL!!!!)" options={["Software Engineer","Frontend Developer","Backend Developer","Fullstack Developer",]}/>
-        <ComboBox label="Region (NON FUNCTIONAL!!!!)"  options={["England", "Scotland", "Wales", "Northern Ireland"]} />
-      </div>
+      <SwipeFilters onApplyFilters={handleApplyFilters} />
 
       {/* TOGGLE BUTTONS FOR GRID OR LIST */}
       <div className="flex mb-4 gap-4">
