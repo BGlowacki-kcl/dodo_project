@@ -9,7 +9,6 @@ function UserJobsPage() {
     const [allJobs, setAllJobs] = useState([]);  // store all fetched jobs
     const [jobs, setJobs] = useState([]);        // store filtered (displayed) jobs
     const [viewMode, setViewMode] = useState("grid");
-    const userId = "67b0ea901bfe9921052c6d2d"; ///replace with acc user HERE!!!
 
     useEffect(() => {
       async function fetchJobs() {
@@ -25,9 +24,8 @@ function UserJobsPage() {
     }, []);
 
     const handleApply = async (jobId) => {
-      const coverLetter = "HELLO I AM THE COVER LETTER COVER LETTER COVER LETTER IF YOU SEE THIS IT MEANS THAT USERJOBSPAGE WAS NOT LINKED TO A COVER LETTER YET!!! :(";
       try {
-        await applyToJob({ jobId, userId, coverLetter });
+        await applyToJob({ jobId, coverLetter });
         alert("Applied successfully!");
       } 
       catch (err) {
@@ -69,6 +67,15 @@ return (
       </div>
 
       <SwipeFilters onApplyFilters={handleApplyFilters} />
+
+      {/* Let user type a cover letter, needs a cover letter import in future*/}
+      <textarea
+        value={coverLetter}
+        onChange={(e) => setCoverLetter(e.target.value)}
+        placeholder="Type your cover letter here..."
+        rows={5}
+        cols={40}
+      />
 
       {/* TOGGLE BUTTONS FOR GRID OR LIST */}
       <div className="flex mb-4 gap-4">
