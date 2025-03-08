@@ -5,7 +5,7 @@ import Navbar from './components/Navbar';
 import LandingPage from './pages/applicant/Landing.jsx';
 import ApplicantDashboard from "./pages/applicant/ApplicantDashboard.jsx";
 import EmployerDashboard from "./pages/employer/EmployerDashboard.jsx";
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import AuthGuard from './guards/auth.guard';
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
@@ -24,8 +24,26 @@ import SearchResults from './pages/SearchResults'
 import AddPdf from './pages/addPdf.jsx';
 import EmployerApplicants from './pages/employer/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
+import { useNotification } from './context/notification.context';
+import { useEffect } from 'react';
 
 function App() {
+	const navigate = useNavigate();
+	const showNotification = useNotification();
+
+	useEffect(() => {
+        const handleSessionExpired = () => {
+            showNotification("Session expired. Please sign in again", "error");
+            navigate("/signin");
+        };
+
+        window.addEventListener("sessionExpired", handleSessionExpired);
+
+        return () => {
+            window.removeEventListener("sessionExpired", handleSessionExpired);
+        };
+    }, [navigate, showNotification]);
+
 	const routeConfig = [
 		// For unLogged users (landing and authorization pages)
 		{ path: '/signin', element: <SignInUp/>, roles: ['unLogged'] },

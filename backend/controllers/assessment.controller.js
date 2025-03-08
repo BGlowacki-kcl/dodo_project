@@ -1,4 +1,4 @@
-export const assessmentService = {
+const assessmentController = {
     async sendCode(req, res) {
         const { source_code, language } = req.body;
   
@@ -18,7 +18,7 @@ export const assessmentService = {
             });
 
             const data = await response.json();
-            return res.status(200).json({ message: "Sent code successfully", data: data });
+            res.status(200).json({ message: "Sent code successfully", data: data });
         } catch (err) {
             return res.status(500).json({ message: "Internal server error", error: err.message });
         }
@@ -26,17 +26,18 @@ export const assessmentService = {
 
     async getStatus(req, res) {
         try {
-            const { requestId } = req.body;
-            const statusResponse = await fetch(`https://paiza-io.p.rapidapi.com/runners/get_details?id=${requestId}`, {
+            console.log("AAAAAAAAAAAA");
+            const { id } = req.query;
+            const statusResponse = await fetch(`https://paiza-io.p.rapidapi.com/runners/get_details?id=${id}`, {
                 method: "GET",
                 headers: {
-                    "Content-Type": "application/json",
                     "x-rapidapi-host": "paiza-io.p.rapidapi.com",
                     "x-rapidapi-key": process.env.PAIZA_API_KEY,
                 }
               })
         
               const statusData = await statusResponse.json();
+              console.log(statusData);
         
               return res.status(200).json({ data: statusData });
           } catch (err) {
@@ -46,3 +47,4 @@ export const assessmentService = {
     }
 }
 
+export default assessmentController;

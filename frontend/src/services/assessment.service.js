@@ -1,6 +1,14 @@
+import { useNavigate } from "react-router-dom";
+import { checkTokenExpiration } from "./auth.service";
+import { useNotification } from "../context/notification.context";
+
 export const assessmentService = {
     async runCode(code, language){
-        if(code.includes("print") && language === "python" || code.includes("console.log") && language === "javascript" || code.includes("cout") && language === "cpp") {
+        if(
+            (code.includes("print") && language === "python") || 
+            (code.includes("console.log") && language === "javascript") || 
+            (code.includes("cout") && language === "cpp")
+        ) {
             return {data: {stderr: "You cannot use output statement in your code"}};
         }
         const tests = [
@@ -45,61 +53,81 @@ export const assessmentService = {
                 output: 17,
             },
         ]
-        const testCases = generateTestCode(tests, language)
-        if(testCases === "") {
-            return {data: {stderr: "Failed to generate test cases"}};
-        }
-        const executeTestsCode = generateExecuteTestsCode(language);
-        code += testCases + executeTestsCode;
-
+        
+        code += constructCode(tests,  language);
         console.log("Code: ", code, "...");
-        const response = await fetch('/api/code', {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                //'Authorization': `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-                source_code: code,
-                language: language,
-            })
-        });
-        if (!response.ok) {
-            throw new Error("Failed to run code");
-        }
 
-        const data = await response.json();
-        console.log("Code: ",data);
-        if(data.data.status === "running") {
-            const executionDetails = await getExecutionDetails(data.data.id);
-            return { data : executionDetails};
-        }
+        const codeSendResponse = await sendCode(code, language);
+        console.log("Provided to check exp: ", codeSendResponse);
+        checkTokenExpiration(codeSendResponse);
+        console.log(codeSendResponse);
+        const id = codeSendResponse.data.id;
+        let counter = 0;
+        let data;
+        do {
+            console.log("Fetching status: ", counter,", data: ",data);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            data = await getExecutionDetails(id);
+            console.log("DATA: ", data);
+            if (data.status !== "running") break;
+            counter++;
+        } while(counter < 7)
+
         return data;
     },
 
     async getTask(appId) {
-        const response = await fetch("/api/code/")
+        
     },
     async getTests() {
 
     }
 }  
 
+async function sendCode(code, language){
+    const response = await fetch('/api/assessment/send', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+            source_code: code,
+            language: language,
+        })
+    });
+    checkTokenExpiration(response);
+    if (!response.ok) {
+        return response;
+    }
+    const data = await response.json();
+    return data;
+}
+
+function constructCode(tests, language) {
+    const testCases = generateTestCode(tests, language)
+    if(testCases === "") {
+        return {data: {stderr: "Failed to generate test cases"}};
+    }
+    const executeTestsCode = generateExecuteTestsCode(language);
+    return testCases + executeTestsCode;
+}
+
 async function getExecutionDetails(id) {
-    const url = `https://paiza-io.p.rapidapi.com/runners/get_details?id=${id}`;
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(`api/assessment/status?id=${id}`, {
             method: 'GET',
             headers: {
-                'x-rapidapi-host': 'paiza-io.p.rapidapi.com',
-                'x-rapidapi-key': '4681e248b1msh30ecf173f9bcb36p1b67aejsnb530c30fe769'
-            }
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
         });
 
         if (!response.ok) {
             throw new Error("Failed to fetch execution details");
         }
+        console.log("Response: ", response);
 
         const data = await response.json();
         console.log("Execution Details: ", data);

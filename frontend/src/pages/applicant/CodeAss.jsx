@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import Editor from "@monaco-editor/react";
 import { assessmentService } from '../../services/assessment.service';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useNotification } from '../../context/notification.context';
+import { checkTokenExpiration } from '../../services/auth.service';
 
 const CodeAss = () => {
   const [code, setCode] = useState(`# Write a function that takes number x and y, then returns the sum of x and y
@@ -16,6 +18,8 @@ def func(x, y):
   const [testsPassed, setTestsPassed] = useState(0);
   const [task, setTask] = useState("");
   const { appId } = useParams();
+  const navigate = useNavigate();
+  const showNotification = useNotification();
 
   useState(() => {
     const fetchTasks = async () => {

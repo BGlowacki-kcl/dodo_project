@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById, withdrawApplication } from "../../services/applicationService";
+import { useNotification } from "../../context/notification.context";
 
 function SingleApplicationPage() {
     const { appId } = useParams();
@@ -8,6 +9,7 @@ function SingleApplicationPage() {
     const [application, setApplication] = useState(null);
     const hasFetched = useRef(false);
     const [codeChallenge, setCodeChallenge] = useState(false);
+    const showNotification = useNotification();
 
 
     useEffect(() => {
@@ -15,21 +17,21 @@ function SingleApplicationPage() {
           if (hasFetched.current) return;
           hasFetched.current = true;
           const data = await getApplicationById(appId);
-          setApplication(data.data);
-          console.log(data.data);
-          if(data.data.status == "code challenge") {
+          console.log(data);
+          if(data.data && data.data.status == "code challenge") {
             setCodeChallenge(true);
           }
           if (data.status && data.status == 403) {
-              alert(data.message);
+              showNotification(data.message);
               navigate("/user/applications");
               return;
           }
           if(data.status && data.status != 200) {
-            alert("Failed to fetch application");
+            showNotification("Failed to fetch application");
             navigate("/user/applications");
             return;
           }    
+          setApplication(data.data);
         }
         fetchApp();
     }, [appId, navigate]);

@@ -22,6 +22,7 @@ api.interceptors.request.use(
 
 export async function getAllUserApplications() {
   const response = await api.get(`/application/all`);
+  checkTokenExpiration(response);
 
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
@@ -32,6 +33,7 @@ export async function getAllUserApplications() {
 export async function getApplicationById(appId) {
   try{
     const response = await api.get(`/application/byId?id=${appId}`);
+    checkTokenExpiration(response);
     if (!response.data.success) {
       throw new Error(response.data.message || "Failed to fetch application");
     }
@@ -58,6 +60,7 @@ export async function applyToJob({ jobId, coverLetter }) {
 
 export async function withdrawApplication(appId) {
   const response = await api.delete(`/application/withdraw?id=${appId}`);
+  checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to withdraw");
   }
