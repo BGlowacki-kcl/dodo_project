@@ -5,8 +5,6 @@ import {
     getAuth 
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNotification } from "../context/notification.context";
-import { useNavigate } from "react-router-dom";
 
 export async function checkTokenExpiration(response) {
     if (response.status === 403) {

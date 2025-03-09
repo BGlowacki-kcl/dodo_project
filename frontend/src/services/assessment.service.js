@@ -192,7 +192,7 @@ void runTests(vector<pair<vector<int>, int>> testCases, string testType) {
     for (size_t i = 0; i < testCases.size(); i++) {
         vector<int> args = testCases[i].first;
         int expected_output = testCases[i].second;
-        int actual_output = func(args[0], args[1]);  // Assuming 2 inputs for simplicity
+        int actual_output = func(args[0], args[1]); 
 
         if (actual_output == expected_output) {
             cout << "Test " << i + 1 << ": Test PASSED " << testType << endl;

@@ -72,11 +72,16 @@ int func(int x, int y) {
     setError("");
     setOutput("");
     const response = await assessmentService.runCode(code, language);
-    console.log("Response in .jsx file: ", response);
+    console.log("Res: ", response);
     setLoading(false);
 
-    if(response.data.stderr != ""){
+    if(response.data.stderr && response.data.stderr != ""){
       setError(response.data.stderr);
+      return;
+    }
+    console.log("Build_err: ",response.data.build_stderr);
+    if(response.data.build_stderr && response.data.build_stderr != ""){
+      setError(response.data.build_stderr);
       return;
     }
 
