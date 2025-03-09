@@ -1,14 +1,13 @@
 import { faker } from "@faker-js/faker";
 import { projectList } from "./projectFixtures.js";
 
-export const generateCV = (name, education, experience, email, skills = []) => {
-    // Select 3 random projects from the fixture array
+export const generateCV = (name, location, education, experience, email, skills = []) => {
     const selectedProjects = faker.helpers.arrayElements(projectList, 3);
 
     return `
 ${name.toUpperCase()}
 
-Location: London
+Location: ${location}
 
 Education
 ${education

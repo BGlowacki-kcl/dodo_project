@@ -14,12 +14,11 @@ import { locations } from "./backend/fixtures/locationFixtures.js";
 import { universityNames, degreeTitles, fieldsOfStudy } from "./backend/fixtures/educationFixtures.js";
 import { techCompanies, techJobDetails, techSkills } from "./backend/fixtures/companyFixtures.js";
 
-//TODO: Seed Cover letter under application, Refine CV generation, Seed sample user
-
 
 //  Initialize Firebase Admin SDK
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);  // Have firebase service key in env file
 admin.initializeApp({
-  credential: admin.credential.cert("./backend/config/dodo-project-42d5c-firebase-adminsdk-fbsvc-14414f6ab9.json"), // Make sure this file exists
+  credential: admin.credential.cert(serviceAccount),
 });
 
 //  Connect to MongoDB
@@ -58,7 +57,7 @@ const generateEducation = () => {
     };
 };
 
-const PASSWORD = "Password123";
+const PASSWORD = "Password123"; // Password for all seeded users
 
 // Generate Random JobSeekers
 const generateJobSeekers = async (num) => {
@@ -66,11 +65,12 @@ const generateJobSeekers = async (num) => {
 
     for (let i = 0; i < num; i++) {
         const name = faker.person.fullName();
-        const email = faker.internet.email({ fistName: name });
+        const email = faker.internet.email({ firstName: name });
         const firebaseUid = await createFirebaseUser(email, PASSWORD, name);
         if (!firebaseUid) continue;
+        const location = faker.helpers.arrayElement(locations);
         const education = generateEducation();
-        const skills = faker.helpers.arrayElement(techSkills, 5);
+        const skills = faker.helpers.arrayElements(techSkills, 5);
         const experience = {
             company: faker.company.name(),
             title: faker.person.jobTitle(),
@@ -83,11 +83,11 @@ const generateJobSeekers = async (num) => {
             email: email,
             role: "jobSeeker",
             name: name,
-            location: faker.helpers.arrayElement(locations),
+            location: location,
             education: [education],
             experience: [experience],
-            skills: [skills],
-            resume: generateCV(name, [education], [experience], email, [skills])
+            skills: skills,
+            resume: generateCV(name, location, [education], [experience], email, skills)
         }));
     }
 
@@ -125,14 +125,14 @@ const generateJobs = (num, employers) => {
         jobs.push({
             title: jobTitle,
             company: employer.companyName,
-            location: faker.location.city(),
+            location: faker.helpers.arrayElement(locations),
             description: techJobDetails[jobTitle],
             salaryRange: {
                 min: faker.number.int({ min: 30000, max: 60000 }),
                 max: faker.number.int({ min: 80000, max: 150000 })
             },
             employmentType: faker.helpers.arrayElement(["full-time", "part-time", "internship", "contract"]),
-            requirements: faker.helpers.arrayElement(techSkills),
+            requirements: faker.helpers.arrayElements(techSkills, 3),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
             postedBy: employer._id,
         });
@@ -152,46 +152,12 @@ const generateApplications = (num, jobSeekers, jobs) => {
         applications.push({
             job: job._id,
             applicant: jobSeeker._id,
-            status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'accepted']),
-            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, jobSeeker.skills, jobSeeker.email)
+            status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted']),
+            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email)
         });
     }
 
     return applications;
-};
-
-// Code to wipe firebase user authentication record, use carefully, not reversible
-const deleteUsersInBatch = async (uids) => {
-    try {
-        const result = await admin.auth().deleteUsers(uids);
-        console.log(`${result.successCount} users deleted, ${result.failureCount} failed`);
-        if (result.failureCount > 0) {
-            console.log(result.errors);
-        }
-    } catch (error) {
-        console.error("Batch deletion error:", error);
-    }
-};
-
-
-const deleteAllFirebaseUsers = async () => {
-    try {
-        let nextPageToken;
-        do {
-            // List up to 1000 users at a time
-            const listUsersResult = await admin.auth().listUsers(1000, nextPageToken);
-            const uids = listUsersResult.users.map(user => user.uid);
-            if (uids.length > 0) {
-                await deleteUsersInBatch(uids);
-                // Wait 60 seconds before deleting the next batch
-                await new Promise(resolve => setTimeout(resolve, 60000));
-            }
-            nextPageToken = listUsersResult.pageToken;
-        } while (nextPageToken);
-        console.log("All users processed.");
-    } catch (error) {
-        console.error("Error deleting Firebase users:", error);
-    }
 };
 
 //  Seed Database
@@ -200,18 +166,15 @@ const seedDatabase = async () => {
     await connectDB();
 
     //  Delete existing data
-    await Application.deleteMany();
-    await Job.deleteMany();
-    await User.deleteMany();
-    await JobSeeker.deleteMany();
-    await Employer.deleteMany();
-    console.log("Existing data deleted");
-
-    // await deleteAllFirebaseUsers();
-    // console.log("Deleted firebase records");
+        await Application.deleteMany();
+        await Job.deleteMany();
+        await User.deleteMany();
+        await JobSeeker.deleteMany();
+        await Employer.deleteMany();
+        console.log("Existing data deleted");
 
       const jobSeekers = await generateJobSeekers(100); // Generate 100 jobseekers
-      const employers = await generateEmployers();
+      const employers = await generateEmployers(); // Generate employers from fixed list
 
       const createdJobSeekers = await JobSeeker.insertMany(jobSeekers);
       console.log("JobSeekers added...");

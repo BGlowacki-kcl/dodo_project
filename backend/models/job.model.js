@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const jobSchema = new Schema({
-    // can probably add other fields we may need for the job posting, like specific phone numbers or websited for the posting (employer will have a company email/website/phone numebr linked)
     title: {
         type: String,
         required: true
@@ -30,7 +29,7 @@ const jobSchema = new Schema({
 
     employmentType: {
         type: [String],
-        enum: ['full-time', 'part-time', 'internship', 'contract'], // can add more employment types
+        enum: ['full-time', 'part-time', 'internship', 'contract'],
         default: ['full-time']
     },
 
@@ -40,7 +39,7 @@ const jobSchema = new Schema({
 
     postedBy: {
         type: Schema.Types.ObjectId,
-        ref: 'User', // can change this if we split employer into its own model
+        ref: 'Employer',
         required: true
     },
 
