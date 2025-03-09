@@ -26,7 +26,6 @@ const assessmentController = {
 
     async getStatus(req, res) {
         try {
-            console.log("AAAAAAAAAAAA");
             const { id } = req.query;
             const statusResponse = await fetch(`https://paiza-io.p.rapidapi.com/runners/get_details?id=${id}`, {
                 method: "GET",
@@ -37,8 +36,6 @@ const assessmentController = {
               })
         
               const statusData = await statusResponse.json();
-              console.log(statusData);
-        
               return res.status(200).json({ data: statusData });
           } catch (err) {
               console.error(err);

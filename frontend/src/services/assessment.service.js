@@ -1,6 +1,4 @@
-import { useNavigate } from "react-router-dom";
 import { checkTokenExpiration } from "./auth.service";
-import { useNotification } from "../context/notification.context";
 
 export const assessmentService = {
     async runCode(code, language){
@@ -58,17 +56,15 @@ export const assessmentService = {
         console.log("Code: ", code, "...");
 
         const codeSendResponse = await sendCode(code, language);
-        console.log("Provided to check exp: ", codeSendResponse);
         checkTokenExpiration(codeSendResponse);
-        console.log(codeSendResponse);
+
         const id = codeSendResponse.data.id;
         let counter = 0;
         let data;
         do {
-            console.log("Fetching status: ", counter,", data: ",data);
             await new Promise(resolve => setTimeout(resolve, 2000));
             data = await getExecutionDetails(id);
-            console.log("DATA: ", data);
+            data = await data.json();
             if (data.status !== "running") break;
             counter++;
         } while(counter < 7)
@@ -101,6 +97,7 @@ async function sendCode(code, language){
         return response;
     }
     const data = await response.json();
+    
     return data;
 }
 
@@ -116,7 +113,7 @@ function constructCode(tests, language) {
 async function getExecutionDetails(id) {
 
     try {
-        const response = await fetch(`api/assessment/status?id=${id}`, {
+        const response = await fetch(`/api/assessment/status?id=${id}`, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -127,11 +124,8 @@ async function getExecutionDetails(id) {
         if (!response.ok) {
             throw new Error("Failed to fetch execution details");
         }
-        console.log("Response: ", response);
 
-        const data = await response.json();
-        console.log("Execution Details: ", data);
-        return data;
+        return response;
     } catch (error) {
         console.error("Error:", error);
         return { error: error.message };

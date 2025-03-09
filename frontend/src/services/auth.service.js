@@ -9,12 +9,9 @@ import { useNotification } from "../context/notification.context";
 import { useNavigate } from "react-router-dom";
 
 export async function checkTokenExpiration(response) {
-    console.log(response);
     if (response.status === 403) {
-        console.log("LOGAOUTTT");
         const data = await response.json();
         if (data.action === "LOGOUT") {
-            console.log("SIGNINGOUT");
             authService.signOut();
             window.dispatchEvent(new Event("sessionExpired"));
         }

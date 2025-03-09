@@ -72,6 +72,7 @@ int func(int x, int y) {
     setError("");
     setOutput("");
     const response = await assessmentService.runCode(code, language);
+    console.log("Response in .jsx file: ", response);
     setLoading(false);
 
     if(response.data.stderr != ""){
