@@ -64,8 +64,30 @@ function CreateJobPost() {
     setError('');
   
     try {
-      await createJob(jobData); // Use the imported createJob service
-      navigate('/employer/posts');
+      // Check if any field is missing
+      const missingFields = [];
+      if (!jobData.title) missingFields.push("Title");
+      if (!jobData.description) missingFields.push("Description");
+      if (!jobData.location) missingFields.push("Location");
+      if (!jobData.company) missingFields.push("Company");
+
+      if (missingFields.length > 0) {
+        throw new Error(`Please fill in: ${missingFields.join(', ')}`);
+      }
+
+
+      const newJob = {
+        ...jobData,
+      };
+
+      //await new Promise((resolve) => setTimeout(resolve, 1000)); not sure if needed before, left commented
+      await createJob(newJob);
+
+      // const storedJobs = JSON.parse(localStorage.getItem('jobs')) || [];
+      // const updatedJobs = [...storedJobs, { id: storedJobs.length + 1, ...jobData, applicants: 0 }];
+      // localStorage.setItem('jobs', JSON.stringify(updatedJobs));
+
+      navigate('/posts');
     } catch (err) {
       console.error('Error creating job:', err);
       setError(err.response?.data?.message || 'Failed to create job');

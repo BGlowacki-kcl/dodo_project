@@ -29,9 +29,17 @@ export const checkRole = (roles) => async (req, res, next) => {
                 return;
             }
             const user = await User.findOne({ uid: uid });
+            if(!user){
+                res.status(403).json({ 
+                    success: false,
+                    message: 'User not found' 
+                });
+                return;
+            }
             const userRole = user.role;
 
             if (!roles.includes(userRole)) {
+                console.log('User role:', userRole, " roles: ", roles);
                 return res.status(403).json({ message: 'Forbidden' });
             } 
             

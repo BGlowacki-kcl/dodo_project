@@ -1,4 +1,5 @@
 const API_BASE_URL = "/api/user";
+import { checkTokenExpiration } from "../services/auth.service";
 
 export const userService = {
     async updateUser(userData) {
@@ -26,6 +27,7 @@ export const userService = {
 
     async getUserProfile() {
         try {
+            console.log(sessionStorage.getItem("token"));
             const response = await fetch(`${API_BASE_URL}/`, {
                 method: "GET",
                 headers: {
@@ -33,6 +35,8 @@ export const userService = {
                     'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
                 },
             });
+
+            console.log(response);
 
             if (!response.ok) {
                 throw new Error("Failed to fetch user profile");

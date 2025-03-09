@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import { User } from "../models/user/user.model.js";
@@ -15,24 +17,7 @@ const handleError = (res, error, defaultMessage = "Server error") => {
 };
 
 export const applicationController = {
-    async apply(req, res) {
-        try {
-            const { jobId, coverLetter } = req.body;
-
-            const application = await Application.create({
-                job: jobId,
-                applicant: req.uid, // Extracted from Firebase auth
-                coverLetter,
-                status: "applying",
-                submittedAt: new Date(),
-            });
-
-            return res.status(201).json(createResponse(true, "Application started successfully", application));
-        } catch (error) {
-            return handleError(res, error, "Error submitting application");
-        }
-    },
-
+  
     async getApplication(req, res) {
         try {
             const { jobId } = req.params;
@@ -45,28 +30,6 @@ export const applicationController = {
             return res.status(200).json(createResponse(true, "Application retrieved successfully", application));
         } catch (error) {
             return handleError(res, error, "Error retrieving application");
-        }
-    },
-
-    async cancel(req, res) {
-        try {
-            const { applicationId } = req.params;
-
-            const application = await Application.findById(applicationId);
-
-            if (!application) {
-                return res.status(404).json(createResponse(false, "Application not found"));
-            }
-
-            if (application.applicant.toString() !== req.uid) {
-                return res.status(403).json(createResponse(false, "Unauthorized to cancel this application"));
-            }
-
-            await Application.findByIdAndDelete(applicationId);
-
-            return res.status(200).json(createResponse(true, "Application canceled successfully"));
-        } catch (error) {
-            return handleError(res, error, "Error canceling application");
         }
     },
 
@@ -125,7 +88,9 @@ export const applicationController = {
 
     async getAllApplications(req, res) {
         try {
-            const filter = req.query.applicant ? { applicant: req.uid } : {};
+            const { uid } = req;
+            const user = await User.findOne({ uid: uid });
+            const filter = { applicant: user._id };
             const apps = await Application.find(filter).populate("job");
             return res.json(createResponse(true, "Applications fetched", apps));
         } catch (err) {
@@ -135,30 +100,37 @@ export const applicationController = {
 
     async getOneApplication(req, res) {
         try {
-            const { id } = req.params;
+            const { id } = req.query;
+            const { uid } = req;
+            const user = await User.findOne({ uid: uid });
             const app = await Application.findById(id).populate("job");
 
             if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
-
-            return res.json(createResponse(true, "Application found", app));
-        } catch (err) {
-            return handleError(res, err, "Error getting application");
+            if(app.applicant.equals(user._id) == false) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
+            res.json(createResponse(true, "Application found", app));
+        } 
+        catch (err) {
+            console.error("Error getting application:", err);
+            res.status(500).json(createResponse(false, err.message));
         }
     },
 
     async createApplication(req, res) {
         try {
             const { jobId, coverLetter } = req.body;
-
+            const { uid } = req;
             if (!jobId) {
-                return res.status(400).json(createResponse(false, "Missing jobId in request body"));
+                return res.status(400).json(createResponse(false, "Missing jobId in body"));
             }
-
+            const user = await User.findOne({uid});
+    
             const newApp = await Application.create({
                 job: jobId,
-                applicant: req.uid,
+                applicant: user._id,
                 coverLetter,
                 status: "applied",
             });
@@ -172,21 +144,25 @@ export const applicationController = {
 
     async withdrawApplication(req, res) {
         try {
-            const { id } = req.params;
+
+            const { id } = req.query;
+            const { uid } = req;
+            const user = await User.findOne({ uid: uid });
 
             const app = await Application.findById(id);
             if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
 
-            if (app.applicant.toString() !== req.uid) {
-                return res.status(403).json(createResponse(false, "Unauthorized to withdraw this application"));
+            if(app.applicant.equals(user._id) == false) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
             }
-
             await app.deleteOne();
-            return res.json(createResponse(true, "Application withdrawn"));
-        } catch (err) {
-            return handleError(res, err, "Error withdrawing application");
+            res.json(createResponse(true, "Application withdrawn", null));
+        }
+        catch (err) {
+            console.error("Error withdrawing application:", err);
+            res.status(500).json(createResponse(false, err.message));
         }
     },
 };
