@@ -24,8 +24,9 @@ const EmployerLogin = () => {
   
       // If they are an employer, proceed with login
       await authService.signIn(email, password, navigate);
+      await authService.verifyUserRole(email, 'employer');
       showNotification('Successfully logged in!', 'success');
-      navigate('/employer/posts'); // Navigate to employer dashboard after successful login
+      navigate('/employer-dashboard'); // Navigate to employer dashboard after successful login
   
     } catch (error) {
       console.error('Login error:', error);

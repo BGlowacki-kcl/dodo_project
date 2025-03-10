@@ -52,6 +52,7 @@ function App() {
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
+		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
 		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
