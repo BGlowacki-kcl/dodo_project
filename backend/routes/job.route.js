@@ -5,11 +5,20 @@ import {
     getJobs,
     getJobById,
     updateJob,
-    deleteJob
+    deleteJob,
+    getJobCountByType,
+    getAllJobRoles,
+    getAllJobLocations,
 } from '../controllers/job.controller.js';
 import { checkRole } from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
+
+router.get('/count/type', getJobCountByType);
+
+router.get('/roles', getAllJobRoles);
+
+router.get('/locations', getAllJobLocations);
 
 // Create a job post
 router.post('/create', checkRole(["employer"]), createJob);
@@ -25,5 +34,7 @@ router.put('/:id', updateJob);
 
 // Delete a job post
 router.delete('/:id', deleteJob);
+
+
 
 export default router;

@@ -98,6 +98,35 @@ export const authService = {
         }
     },
 
+    async verifyUserRole(email, expectedRole) {
+        try {
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/user/role', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            
+
+            const data = await response.json();
+            if (data.data !== expectedRole) {
+                throw new Error(
+                    expectedRole === 'employer' 
+                        ? 'Please use the employer login page' 
+                        : 'Please use the jobseeker login page'
+                );
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Role verification error:', error);
+            throw error;
+        }
+    },
+
     async signOut(){
         const auth = getAuth();
         
@@ -131,7 +160,7 @@ export const authService = {
             if (data.redirect) {
                 navigate(data.redirect);  // Ensures navigation works
             } else {
-                navigate('/dashboard');
+                navigate('/');
             }
 
         } catch (err) {
