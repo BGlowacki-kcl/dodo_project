@@ -9,6 +9,8 @@ function UserJobsPage() {
     const [allJobs, setAllJobs] = useState([]);  // store all fetched jobs
     const [jobs, setJobs] = useState([]);        // store filtered (displayed) jobs
     const [viewMode, setViewMode] = useState("grid");
+    const [applyOpenId, setApplyOpenId] = useState(null);
+    const [coverLetter, setCoverLetter] = useState("");
 
     useEffect(() => {
       async function fetchJobs() {
@@ -22,18 +24,41 @@ function UserJobsPage() {
       }
       fetchJobs();
     }, []);
+    
+    const handleOpenApply = (jobId) => {
+      if (applyOpenId === jobId) {
+        setApplyOpenId(null);
+        setCoverLetter("");
+      } else {
+        setApplyOpenId(jobId);
+        setCoverLetter("");
+      }
+    };
 
-    const handleApply = async (jobId) => {
+    const handleSubmitApplication = async (jobId) => {
       try {
         await applyToJob({ jobId, coverLetter });
         alert("Applied successfully!");
-      } 
-      catch (err) {
+        setApplyOpenId(null);
+        setCoverLetter("");
+      } catch (err) {
         console.error("Failed to apply:", err);
         alert("Failed to apply");
       }
     };
-    
+
+    const handleShortlist = async (jobId) => {
+      try {
+        await addJobToShortlist(userId, jobId);
+        alert("Job added to shortlist!");
+      } catch (err) {
+        console.error("Error adding job to shortlist:", err);
+        alert("Error shortlisting job");
+      }
+    };
+
+
+
     const handleViewModeChange = (mode) => {
         setViewMode(mode);
       };
