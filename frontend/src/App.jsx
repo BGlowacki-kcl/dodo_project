@@ -53,12 +53,10 @@ function App() {
 		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
-		{ path: '/employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
-		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
-		
-		// Forbidden page, for any user entering forbidden url
-		{ path: '/forbidden', element: <Forbidden />, dontCheck: true },
-	];
+		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
+		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
+		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
+	  ];
 
 	return (
 		<Box className="bg-background min-h-screen">

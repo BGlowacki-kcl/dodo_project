@@ -11,8 +11,8 @@ export const createJob = async (req, res) => {
             employmentType,
             requirements,
             experienceLevel,
-            postedBy
         } = req.body;
+        const { postedBy } = req;
 
         if (!title || !company || !location || !description || !postedBy) {
             return res.status(400).json({ message: 'All required fields must be filled.' });
@@ -96,3 +96,43 @@ export const deleteJob = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const getJobCountByType = async (req, res) => {
+    try {
+        const { type } = req.query;
+        const count = await Job.countDocuments({ employmentType: type });
+        res.status(200).json({ count });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getAllJobRoles = async (req, res) => {
+    try {
+      console.log("Fetching all job roles");
+      const titles = await Job.distinct('title');
+      console.log("Found titles:", titles);
+      res.status(200).json(titles);
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch job roles",
+        error: error.message 
+      });
+    }
+  };
+
+export const getAllJobLocations = async (req, res) => {
+    try {
+      console.log("Fetching all job locations");
+      const locations = await Job.distinct('location');
+      console.log("Found locations:", locations);
+      res.status(200).json(locations);
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch job locations",
+        error: error.message 
+      });
+    }
+  };
