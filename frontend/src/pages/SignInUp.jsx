@@ -44,12 +44,12 @@ const AuthForm = (mode) => {
         if (!isPasswordStrong(password)) {
           throw new Error("Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.");
         }
-      }
+      }    
 
       // Always sign up as job seeker
       await (isLogin 
         ? authService.signIn(email, password, navigate) 
-        : authService.signUp(email, password, false, navigate));
+        : authService.signUp(email, password, false, navigate));     
       
       const successMessage = isLogin ? 'Sign in successful!' : 'Sign up successful! Please complete your profile.';
       showNotification(successMessage, 'success');

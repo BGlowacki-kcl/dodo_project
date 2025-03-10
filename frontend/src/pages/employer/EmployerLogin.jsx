@@ -11,6 +11,7 @@ const EmployerLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const showNotification = useNotification();
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -18,21 +19,18 @@ const EmployerLogin = () => {
     setLoading(true);
 
     try {
-      // Use the auth service to sign in
-      await authService.signIn(email, password, () => {
-        // After successful login, check if user is employer
-        const userRole = sessionStorage.getItem('role');
-        if (userRole === 'employer') {
-          showNotification('Successfully logged in!', 'success');
-          navigate('/employer-dashboard'); // Navigate to employer dashboard
-        } else {
-          throw new Error('Unauthorized. Employer access only.');
-        }
-      });
+      // First check if user is an employer
+      
+  
+      // If they are an employer, proceed with login
+      await authService.signIn(email, password, navigate);
+      showNotification('Successfully logged in!', 'success');
+      navigate('/employer/posts'); // Navigate to employer dashboard after successful login
+  
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.message || 'Invalid login credentials');
-      showNotification('Login failed. Please try again.', 'error');
+      setError(error.message || 'Invalid credentials');
+      showNotification(error.message || 'Login failed', 'error');
     } finally {
       setLoading(false);
     }
