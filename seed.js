@@ -2,11 +2,13 @@ import mongoose from "mongoose";
 import "dotenv/config";
 import { faker } from "@faker-js/faker";
 import admin from "firebase-admin";
+
 import User from "./backend/models/user/user.model.js";
 import { JobSeeker } from "./backend/models/user/jobSeeker.model.js";
 import { Employer } from "./backend/models/user/Employer.model.js";
 import Job from "./backend/models/job.model.js";
 import Application from "./backend/models/application.model.js";
+import Shortlist from "./backend/models/shortlist.model.js";
 
 import { generateCV } from "./backend/fixtures/cvTemplate.js";
 import { generateCoverLetter } from "./backend/fixtures/coverLetTemplate.js";
@@ -16,7 +18,7 @@ import { techCompanies, techJobDetails, techSkills } from "./backend/fixtures/co
 
 
 //  Initialize Firebase Admin SDK
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);  // Have firebase service key in env file
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);  // Have firebase service key path in env file
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -131,7 +133,7 @@ const generateJobs = (num, employers) => {
                 min: faker.number.int({ min: 30000, max: 60000 }),
                 max: faker.number.int({ min: 80000, max: 150000 })
             },
-            employmentType: faker.helpers.arrayElement(["full-time", "part-time", "internship", "contract"]),
+            employmentType: faker.helpers.arrayElement(['Full-Time', 'Part-Time', 'Internship', 'Graduate', 'Placement']),
             requirements: faker.helpers.arrayElements(techSkills, 3),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
             postedBy: employer._id,
@@ -160,12 +162,30 @@ const generateApplications = (num, jobSeekers, jobs) => {
     return applications;
 };
 
-//  Seed Database
-const seedDatabase = async () => {
-  try {
-    await connectDB();
+// Generate Random Shortlisted jobs for each jobSeeker
+const generateShortlists = (jobSeekers, jobs) => {
+    const shortlists = [];
 
-    //  Delete existing data
+    for (let i = 0; i < jobSeekers.length; i++) {
+        // Choose a random number (1 to 5) of jobs to be saved
+        const numJobs = faker.number.int({ min: 1, max: 10 });
+        const savedJobs = faker.helpers.arrayElements(jobs, numJobs);
+
+        shortlists.push({
+            user: jobSeekers[i]._id,
+            jobs: savedJobs.map(job => job._id)
+        });
+    }
+
+    return shortlists;
+};
+
+// Seed Database
+const seedDatabase = async () => {
+    try {
+        await connectDB();
+
+        //  Delete existing data
         await Application.deleteMany();
         await Job.deleteMany();
         await User.deleteMany();
@@ -173,33 +193,36 @@ const seedDatabase = async () => {
         await Employer.deleteMany();
         console.log("Existing data deleted");
 
-      const jobSeekers = await generateJobSeekers(100); // Generate 100 jobseekers
-      const employers = await generateEmployers(); // Generate employers from fixed list
+        const jobSeekers = await generateJobSeekers(100); // Generate 100 jobseekers
+        const employers = await generateEmployers(); // Generate employers from fixed list
 
-      const createdJobSeekers = await JobSeeker.insertMany(jobSeekers);
-      console.log("JobSeekers added...");
+        const createdJobSeekers = await JobSeeker.insertMany(jobSeekers);
+        console.log("JobSeekers added...");
 
-      const createdEmployers = await Employer.insertMany(employers);
-      console.log("Employers added...");
+        const createdEmployers = await Employer.insertMany(employers);
+        console.log("Employers added...");
 
-      // Generate and insert Jobs
-      const jobs = generateJobs(200, createdEmployers); // 200 Jobs
-      const createdJobs = await Job.insertMany(jobs);
-      console.log("Jobs added...");
+        // Generate and insert Jobs
+        const jobs = generateJobs(200, createdEmployers); // 200 Jobs
+        const createdJobs = await Job.insertMany(jobs);
+        console.log("Jobs added...");
 
-      // Generate and insert Applications
-      const applications = generateApplications(300, createdJobSeekers, createdJobs); // 300 Applications
-      await Application.insertMany(applications);
-      console.log("Applications added...");
+        // Generate and insert Applications
+        const applications = generateApplications(400, createdJobSeekers, createdJobs); // 300 Applications
+        await Application.insertMany(applications);
+        console.log("Applications added...");
 
+        const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
+        await Shortlist.insertMany(shortlistsData);
+        console.log("Shortlists added...");
 
-    mongoose.connection.close();
-    console.log(" Database connection closed");
-  } catch (error) {
-    console.error("Seeding error:", error);
-    mongoose.connection.close();
-    process.exit(1);
-  }
+        mongoose.connection.close();
+        console.log(" Database connection closed");
+    } catch (error) {
+        console.error("Seeding error:", error);
+        mongoose.connection.close();
+        process.exit(1);
+    }
 };
 
 //  Run Seeder

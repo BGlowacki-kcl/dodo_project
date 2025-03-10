@@ -28,9 +28,9 @@ const jobSchema = new Schema({
     },
 
     employmentType: {
-        type: [String],
-        enum: ['full-time', 'part-time', 'internship', 'contract'],
-        default: ['full-time']
+        type: String,
+        enum: ['Full-Time', 'Part-Time', 'Internship', 'Graduate', 'Placement'],
+        default: ['Full-Time']
     },
 
     requirements: [String],
