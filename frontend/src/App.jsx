@@ -47,6 +47,8 @@ function App() {
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
+		{ path: '/dashboard', element: <Dashboard />, roles: ['jobSeeker', 'employer'] },
+
 		
 		// Employer accessible pages
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
