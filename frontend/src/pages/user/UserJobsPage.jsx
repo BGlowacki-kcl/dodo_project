@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { applyToJob } from "../../services/applicationService";
 import { getAllJobs } from "../../services/jobService";
 import ComboBox from "../../components/ComboBox";
@@ -130,7 +131,13 @@ function UserJobsPage() {
         <h1 className="text-white text-4xl font-bold">Available Job Posts</h1>
         <p className="text-stone-200 text-lg mt-2">Find the perfect opportunity for you</p>
       </div>
-
+      {/*APPLICATIONSBUTTON */}
+      <Link 
+        to="/user/applications"
+        className="inline-block mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+      >
+        My Applications
+      </Link>
       {/* FILTERS */}
       <SwipeFilters onApplyFilters={handleApplyFilters} />
 

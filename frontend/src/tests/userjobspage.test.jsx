@@ -6,6 +6,8 @@ import { userService } from "../services/user.service";
 import { getAllJobs } from "../services/jobService";
 import { getAllUserApplications } from "../services/applicationService";
 import { getShortlist } from "../services/shortlist.service";
+import { vi } from 'vitest';
+
 
 vi.mock("../services/user.service", () => ({
   userService: {
