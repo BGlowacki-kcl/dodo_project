@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Checkbox, FormControlLabel } from '@mui/material';
 import { useNotification } from '../context/notification.context';
 
-const AuthForm = (mode) => {
+const AuthForm = () => {
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

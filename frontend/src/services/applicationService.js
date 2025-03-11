@@ -85,7 +85,7 @@ export async function withdrawApplication(appId) {
       "Content-Type": "application/json",
       'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
     }
-  })
+  });
   checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to withdraw");

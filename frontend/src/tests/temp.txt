@@ -1,7 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react'; // Import fireEvent
-import userEvent from '@testing-library/user-event'; // Import userEvent
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import AuthForm from '../pages/SignInUp';
+import { vi } from 'vitest';
+import { authService } from '../services/auth.service';
 import { useNotification } from '../context/notification.context';
 
 // Mock the useNotification hook
@@ -117,107 +118,4 @@ describe('AuthForm', () => {
       expect(mockShowNotification).toHaveBeenCalledWith('Sign in failed. Please check your email and password.', 'error');
     });
   });
-});
-
-test('renders Sign In form correctly', () => {
-  render(
-    <MemoryRouter initialEntries={['/signin']}>
-      <Routes>
-        <Route path="/signin" element={<AuthForm />} />
-      </Routes>
-    </MemoryRouter>
-  );
-
-  expect(screen.getByText(/Welcome Back!/i)).toBeInTheDocument();
-  expect(screen.getByPlaceholderText(/Enter your email/i)).toBeInTheDocument();
-  expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
-});
-
-test('renders Sign Up form correctly', () => {
-  render(
-    <MemoryRouter initialEntries={['/signup']}>
-      <Routes>
-        <Route path="/signup" element={<AuthForm />} />
-      </Routes>
-    </MemoryRouter>
-  );
-
-  expect(screen.getByText(/Create an Account/i)).toBeInTheDocument();
-  expect(screen.getByPlaceholderText(/Enter your email/i)).toBeInTheDocument();
-  expect(screen.getByText(/Sign Up/i)).toBeInTheDocument();
-});
-
-test('correctly catches password outside legal values', async () => {
-  render(
-    <MemoryRouter initialEntries={['/signup']}>
-      <Routes>
-        <Route path="/signup" element={<AuthForm />} />
-      </Routes>
-    </MemoryRouter>
-  );
-  
-  const emailInput = screen.getByPlaceholderText('Enter your email');
-  fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-
-  const passwordInput = screen.getByPlaceholderText('Enter your password');
-  fireEvent.change(passwordInput, { target: { value: 'short' } });
-
-  const confirmPasswordInput = screen.getByPlaceholderText('Confirm your password');
-  fireEvent.change(confirmPasswordInput, { target: { value: 'short' } });
-
-  const submitButton = screen.getByRole('button', { name: /Sign Up/i });
-  await userEvent.click(submitButton);
-
-  const errorMessage = await screen.findByText(
-    /Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number./i
-  );
-  expect(errorMessage).toBeInTheDocument();
-
-});
-
-test('correctly catches passwords mismatch', async () => {
-  render(
-    <MemoryRouter initialEntries={['/signup']}>
-      <Routes>
-        <Route path="/signup" element={<AuthForm />} />
-      </Routes>
-    </MemoryRouter>
-  );
-
-  const emailInput = screen.getByPlaceholderText('Enter your email');
-  fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-
-  const passwordInput = screen.getByPlaceholderText('Enter your password');
-  fireEvent.change(passwordInput, { target: { value: 'ValidPass1' } });
-
-  const confirmPasswordInput = screen.getByPlaceholderText('Confirm your password');
-  fireEvent.change(confirmPasswordInput, { target: { value: 'MismatchPass1' } });
-
-  const submitButton = screen.getByRole('button', { name: /Sign Up/i });
-  await userEvent.click(submitButton);
-
-  const errorMessage = await screen.findByText(/Passwords do not match./i);
-  expect(errorMessage).toBeInTheDocument();
-});
-
-test('does not process form if password confirmation is missing', async () => {
-  render(
-    <MemoryRouter initialEntries={['/signup']}>
-      <Routes>
-        <Route path="/signup" element={<AuthForm />} />
-      </Routes>
-    </MemoryRouter>
-  );
-
-  const emailInput = screen.getByPlaceholderText('Enter your email');
-  fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-
-  const passwordInput = screen.getByPlaceholderText('Enter your password');
-  fireEvent.change(passwordInput, { target: { value: 'ValidPass1' } });
-
-  const submitButton = screen.getByRole('button', { name: /Sign Up/i });
-  await userEvent.click(submitButton);
-
-  const errorMessage = await screen.findByText(/Please confirm your password./i);
-  expect(errorMessage).toBeInTheDocument();
 });
