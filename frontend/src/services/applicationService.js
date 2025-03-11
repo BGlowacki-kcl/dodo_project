@@ -19,7 +19,7 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
+// TODO: do .json() on all responses
 export async function getAllUserApplications() {
   const response = await fetch('/api/application/all', {
     method: 'GET',
@@ -28,13 +28,13 @@ export async function getAllUserApplications() {
       'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
     }
   })
-  console.log("RES: ",response);
   checkTokenExpiration(response);
 
-  if (!response.data.success) {
+  const data = await response.json();
+  if (!data.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
   }
-  return response.data.data;
+  return data.data;
 }
 
 export async function getApplicationById(appId) {
