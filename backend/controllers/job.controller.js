@@ -136,3 +136,39 @@ export const getAllJobLocations = async (req, res) => {
       });
     }
   };
+
+export const getAllJobTypes = async (req, res) => {
+    try {
+        console.log("Fetching all job types");
+        const employmentType = await Job.distinct('employmentType');
+        console.log("Found employmentTypes:", employmentType);
+        res.status(200).json(employmentType);
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ 
+        message: "Failed to fetch job types",
+        error: error.message 
+        });
+    }
+};
+
+export const getFilteredJobs = async (req, res) => {
+    try {
+        const { jobType, location, role } = req.query;
+
+        const filter = {};
+
+        // Convert single values to arrays if needed and apply filters
+        if (jobType) filter.employmentType = Array.isArray(jobType) ? { $in: jobType } : jobType;
+        if (location) filter.location = Array.isArray(location) ? { $in: location } : location;
+        if (role) filter.title = Array.isArray(role) ? { $in: role } : role;
+
+        console.log("Fetching jobs with filters:", filter);
+
+        const jobs = await Job.find(filter);
+        res.status(200).json(jobs);
+    } catch (error) {
+        console.error("Error fetching filtered jobs:", error);
+        res.status(500).json({ message: "Failed to fetch jobs", error: error.message });
+    }
+};
