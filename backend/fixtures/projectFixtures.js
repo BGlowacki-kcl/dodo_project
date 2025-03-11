@@ -1,0 +1,22 @@
+export const projectList = [
+    "Developed a full-stack job portal using the MERN stack, featuring user authentication, job listings, and real-time notifications.",
+    "Built an AI-based resume parser with Python and natural language processing to automate candidate screening and skill extraction.",
+    "Contributed to several open-source web development projects, focusing on bug fixes, feature enhancements, and documentation improvements.",
+    "Designed and implemented a scalable microservices architecture for a high-traffic e-commerce platform, using Docker and Kubernetes.",
+    "Implemented CI/CD pipelines with Jenkins, Docker, and GitHub Actions to streamline testing and deployment processes, reducing release times by 50%.",
+    "Developed a cross-platform mobile application using React Native, enabling on-demand service bookings with integrated payment processing.",
+    "Created an interactive data visualization dashboard with D3.js and Chart.js, providing real-time business analytics for key performance indicators.",
+    "Built an online learning management system featuring video streaming, interactive quizzes, and discussion boards for enhanced student engagement.",
+    "Developed an IoT-based smart home automation solution using Node.js, MQTT, and Raspberry Pi to control lighting, security, and energy management.",
+    "Implemented a blockchain-based voting system ensuring secure, transparent, and tamper-proof election processes.",
+    "Created a virtual reality (VR) immersive experience using Unity and C#, designed for educational simulations and interactive training modules.",
+    "Developed an intelligent chatbot with TensorFlow and Python to handle customer support queries, reducing response times significantly.",
+    "Built a recommendation engine leveraging collaborative filtering and machine learning to personalize user content across digital platforms.",
+    "Created a serverless application using AWS Lambda, API Gateway, and DynamoDB to build scalable, cost-effective backend services.",
+    "Developed an augmented reality (AR) application with ARKit and Swift, integrating digital overlays with live camera feeds for enhanced user experiences.",
+    "Implemented a multi-tenant Software-as-a-Service (SaaS) platform with advanced user management, security features, and customizable dashboards.",
+    "Built a real-time messaging application using Node.js and WebSocket, ensuring low latency communication for chat and collaboration tools.",
+    "Created a custom content management system (CMS) using PHP and MySQL, tailored to specific client requirements and branding.",
+    "Developed a social media analytics tool using Python and data mining techniques, providing insights into user behavior and trends.",
+    "Built a progressive web app (PWA) that offers an app-like experience on the web with offline capabilities, responsive design, and push notifications."
+];
