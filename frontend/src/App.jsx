@@ -15,7 +15,6 @@ import EditJobPost from './pages/employer/EditJobPost.jsx';
 import UserJobsPage from './pages/user/UserJobsPage.jsx';
 import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
-import EmployerSignIn from "./pages/employer/EmployerSignIn.jsx";
 import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAss';
@@ -71,6 +70,7 @@ function App() {
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
+		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
 
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }

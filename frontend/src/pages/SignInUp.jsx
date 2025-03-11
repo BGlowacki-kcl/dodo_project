@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { Link } from 'react-router-dom';
-import { Checkbox, FormControlLabel } from '@mui/material';
 import { useNotification } from '../context/notification.context';
 
 const AuthForm = () => {
@@ -13,7 +12,6 @@ const AuthForm = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const location = useLocation();
@@ -27,7 +25,6 @@ const AuthForm = () => {
     setConfirmPassword('');
     setError(null);
     setShowPassword(false);
-    setIsEmployer(false);
   }, [location.pathname]);
 
   // Check if pssword is strong, passes all the t
@@ -53,12 +50,12 @@ const AuthForm = () => {
         if (!isPasswordStrong(password)) {
           throw new Error("Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.");
         }
-      }
+      }    
 
-      //  Redirect after checking profile completion
+      // Always sign up as job seeker
       await (isLogin 
         ? authService.signIn(email, password, navigate) 
-        : authService.signUp(email, password, isEmployer, navigate));
+        : authService.signUp(email, password, false, navigate));     
       
       const successMessage = isLogin ? 'Sign in successful!' : 'Sign up successful! Please complete your profile.';
       showNotification(successMessage, 'success');
@@ -78,10 +75,10 @@ const AuthForm = () => {
       {/* The main Sign in or up form component */}
       <div className="bg-white shadow-lg rounded-lg p-8 w-96">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">
-          {isLogin ? 'Welcome Back!' : 'Create an Account'}
+          {isLogin ? 'Welcome Back!' : 'Create Job Seeker Account'}
         </h2>
         <p className="text-sm text-gray-500 text-center mb-6">
-          {isLogin ? 'Sign in to continue' : 'Join us today!'}
+          {isLogin ? 'Sign in to continue' : 'Start your job search today!'}
         </p>
 
         {error && (
@@ -91,6 +88,7 @@ const AuthForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
           {/* Email field */}
           <div>
             <label className="text-sm font-medium text-gray-700">Email</label>
@@ -135,9 +133,7 @@ const AuthForm = () => {
                 required
                 className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
               />
-              <FormControlLabel control={<Checkbox onChange={(e) => setIsEmployer(e.target.value)} />} label="Is employer?" />
             </div>
-            
           )}
 
           {/* Submit form button */}
@@ -175,6 +171,12 @@ const AuthForm = () => {
             className="ml-2 text-blue-500 font-medium hover:text-blue-700"
           >
             {isLogin ? 'Sign Up' : 'Sign In'}
+          </Link>
+        </div>
+
+        <div className="text-center mt-4">
+          <Link to="/employer-login" className="text-sm text-blue-500 hover:text-blue-700">
+            Are you an employer? Sign in here
           </Link>
         </div>
       </div>

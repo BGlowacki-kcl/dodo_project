@@ -103,7 +103,7 @@ const Navbar = () => {
             alt="Logo"
           />
         </Link>
-        <button onClick={handleSignOut} >Sign out</button>
+       
 
         {isEmployer ? (
           // Employer Navigation: Shows the ProfileDropdown

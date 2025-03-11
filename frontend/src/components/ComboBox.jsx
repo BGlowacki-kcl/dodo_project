@@ -26,9 +26,9 @@ const ComboBox = ({ label, options, onSelect }) => {
           onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
         />
 
-        {/* Dropdown options */}
+        {/* Dropdown options with scrolling and max 5 visible */}
         {dropdownOpen && (
-          <ul className="absolute z-10 mt-1 bg-primary rounded-sm shadow-lg w-full">
+          <ul className="absolute z-10 mt-1 bg-primary rounded-sm shadow-lg w-48 max-h-60 overflow-y-auto border border-gray-300">
             {options
               .filter((option) =>
                 option.toLowerCase().includes(inputValue.toLowerCase())
