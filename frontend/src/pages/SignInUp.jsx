@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+// SingInUp page handles logging in and signing up forms depending on the url
+
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 import { Link } from 'react-router-dom';
@@ -6,17 +8,18 @@ import { Checkbox, FormControlLabel } from '@mui/material';
 import { useNotification } from '../context/notification.context';
 
 const AuthForm = () => {
-  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const isLogin = location.pathname === '/signin';
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isEmployer, setIsEmployer] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  const location = useLocation();
   const navigate = useNavigate();
   const showNotification = useNotification();
+  const isLogin = location.pathname === '/signin';
 
   useEffect(() => {
     setEmail('');
@@ -27,6 +30,7 @@ const AuthForm = () => {
     setIsEmployer(false);
   }, [location.pathname]);
 
+  // Check if pssword is strong, passes all the t
   const isPasswordStrong = (password) => {
     return password.length >= 8 && 
            /[A-Z]/.test(password) && 
@@ -34,12 +38,14 @@ const AuthForm = () => {
            /[0-9]/.test(password);
   };
 
+  // Send request to sign user in or up depending on the page's url to the auth service
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
+      // Check password constraints and missmatch
       if (!isLogin) {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match.");
@@ -69,6 +75,7 @@ const AuthForm = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      {/* The main Sign in or up form component */}
       <div className="bg-white shadow-lg rounded-lg p-8 w-96">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">
           {isLogin ? 'Welcome Back!' : 'Create an Account'}
@@ -84,6 +91,7 @@ const AuthForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email field */}
           <div>
             <label className="text-sm font-medium text-gray-700">Email</label>
             <input
@@ -95,7 +103,7 @@ const AuthForm = () => {
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
             />
           </div>
-
+          {/* Password field */}
           <div className="relative">
             <label className="text-sm font-medium text-gray-700">Password</label>
             <input
@@ -115,6 +123,7 @@ const AuthForm = () => {
             </button>
           </div>
 
+          {/* Confirm password field (only if signing up) */}
           {!isLogin && (
             <div>
               <label className="text-sm font-medium text-gray-700">Confirm Password</label>
@@ -131,6 +140,7 @@ const AuthForm = () => {
             
           )}
 
+          {/* Submit form button */}
           <button 
             type="submit" 
             disabled={loading}
@@ -140,7 +150,8 @@ const AuthForm = () => {
           >
             {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up'}
           </button>
-
+          
+          {/* Additional functionality and information */}
           <div className="text-center mt-4">
             {isLogin ? (
               <Link to="#" className="text-sm text-blue-500 hover:text-blue-700">
@@ -154,6 +165,7 @@ const AuthForm = () => {
           </div>
         </form>
 
+        {/* Switch between sign in and sign up form */}
         <div className="text-center mt-4">
           <span className="text-gray-600 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"} 
