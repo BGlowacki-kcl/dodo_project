@@ -9,6 +9,7 @@ import {
     getJobCountByType,
     getAllJobRoles,
     getAllJobLocations,
+    getJobsByEmployer,
 } from '../controllers/job.controller.js';
 import { checkRole } from '../middlewares/auth.middleware.js';
 
@@ -31,6 +32,9 @@ router.get('/:id', getJobById);
 
 // Update a job post
 router.put('/:id', updateJob);
+
+
+router.get('/employer', checkRole(['employer']), getJobsByEmployer);
 
 // Delete a job post
 router.delete('/:id', deleteJob);

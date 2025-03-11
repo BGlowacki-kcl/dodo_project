@@ -1,4 +1,5 @@
 import Job from '../models/job.model.js';
+import { Employer } from '../models/user/Employer.model.js';
 
 export const createJob = async (req, res) => {
     try {
@@ -44,6 +45,26 @@ export const getJobs = async (req, res) => {
         res.status(200).json(jobs);
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
+export const getJobsByEmployer = async (req, res) => {
+    try {
+        const { uid } = req; // This comes from auth middleware
+        
+        // Find the employer by their uid first
+        const employer = await Employer.findOne({ uid });
+        
+        if (!employer) {
+            return res.status(404).json({ message: 'Employer not found' });
+        }
+
+        // Then find all jobs posted by this employer using their MongoDB _id
+        const jobs = await Job.find({ postedBy: employer._id });
+        
+        res.status(200).json(jobs);
+    } catch (error) {
+        console.error('Error fetching employer jobs:', error);
         res.status(500).json({ message: error.message });
     }
 };
