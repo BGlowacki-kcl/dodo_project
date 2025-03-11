@@ -57,8 +57,4 @@ const userSchema = new Schema({
 { discriminatorKey: "role", collection: "users" }
 );
 
-
-// const User = mongoose.model("User", userSchema);          ISSUE WITH THIS and other files importing?
-// export default User;
-const User = mongoose.model("User", userSchema);
-export { User };
+export default mongoose.model("User", userSchema);

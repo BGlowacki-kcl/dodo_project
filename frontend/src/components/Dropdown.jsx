@@ -26,7 +26,7 @@ const Dropdown = ({ label, options, onSelect }) => {
 
         {/* Dropdown Menu */}
         {dropdownOpen && (
-          <ul className="absolute z-10 mt-1 bg-white rounded-sm shadow-lg w-48">
+          <ul className="absolute z-10 mt-1 bg-white rounded-sm shadow-lg w-48 max-h-60 overflow-y-auto border border-gray-300">
             {options.map((option) => (
               <li
                 key={option}

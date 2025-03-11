@@ -16,11 +16,10 @@ const jobApplicationSchema = new Schema({
 
   status: {
     type: String,
-    enum: ['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'hired'],
+    enum: ['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted'],
     default: 'applying'
   },
 
-  // if we want a coverletter or anything else linked to the job application
   coverLetter: String,
 
   submittedAt: {
@@ -28,7 +27,7 @@ const jobApplicationSchema = new Schema({
     default: Date.now
   },
 
-  assessmets: [{
+  assessments: [{
     type: Schema.Types.ObjectId,
     ref: 'Assessment'
   }],

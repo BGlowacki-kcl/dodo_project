@@ -1,19 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById, withdrawApplication } from "../../services/applicationService";
+import { useNotification } from "../../context/notification.context";
 
 /* 
   SingleApplicationPage:
   This page displays details of a specific job application.
   It fetches application data based on the application ID retrieved from the URL.
 */
-
 function SingleApplicationPage() {
     const { appId } = useParams();    // Get application ID from URL parameters
     const navigate = useNavigate();    // Hook for navigation
     const [application, setApplication] = useState(null);    // State to store application details
     const hasFetched = useRef(false);    // Ref to prevent multiple fetches
     const [codeChallenge, setCodeChallenge] = useState(false);    // State to track if the application requires a code challenge
+    const showNotification = useNotification();
 
     // Fetches application details
     useEffect(() => {
@@ -25,20 +26,21 @@ function SingleApplicationPage() {
           setApplication(data.data);
           console.log(data.data);
           // Check if the application status requires a code challenge
-          if(data.data.status == "code challenge") {
+          if(data.data && data.data.status == "code challenge") {
             setCodeChallenge(true);
           }
           // Handle unauthorized or failed fetch scenarios
           if (data.status && data.status == 403) {
-              alert(data.message);
+              showNotification(data.message);
               navigate("/user/applications");
               return;
           }
           if(data.status && data.status != 200) {
-            alert("Failed to fetch application");
+            showNotification("Failed to fetch application");
             navigate("/user/applications");
             return;
           }    
+          setApplication(data.data);
         }
         fetchApp();
     }, [appId, navigate]);

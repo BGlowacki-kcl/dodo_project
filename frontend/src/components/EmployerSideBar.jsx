@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { authService } from '../services/auth.service';
 
 const EmployerSideBar = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
-    const handleSignOut = () => {
-        navigate('/');
+    const handleSignOut = async () => {
+        try {
+            await authService.signOut();
+            navigate('/');
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
     };
 
     const toggleCollapse = () => {
