@@ -21,7 +21,15 @@ api.interceptors.request.use(
 );
 
 export async function getAllUserApplications() {
-  const response = await api.get(`/application/all`);
+  const response = await fetch('/api/application/all', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  })
+  console.log("RES: ",response);
+  checkTokenExpiration(response);
 
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
@@ -31,7 +39,14 @@ export async function getAllUserApplications() {
 
 export async function getApplicationById(appId) {
   try{
-    const response = await api.get(`/application/byId?id=${appId}`);
+    const response = await fetch(`/api/application/byId?id=${appId}`, {
+      method: 'GET',
+      headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        }
+    });
+    checkTokenExpiration(response);
     if (!response.data.success) {
       throw new Error(response.data.message || "Failed to fetch application");
     }
@@ -45,10 +60,17 @@ export async function getApplicationById(appId) {
 }
 
 export async function applyToJob({ jobId, coverLetter }) {
-  const response = await api.post("/application/apply", {
-    jobId,
-    coverLetter
-  });
+  const response = await fetch('/api/application/apply', {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({
+      jobId,
+      coverLetter
+    })
+  })
   checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to apply");
@@ -57,7 +79,14 @@ export async function applyToJob({ jobId, coverLetter }) {
 }
 
 export async function withdrawApplication(appId) {
-  const response = await api.delete(`/application/withdraw?id=${appId}`);
+  const response = await fetch(`/api/application/withdraw?id=${appId}`, {
+    method: 'DELETE',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  });
+  checkTokenExpiration(response);
   if (!response.data.success) {
     throw new Error(response.data.message || "Failed to withdraw");
   }

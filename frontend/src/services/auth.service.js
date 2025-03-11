@@ -5,16 +5,13 @@ import {
     getAuth 
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNotification } from "../context/notification.context";
 
 export async function checkTokenExpiration(response) {
-    if (response.status === 401) {
+    if (response.status === 403) {
         const data = await response.json();
         if (data.action === "LOGOUT") {
             authService.signOut();
-            window.location('/signin');
-            const showNotification = useNotification();
-            showNotification("Session expired. Please sign in again", "error");
+            window.dispatchEvent(new Event("sessionExpired"));
         }
     }
 }

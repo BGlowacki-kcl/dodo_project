@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import Editor from "@monaco-editor/react";
 import { assessmentService } from '../../services/assessment.service';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useNotification } from '../../context/notification.context';
+import { checkTokenExpiration } from '../../services/auth.service';
 
 const CodeAss = () => {
   const [code, setCode] = useState(`# Write a function that takes number x and y, then returns the sum of x and y
@@ -14,10 +17,15 @@ def func(x, y):
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
   const [task, setTask] = useState("");
+  const { appId } = useParams();
+  const navigate = useNavigate();
+  const showNotification = useNotification();
 
   useState(() => {
-    const response = assessmentService.getTask();
-    setTask(response.data);
+    const fetchTasks = async () => {
+      const response = await assessmentService.getTask(appId);
+    }
+    fetchTasks();
   }, []);
 
   const handleLanguageChange = (e) => {
@@ -64,10 +72,16 @@ int func(int x, int y) {
     setError("");
     setOutput("");
     const response = await assessmentService.runCode(code, language);
+    console.log("Res: ", response);
     setLoading(false);
 
-    if(response.data.stderr != ""){
+    if(response.data.stderr && response.data.stderr != ""){
       setError(response.data.stderr);
+      return;
+    }
+    console.log("Build_err: ",response.data.build_stderr);
+    if(response.data.build_stderr && response.data.build_stderr != ""){
+      setError(response.data.build_stderr);
       return;
     }
 
