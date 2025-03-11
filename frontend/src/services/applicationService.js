@@ -1,25 +1,5 @@
-import axios from "axios";
 import { checkTokenExpiration } from "./auth.service.js";
 
-const api = axios.create({
-  baseURL: "/api", /// CHECK IF HERE
-});
-
-function getAuthToken() {
-  return sessionStorage.getItem("token");
-}
-
-api.interceptors.request.use(
-  (config) => {
-    const token = getAuthToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-// TODO: do .json() on all responses
 export async function getAllUserApplications() {
   const response = await fetch('/api/application/all', {
     method: 'GET',
@@ -30,11 +10,11 @@ export async function getAllUserApplications() {
   })
   checkTokenExpiration(response);
 
-  const data = await response.json();
-  if (!data.success) {
+  const responseJson = await response.json();
+  if (!responseJson.success) {
     throw new Error(response.data.message || "Failed to fetch applications");
   }
-  return data.data;
+  return responseJson.data;
 }
 
 export async function getApplicationById(appId) {
@@ -47,10 +27,11 @@ export async function getApplicationById(appId) {
         }
     });
     checkTokenExpiration(response);
-    if (!response.data.success) {
+    const responseJson = await response.json();
+    if (!responseJson.success) {
       throw new Error(response.data.message || "Failed to fetch application");
     }
-    return response.data;
+    return responseJson.data;
   } catch (error) {
     if(error.response.status && error.response.status === 403) {
       return {status: 403, message: "You are not authorized to view this application"};
@@ -72,10 +53,11 @@ export async function applyToJob({ jobId, coverLetter }) {
     })
   })
   checkTokenExpiration(response);
-  if (!response.data.success) {
+  const responseJson = response.json();
+  if (!responseJson.success) {
     throw new Error(response.data.message || "Failed to apply");
   }
-  return response.data.data; 
+  return responseJson.data; 
 }
 
 export async function withdrawApplication(appId) {
