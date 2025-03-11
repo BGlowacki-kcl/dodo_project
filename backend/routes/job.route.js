@@ -9,6 +9,8 @@ import {
     getJobCountByType,
     getAllJobRoles,
     getAllJobLocations,
+    getAllJobTypes,
+    getFilteredJobs
 } from '../controllers/job.controller.js';
 import { checkRole } from '../middlewares/auth.middleware.js';
 
@@ -19,6 +21,10 @@ router.get('/count/type', getJobCountByType);
 router.get('/roles', getAllJobRoles);
 
 router.get('/locations', getAllJobLocations);
+
+router.get('/employmentType', getAllJobTypes);
+
+router.get('/search', getFilteredJobs);
 
 // Create a job post
 router.post('/create', checkRole(["employer"]), createJob);

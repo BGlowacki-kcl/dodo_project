@@ -65,3 +65,17 @@ export const getAllJobLocations = async () => {
   const response = await axios.get(`api/job/locations`);
   return response.data;
 }
+
+export const getAllJobTypes = async () => {
+  const response = await axios.get(`api/job/employmentType`);
+  return response.data;
+}
+
+export const getFilteredJobs = async (filters) => {
+  const queryParams = new URLSearchParams();
+  filters.jobType?.forEach((type) => queryParams.append("jobType", type));
+  filters.location?.forEach((loc) => queryParams.append("location", loc));
+  filters.role?.forEach((role) => queryParams.append("role", role));
+  const response = await axios.get(`/api/job/search?${queryParams.toString()}`);
+  return response.data;
+};
