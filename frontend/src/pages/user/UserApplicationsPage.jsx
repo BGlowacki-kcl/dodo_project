@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { getAllUserApplications } from "../../services/applicationService"; //// any functions using applicationservice are filled with fake details for now!!!
+import { Link } from "react-router-dom"; // <-- import Link
+import { getAllUserApplications } from "../../services/applicationService";
 
 function UserApplicationsPage() {
     const [applications, setApplications] = useState([]);
-    const [viewMode, setViewMode] = useState("list"); //LIST OR GRID!!
+    const [viewMode, setViewMode] = useState("list"); // "list" or "grid"
     const [statusFilter, setStatusFilter] = useState("all"); //// update when backend
 
     useEffect(() => {
@@ -39,12 +40,20 @@ function UserApplicationsPage() {
         <p className="text-stone-200 text-lg mt-2"> Track your job applications </p>
       </div>
 
-      {/* FILTER ROW ---> CHANGE OPTIONS AND TYPES WITH UPDATED ONES*/}
+      {/* BUTTON THAT TAKES YOU TO A PAGE CALLED THE USER JOBS PAGE*/}
+      <Link
+        to="/user/jobs"
+        className="inline-block mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+      >
+        Browse Jobs
+      </Link>
+
+      {/* FILTER ROW*/}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
         {/* Status Filter */}
         <div>
-            <label className="text-white block mb-1">Filter by Status</label>
-            <select value={statusFilter} onChange={handleStatusChange} className="px-2 py-1 rounded-md border bg-white text-gray-800"  >
+            <label htmlFor="statusFilterSelect" className="text-white block mb-1">Filter by Status</label>
+            <select id="statusFilterSelect" value={statusFilter} onChange={handleStatusChange} className="px-2 py-1 rounded-md border bg-white text-gray-800"  >
                 <option value="all">All</option>
                 <option value="applied">Applied</option>
                 <option value="in review">In Review</option>

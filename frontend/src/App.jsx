@@ -23,6 +23,7 @@ import SearchResults from './pages/SearchResults'
 import AddPdf from './pages/addPdf.jsx';
 import EmployerApplicants from './pages/employer/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
+import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
 import { useNotification } from './context/notification.context';
 import { useEffect } from 'react';
 
@@ -64,7 +65,9 @@ function App() {
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
-		
+		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
+
+		//JobDetailsPage
 		// Employer accessible pages
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },

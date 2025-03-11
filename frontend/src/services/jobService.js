@@ -22,10 +22,9 @@ api.interceptors.request.use(
 
 /// change to api.---- for header
 export const getAllJobs = async () => {
-  const url = employerId ? `/api/job?postedBy=${employerId}` : `/api/job`;
-  const response = await axios.get(url);
+  const response = await axios.get(`/api/job`); 
   checkTokenExpiration(response);
-  return response.data; 
+  return response.data;
 };
 
 export const getJobById = async (id) => {
