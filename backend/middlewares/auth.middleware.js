@@ -1,5 +1,5 @@
 import admin from "../config/firebase.js";
-import {User} from "../models/user/user.model.js";
+import User from "../models/user/user.model.js";
 
 export const checkRole = (roles) => async (req, res, next) => {
         try {
@@ -29,6 +29,13 @@ export const checkRole = (roles) => async (req, res, next) => {
                 return;
             }
             const user = await User.findOne({ uid: uid });
+            if(!user){
+                res.status(403).json({ 
+                    success: false,
+                    message: 'User not found' 
+                });
+                return;
+            }
             const userRole = user.role;
 
             if (!roles.includes(userRole)) {
