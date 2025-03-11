@@ -2,24 +2,33 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById, withdrawApplication } from "../../services/applicationService";
 
+/* 
+  SingleApplicationPage:
+  This page displays details of a specific job application.
+  It fetches application data based on the application ID retrieved from the URL.
+*/
+
 function SingleApplicationPage() {
-    const { appId } = useParams();
-    const navigate = useNavigate();
-    const [application, setApplication] = useState(null);
-    const hasFetched = useRef(false);
-    const [codeChallenge, setCodeChallenge] = useState(false);
+    const { appId } = useParams();    // Get application ID from URL parameters
+    const navigate = useNavigate();    // Hook for navigation
+    const [application, setApplication] = useState(null);    // State to store application details
+    const hasFetched = useRef(false);    // Ref to prevent multiple fetches
+    const [codeChallenge, setCodeChallenge] = useState(false);    // State to track if the application requires a code challenge
 
-
+    // Fetches application details
     useEffect(() => {
         async function fetchApp() {
           if (hasFetched.current) return;
           hasFetched.current = true;
+          // Fetch application data from API
           const data = await getApplicationById(appId);
           setApplication(data.data);
           console.log(data.data);
+          // Check if the application status requires a code challenge
           if(data.data.status == "code challenge") {
             setCodeChallenge(true);
           }
+          // Handle unauthorized or failed fetch scenarios
           if (data.status && data.status == 403) {
               alert(data.message);
               navigate("/user/applications");
@@ -34,6 +43,7 @@ function SingleApplicationPage() {
         fetchApp();
     }, [appId, navigate]);
 
+    // Handle withdrawal of application
     const handleWithdraw = async () => {
         if (!window.confirm("Are you sure you want to withdraw this application?")) {
             return;
@@ -48,7 +58,7 @@ function SingleApplicationPage() {
             alert("Failed to withdraw application.");
         }
     };
-    ////// color badge helper for status
+    ////// Helper function to return appropriate badge color for application status
     const getStatusBadgeClass = (status) => {
         switch (status) {
           case "applied":
@@ -68,6 +78,8 @@ function SingleApplicationPage() {
         }
       };
 
+
+    // Show loading message while fetching application data  
     if (!application) {
         return (
         <div className="bg-slate-900 min-h-screen flex items-center justify-center"> 
