@@ -147,14 +147,6 @@ const Navbar = () => {
                 Home
               </Link>
             </li>
-            <li>
-              <Link
-                to="/about"
-                className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"
-              >
-                About Us
-              </Link>
-            </li>
             <li className="relative group">
               <Link
                 to="#"

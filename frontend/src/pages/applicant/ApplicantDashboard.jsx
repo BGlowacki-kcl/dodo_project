@@ -16,9 +16,9 @@ const ApplicantDashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray flex">
+        <div className="min-h-screen flex">
             {/* Sidebar */}
-            <div className="w-64 bg-[#1B2A41] shadow-lg p-4 border-r border-[#324A5F] flex flex-col h-screen">
+            <div className="w-64 bg-[#1B2A41] shadow-lg p-4 border-r border-[#324A5F] flex flex-col min-h-screen">
                 <nav className="space-y-2">
                     <button
                         onClick={() => setActiveView("activity")}
@@ -64,7 +64,7 @@ const ApplicantDashboard = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 p-8 max-w-7xl mx-auto ">
+            <div className="flex-1 p-8 max-w-7xl mx-auto">
                 {activeView === "activity" && <ApplicantActivity />}
                 {activeView === "shortlist" && <ApplicantShortlist />}
                 {activeView === "profile" && <ApplicantProfile />}
