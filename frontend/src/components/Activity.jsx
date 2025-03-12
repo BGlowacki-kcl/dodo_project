@@ -15,7 +15,7 @@ const ApplicantActivity = ({ userId }) => {
                 setApplications(applications);
                 setApplicationsSent(applications.length);
                 setRejections(applications.filter(app => app.status === 'rejected').length);
-                setAcceptances(applications.filter(app => app.status === 'hired').length);
+                setAcceptances(applications.filter(app => app.status === 'accepted').length);
             } catch (error) {
                 console.error('Error fetching applications:', error);
             }
