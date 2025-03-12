@@ -1,39 +1,51 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById, withdrawApplication } from "../../services/applicationService";
+import { useNotification } from "../../context/notification.context";
 
+/* 
+  SingleApplicationPage:
+  This page displays details of a specific job application.
+  It fetches application data based on the application ID retrieved from the URL.
+*/
 function SingleApplicationPage() {
-    const { appId } = useParams();
-    const navigate = useNavigate();
-    const [application, setApplication] = useState(null);
-    const hasFetched = useRef(false);
-    const [codeChallenge, setCodeChallenge] = useState(false);
+    const { appId } = useParams();    // Get application ID from URL parameters
+    const navigate = useNavigate();    // Hook for navigation
+    const [application, setApplication] = useState(null);    // State to store application details
+    const hasFetched = useRef(false);    // Ref to prevent multiple fetches
+    const [codeChallenge, setCodeChallenge] = useState(false);    // State to track if the application requires a code challenge
+    const showNotification = useNotification();
 
-
+    // Fetches application details
     useEffect(() => {
         async function fetchApp() {
           if (hasFetched.current) return;
           hasFetched.current = true;
+          // Fetch application data from API
           const data = await getApplicationById(appId);
           setApplication(data.data);
           console.log(data.data);
-          if(data.data.status == "code challenge") {
+          // Check if the application status requires a code challenge
+          if(data.data && data.data.status == "code challenge") {
             setCodeChallenge(true);
           }
+          // Handle unauthorized or failed fetch scenarios
           if (data.status && data.status == 403) {
-              alert(data.message);
+              showNotification(data.message);
               navigate("/user/applications");
               return;
           }
           if(data.status && data.status != 200) {
-            alert("Failed to fetch application");
+            showNotification("Failed to fetch application");
             navigate("/user/applications");
             return;
           }    
+          setApplication(data.data);
         }
         fetchApp();
     }, [appId, navigate]);
 
+    // Handle withdrawal of application
     const handleWithdraw = async () => {
         if (!window.confirm("Are you sure you want to withdraw this application?")) {
             return;
@@ -48,7 +60,7 @@ function SingleApplicationPage() {
             alert("Failed to withdraw application.");
         }
     };
-    ////// color badge helper for status
+    ////// Helper function to return appropriate badge color for application status
     const getStatusBadgeClass = (status) => {
         switch (status) {
           case "applied":
@@ -68,6 +80,8 @@ function SingleApplicationPage() {
         }
       };
 
+
+    // Show loading message while fetching application data  
     if (!application) {
         return (
         <div className="bg-slate-900 min-h-screen flex items-center justify-center"> 
@@ -78,7 +92,6 @@ function SingleApplicationPage() {
 
     const { job, status, coverLetter, submittedAt } = application;
     const formattedDate = new Date(submittedAt).toLocaleString();
-        ////////// fill in stuff here with real stuff from backend
     return (
         <div className="bg-slate-900 min-h-screen w-full flex flex-col items-center px-4 py-8">
             <div className="max-w-xl w-full bg-white p-6 rounded-md shadow-md">
@@ -116,7 +129,7 @@ function SingleApplicationPage() {
                 <div className="flex items-center space-x-4 mt-6">
                 {/* Can link to another more detailed job details page */}
                 {job?._id && (
-                    <button onClick={() => navigate(`/user/jobs/${job._id}`)} className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200" > View Job Listing </button>
+                    <button onClick={() => navigate(`/user/jobs/details/${job._id}`)} className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200" > View Job Listing </button>
                 )}
 
                 {codeChallenge && (

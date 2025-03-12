@@ -1,5 +1,5 @@
+import { checkTokenExpiration } from "./auth.service";
 const API_BASE_URL = "/api/user";
-import { checkTokenExpiration } from "../services/auth.service";
 
 export const userService = {
     async updateUser(userData) {

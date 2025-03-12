@@ -5,16 +5,13 @@ import {
     getAuth 
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNotification } from "../context/notification.context";
 
 export async function checkTokenExpiration(response) {
-    if (response.status === 401) {
+    if (response.status === 403) {
         const data = await response.json();
         if (data.action === "LOGOUT") {
             authService.signOut();
-            window.location('/signin');
-            const showNotification = useNotification();
-            showNotification("Session expired. Please sign in again", "error");
+            window.dispatchEvent(new Event("sessionExpired"));
         }
     }
 }
@@ -95,6 +92,35 @@ export const authService = {
         } catch (error) {
             console.error("SignIn error: ", error);
             throw new Error('Invalid email or password');
+        }
+    },
+
+    async verifyUserRole(email, expectedRole) {
+        try {
+            const token = sessionStorage.getItem('token');
+            const response = await fetch('/api/user/role', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            
+
+            const data = await response.json();
+            if (data.data !== expectedRole) {
+                throw new Error(
+                    expectedRole === 'employer' 
+                        ? 'Please use the employer login page' 
+                        : 'Please use the jobseeker login page'
+                );
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Role verification error:', error);
+            throw error;
         }
     },
 

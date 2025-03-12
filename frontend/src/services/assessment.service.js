@@ -1,7 +1,12 @@
+import { checkTokenExpiration } from "./auth.service";
 
 export const assessmentService = {
     async runCode(code, language){
-        if(code.includes("print") && language === "python" || code.includes("console.log") && language === "javascript" || code.includes("cout") && language === "cpp") {
+        if(
+            (code.includes("print") && language === "python") || 
+            (code.includes("console.log") && language === "javascript") || 
+            (code.includes("cout") && language === "cpp")
+        ) {
             return {data: {stderr: "You cannot use output statement in your code"}};
         }
         const tests = [
@@ -46,42 +51,28 @@ export const assessmentService = {
                 output: 17,
             },
         ]
-        const testCases = generateTestCode(tests, language)
-        if(testCases === "") {
-            return {data: {stderr: "Failed to generate test cases"}};
-        }
-        const executeTestsCode = generateExecuteTestsCode(language);
-        code += testCases + executeTestsCode;
-
+        
+        code += constructCode(tests,  language);
         console.log("Code: ", code, "...");
-        const response = await fetch('/api/code', {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                //'Authorization': `Bearer ${idToken}`,
-            },
-            body: JSON.stringify({
-                source_code: code,
-                language: language,
-            })
-        });
-        const responseJson = await response.json();
-        checkTokenExpiration(responseJson);
-        if (!response.ok) {
-            throw new Error("Failed to run code");
-        }
 
-        const data = await response.json();
-        console.log("Code: ",data);
-        if(data.data.status === "running") {
-            const executionDetails = await getExecutionDetails(data.data.id);
-            console.log("--------------",executionDetails);
-            return { data : executionDetails};
-        }
+        const codeSendResponse = await sendCode(code, language);
+        checkTokenExpiration(codeSendResponse);
+
+        const id = codeSendResponse.data.id;
+        let counter = 0;
+        let data;
+        do {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            data = await getExecutionDetails(id);
+            data = await data.json();
+            if (data.status !== "running") break;
+            counter++;
+        } while(counter < 7)
+
         return data;
     },
 
-    async getTask() {
+    async getTask(appId) {
         
     },
     async getTests() {
@@ -89,25 +80,52 @@ export const assessmentService = {
     }
 }  
 
+async function sendCode(code, language){
+    const response = await fetch('/api/assessment/send', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+            source_code: code,
+            language: language,
+        })
+    });
+    checkTokenExpiration(response);
+    if (!response.ok) {
+        return response;
+    }
+    const data = await response.json();
+    
+    return data;
+}
+
+function constructCode(tests, language) {
+    const testCases = generateTestCode(tests, language)
+    if(testCases === "") {
+        return {data: {stderr: "Failed to generate test cases"}};
+    }
+    const executeTestsCode = generateExecuteTestsCode(language);
+    return testCases + executeTestsCode;
+}
+
 async function getExecutionDetails(id) {
-    const url = `https://paiza-io.p.rapidapi.com/runners/get_details?id=${id}`;
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(`/api/assessment/status?id=${id}`, {
             method: 'GET',
             headers: {
-                'x-rapidapi-host': 'paiza-io.p.rapidapi.com',
-                'x-rapidapi-key': '4681e248b1msh30ecf173f9bcb36p1b67aejsnb530c30fe769'
-            }
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
         });
 
         if (!response.ok) {
             throw new Error("Failed to fetch execution details");
         }
 
-        const data = await response.json();
-        console.log("Execution Details: ", data);
-        return data;
+        return response;
     } catch (error) {
         console.error("Error:", error);
         return { error: error.message };
@@ -174,7 +192,7 @@ void runTests(vector<pair<vector<int>, int>> testCases, string testType) {
     for (size_t i = 0; i < testCases.size(); i++) {
         vector<int> args = testCases[i].first;
         int expected_output = testCases[i].second;
-        int actual_output = func(args[0], args[1]);  // Assuming 2 inputs for simplicity
+        int actual_output = func(args[0], args[1]); 
 
         if (actual_output == expected_output) {
             cout << "Test " << i + 1 << ": Test PASSED " << testType << endl;

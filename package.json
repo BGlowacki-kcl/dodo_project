@@ -12,9 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@babel/core": "^7.26.8",
     "@babel/node": "^7.26.0",
-    "@babel/preset-env": "^7.26.8",
     "@faker-js/faker": "^9.5.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -27,9 +25,13 @@
     "vite": "^6.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.9",
+    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
     "@eslint/js": "^9.19.0",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.14",
+    "babel-jest": "^29.7.0",
     "chai": "^5.1.2",
     "cross-env": "^7.0.3",
     "eslint": "^9.19.0",
