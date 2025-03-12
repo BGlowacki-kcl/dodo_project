@@ -24,6 +24,9 @@ import SearchResults from './pages/SearchResults'
 import AddPdf from './pages/addPdf.jsx';
 import EmployerApplicants from './pages/employer/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
+import { useNotification } from './context/notification.context';
+import { useEffect } from 'react';
+import Apply from './pages/applicant/Apply';
 
 function App() {
 	const routeConfig = [
@@ -45,11 +48,12 @@ function App() {
 		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
 		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
+		{ path: '/apply/', element: <Apply />, roles: ['jobSeeker'] },
 		
 		// Employer accessible pages
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
+		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
