@@ -59,22 +59,19 @@ function App() {
 		
 		// jobSeeker accessible pages
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
-		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
 		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
-		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
 		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
-
-		//JobDetailsPage
+		
 		// Employer accessible pages
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
-		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
+		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },	
 		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
+		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
-		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
+		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
 
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	  ];
