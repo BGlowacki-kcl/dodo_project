@@ -30,9 +30,11 @@ def func(x, y):
     const fetchTasks = async () => {
       const response = await assessmentService.getTask(appId);
       setTask(response.data);
+      console.log("Task: ", response.data);
     }
+    console.log("FETCHING");
     fetchTasks();
-  }, []);
+  }, [appId]);
 
   const handleLanguageChange = (e) => {
     const userConfirmed = window.confirm("The current progress will not be saved. Do you wish to proceed?");
@@ -66,7 +68,7 @@ function func(x, y) {
 
 using namespace std;
 
-int func(${funcForCpp}) {
+int func(int x, int y) { //here
   // Write your code here
 
   return 0;
@@ -79,7 +81,7 @@ int func(${funcForCpp}) {
     setLoading(true);
     setError("");
     setOutput("");
-    const response = await assessmentService.runCode(code, language);
+    const response = await assessmentService.runCode(code, language, task.tests, task.funcForCppTests);
     console.log("Res: ", response);
     setLoading(false);
 

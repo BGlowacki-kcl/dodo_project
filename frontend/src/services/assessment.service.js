@@ -1,7 +1,7 @@
 import { checkTokenExpiration } from "./auth.service";
 
 export const assessmentService = {
-    async runCode(code, language){
+    async runCode(code, language, tests, funcForCppTest){
         if(
             (code.includes("print") && language === "python") || 
             (code.includes("console.log") && language === "javascript") || 
@@ -9,50 +9,50 @@ export const assessmentService = {
         ) {
             return {data: {stderr: "You cannot use output statement in your code"}};
         }
-        const tests = [
-            {
-                input: [1, 2],
-                output: 3,
-            },
-            {
-                input: [3, 4],
-                output: 7,
-            },
-            {
-                input: [5, 6],
-                output: 11,
-            },
-            {
-                input: [10, 6],
-                output: 16,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-        ]
+        // const tests = [
+        //     {
+        //         input: [1, 2],
+        //         output: 3,
+        //     },
+        //     {
+        //         input: [3, 4],
+        //         output: 7,
+        //     },
+        //     {
+        //         input: [5, 6],
+        //         output: 11,
+        //     },
+        //     {
+        //         input: [10, 6],
+        //         output: 16,
+        //     },
+        //     {
+        //         input: [11, 6],
+        //         output: 17,
+        //     },
+        //     {
+        //         input: [11, 6],
+        //         output: 17,
+        //     },
+        //     {
+        //         input: [11, 6],
+        //         output: 17,
+        //     },
+        //     {
+        //         input: [11, 6],
+        //         output: 17,
+        //     },
+        //     {
+        //         input: [11, 6],
+        //         output: 17,
+        //     },
+        //     {
+        //         input: [11, 6],
+        //         output: 17,
+        //     },
+        // ]
         
-        code += constructCode(tests,  language);
+        code += constructCode(tests,  language, funcForCppTest);
         console.log("Code: ", code, "...");
 
         const codeSendResponse = await sendCode(code, language);
@@ -73,17 +73,19 @@ export const assessmentService = {
     },
 
     async getTask(appId) {
-        const response = fetch(`api/assessment/task?${appId}`,{
+        const response = await fetch(`/api/assessment/task?id=${appId}`,{
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
                 'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
             },
         });
+        checkTokenExpiration(response);
         if(!response.ok){
             return response;
         }
-        const data = response.json();
+        const data = await response.json();
+        console.log("MMMMM: ",data);
         return data;
     },
 }  
@@ -109,12 +111,12 @@ async function sendCode(code, language){
     return data;
 }
 
-function constructCode(tests, language) {
+function constructCode(tests, language, funcForCppTest) {
     const testCases = generateTestCode(tests, language)
     if(testCases === "") {
         return {data: {stderr: "Failed to generate test cases"}};
     }
-    const executeTestsCode = generateExecuteTestsCode(language, "args[0], args[1]");
+    const executeTestsCode = generateExecuteTestsCode(language, funcForCppTest);
     return testCases + executeTestsCode;
 }
 

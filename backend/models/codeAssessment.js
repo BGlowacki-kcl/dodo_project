@@ -1,6 +1,6 @@
-const { Schema } = mongoose;
+import mongoose from "mongoose";
 
-const codeAssessmentSchema = new Schema({
+const codeAssessmentSchema = new mongoose.Schema({
     title: String,
     description: String,
         
@@ -10,8 +10,8 @@ const codeAssessmentSchema = new Schema({
     },
     testCases: [
         {
-            input: [Schema.Types.Mixed],
-            output: [Schema.Types.Mixed]
+            input: [mongoose.Schema.Types.Mixed],
+            output: [mongoose.Schema.Types.Mixed]
         }
     ],
     funcForCpp: String,

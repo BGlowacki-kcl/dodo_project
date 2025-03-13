@@ -1,6 +1,7 @@
-const { Schema } = mongoose;
+import mongoose from "mongoose";
+import { Schema } from "mongoose";
 
-const codeSubmissionSchema = new Schema({
+const codeSubmissionSchema = new mongoose.Schema({
     // if we use a third party we can link to a third party submission or something like that
     assessment: {
         type: Schema.Types.ObjectId,
@@ -39,4 +40,4 @@ const codeSubmissionSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('CodeSubmission', codeSubmissionSchema);
+export default mongoose.model('CodeSubmission', codeSubmissionSchema);

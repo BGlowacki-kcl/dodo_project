@@ -1,5 +1,7 @@
-import CodeAssessment from "../models/codeAssessment";
-import CodeSubmission from "../models/codeSubmission";
+import CodeAssessment from "../models/codeAssessment.js";
+import CodeSubmission from "../models/codeSubmission.js";
+import Application from "../models/application.model.js";
+import User from "../models/user/user.model.js";
 
 const assessmentController = {
     async sendCode(req, res) {
@@ -49,14 +51,21 @@ const assessmentController = {
     async getTask(req, res) {
         try {
             const { id } = req.query;
+            const { uid } = req;
             if(!id){
                 return res.status(400).json({ message: "No id provided"});
             }
-            const assessment = CodeAssessment.findOne({ _id: id });
-            if(!assessment){
-                return res.status(401).json({ message: "Assessment not found"});
+            const application = Application.findOne({ _id: id })
+            const user = User.findOne({ uid: uid });
+            if(application.applicant != user){
+                return res.status(403).json({ message: "User not authorized" });
             }
-            return res.status(200).json({ message: "Successfully retrived aassessment", data: assessment});
+            const assessments = application.assessment;
+            if(!assessments){
+                return res.status(400).json({ message: "No assessment required for this application" });
+            }
+            // TODO: Check submitted and take the next not submitted task
+            res.status(200).json({ message: "Successfully retrived aassessment", data: assessments});
         } catch (err) {
             return res.status(500).json({ message: "Error: "+err.message });
         }
@@ -67,7 +76,7 @@ const assessmentController = {
     },
 
     async createAss(req, res){
-        const assessment = {
+        const {
             title,
             description,
             difficulty,
@@ -83,8 +92,8 @@ const assessmentController = {
             funcForCpp,
             funcForCppTest
         })
-        const assessmentAdded = await assessment.save();
-        return res.status(200).json({ message: "assessment added successfully" });
+        const assessmentAdded = await newAssessment.save();
+        return res.status(200).json({ message: "assessment added successfully", data: assessmentAdded });
     }
 }
 
