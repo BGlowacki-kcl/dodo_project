@@ -1,3 +1,6 @@
+import CodeAssessment from "../models/codeAssessment";
+import CodeSubmission from "../models/codeSubmission";
+
 const assessmentController = {
     async sendCode(req, res) {
         const { source_code, language } = req.body;
@@ -41,6 +44,47 @@ const assessmentController = {
               console.error(err);
               return res.status(500).json({ message: "Internal server error", error: err.message });
           }
+    },
+
+    async getTask(req, res) {
+        try {
+            const { id } = req.query;
+            if(!id){
+                return res.status(400).json({ message: "No id provided"});
+            }
+            const assessment = CodeAssessment.findOne({ _id: id });
+            if(!assessment){
+                return res.status(401).json({ message: "Assessment not found"});
+            }
+            return res.status(200).json({ message: "Successfully retrived aassessment", data: assessment});
+        } catch (err) {
+            return res.status(500).json({ message: "Error: "+err.message });
+        }
+    },
+    
+    async submit(req, res){
+
+    },
+
+    async createAss(req, res){
+        const assessment = {
+            title,
+            description,
+            difficulty,
+            testCases,
+            funcForCpp,
+            funcForCppTest
+        } = req.body;
+        const newAssessment = new CodeAssessment({
+            title,
+            description,
+            difficulty,
+            testCases,
+            funcForCpp,
+            funcForCppTest
+        })
+        const assessmentAdded = await assessment.save();
+        return res.status(200).json({ message: "assessment added successfully" });
     }
 }
 

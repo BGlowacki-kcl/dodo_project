@@ -16,7 +16,12 @@ def func(x, y):
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
-  const [task, setTask] = useState("");
+  const [task, setTask] = useState({
+    description: "",
+    tests: null,
+    funcForCpp: "",
+    funcForCppTests:""
+  });
   const { appId } = useParams();
   const navigate = useNavigate();
   const showNotification = useNotification();
@@ -24,12 +29,15 @@ def func(x, y):
   useState(() => {
     const fetchTasks = async () => {
       const response = await assessmentService.getTask(appId);
+      setTask(response.data);
     }
     fetchTasks();
   }, []);
 
   const handleLanguageChange = (e) => {
     const userConfirmed = window.confirm("The current progress will not be saved. Do you wish to proceed?");
+    setTestsPassed(0);
+    setOutput("");
     if(!userConfirmed) {
       e.target.value = language;
       return;
@@ -37,19 +45,19 @@ def func(x, y):
     setLanguage(e.target.value);
     let defText = "";
     if (e.target.value === "python") {
-      defText = `# Write a function that takes number x and y, then returns the sum of x and y
+      defText = `# ${task.description}
 
 def func(x, y):
   # Write your code here`;
     } else if (e.target.value === "javascript") {
-      defText = `// Write a function that takes number x and y, then returns the sum of x and y
+      defText = `// ${task.description}
 
 function func(x, y) {
   // Write your code here
 
 }`;
     } else if (e.target.value === "cpp") {
-      defText = `// Write a function that takes number x and y, then returns the sum of x and y
+      defText = `// ${task.description}
 
 #include <vector>
 #include <iostream>
@@ -58,7 +66,7 @@ function func(x, y) {
 
 using namespace std;
 
-int func(int x, int y) {
+int func(${funcForCpp}) {
   // Write your code here
 
   return 0;

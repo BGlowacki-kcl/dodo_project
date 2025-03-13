@@ -31,7 +31,7 @@ export async function getApplicationById(appId) {
     if (!responseJson.success) {
       throw new Error(response.data.message || "Failed to fetch application");
     }
-    return responseJson.data;
+    return responseJson;
   } catch (error) {
     if(error.response.status && error.response.status === 403) {
       return {status: 403, message: "You are not authorized to view this application"};

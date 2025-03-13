@@ -73,11 +73,19 @@ export const assessmentService = {
     },
 
     async getTask(appId) {
-        
+        const response = fetch(`api/assessment/task?${appId}`,{
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
+        });
+        if(!response.ok){
+            return response;
+        }
+        const data = response.json();
+        return data;
     },
-    async getTests() {
-
-    }
 }  
 
 async function sendCode(code, language){
@@ -106,7 +114,7 @@ function constructCode(tests, language) {
     if(testCases === "") {
         return {data: {stderr: "Failed to generate test cases"}};
     }
-    const executeTestsCode = generateExecuteTestsCode(language);
+    const executeTestsCode = generateExecuteTestsCode(language, "args[0], args[1]");
     return testCases + executeTestsCode;
 }
 
@@ -132,7 +140,7 @@ async function getExecutionDetails(id) {
     }
 }
 
-function generateExecuteTestsCode(language) {
+function generateExecuteTestsCode(language, funcForCpp) {
     if(language === "python") {
         return `
 for index, testCase in enumerate(testCases):
@@ -192,7 +200,7 @@ void runTests(vector<pair<vector<int>, int>> testCases, string testType) {
     for (size_t i = 0; i < testCases.size(); i++) {
         vector<int> args = testCases[i].first;
         int expected_output = testCases[i].second;
-        int actual_output = func(args[0], args[1]); 
+        int actual_output = func(${funcForCpp}); 
 
         if (actual_output == expected_output) {
             cout << "Test " << i + 1 << ": Test PASSED " << testType << endl;
