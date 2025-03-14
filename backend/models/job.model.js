@@ -57,6 +57,11 @@ const jobSchema = new Schema({
         }
     ],
 
+    assessments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Assessment'
+    }],
+
 });
 
 export default mongoose.model('Job', jobSchema);

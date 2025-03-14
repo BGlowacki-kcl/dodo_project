@@ -50,7 +50,7 @@ const assessmentController = {
 
     async getTask(req, res) {
         try {
-            const { id } = req.query;
+            const { appId, taskId } = req.query;
             const { uid } = req;
             if(!id){
                 return res.status(400).json({ message: "No id provided"});
@@ -64,8 +64,59 @@ const assessmentController = {
             if(!assessments){
                 return res.status(400).json({ message: "No assessment required for this application" });
             }
-            // TODO: Check submitted and take the next not submitted task
+            const submitted = CodeSubmission.find({ taskId: id, uid: uid });
+            
             res.status(200).json({ message: "Successfully retrived aassessment", data: assessments});
+        } catch (err) {
+            return res.status(500).json({ message: "Error: "+err.message });
+        }
+    },
+
+    async getTasksId(req, res) {
+        try {
+            const { appId } = req.query;
+            const { uid } = req;
+            if(!id){
+                return res.status(400).json({ message: "No id provided"});
+            }
+            const application = Application.findOne({ _id: appId })
+            const user = User.findOne({ uid: uid });
+            if (String(application.applicant) !== String(user._id)) {
+                return res.status(403).json({ message: "User not authorized" });
+            }
+            const submissions = await CodeSubmission.find({ applicationId: id, userId: user._id });
+            const assessments = application.assessment;
+
+            if (!assessments || assessments.length === 0) {
+                return res.status(400).json({ message: "No assessment required for this application" });
+            }
+
+            const submissionMap = new Map();
+            submissions.forEach(sub => {
+                submissionMap.set(sub.codeAssessmentId.toString(), sub);
+            });
+
+            const assessmentsWithStatus = assessments.map((assessment) => {
+                const submission = submissionMap.get(assessment._id.toString());
+
+                let status = "not-attempted"; // Default status
+
+                if (submission) {
+                    status = submission.testsPassed === assessment.totalTests
+                        ? "completed"
+                        : "attempted";
+                }
+
+                return {
+                    ...assessment.toObject(), // Convert to plain object
+                    status
+                };
+            });
+            
+            return res.status(200).json({
+                message: "Successfully retrieved assessments with status",
+                data: assessmentsWithStatus,
+            });
         } catch (err) {
             return res.status(500).json({ message: "Error: "+err.message });
         }

@@ -4,6 +4,7 @@ import { assessmentService } from '../../services/assessment.service';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useNotification } from '../../context/notification.context';
 import { checkTokenExpiration } from '../../services/auth.service';
+import AssessmentStatus from '../../components/AssessmentStatus';
 
 const CodeAss = () => {
   const [code, setCode] = useState(`# Write a function that takes number x and y, then returns the sum of x and y
@@ -16,6 +17,7 @@ def func(x, y):
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
+  const [tasksId, setTasksId] = useState([]);
   const [task, setTask] = useState({
     description: "",
     tests: null,
@@ -28,9 +30,10 @@ def func(x, y):
 
   useState(() => {
     const fetchTasks = async () => {
-      const response = await assessmentService.getTask(appId);
-      setTask(response.data);
-      console.log("Task: ", response.data);
+      const response = await assessmentService.getTasksId(appId);
+      // const response = await assessmentService.getTask(appId);
+      // setTask(response.data);
+      // console.log("Task: ", response.data);
     }
     console.log("FETCHING");
     fetchTasks();
@@ -117,7 +120,7 @@ int func(int x, int y) { //here
   }
 
   return (
-    <div className='bg-[#1B2A41] h-screen'>
+    <div className='bg-[#1B2A41] h-fit'>
       <div className='flex flex-row items-center justify-center'>
         <div className='flex flex-col items-center justify-center w-full p-4 space-y-20'>
           <select
@@ -152,7 +155,7 @@ int func(int x, int y) { //here
           </div>
         </div>
       </div>
-      <div className='relative p-4 m-10 bg-slate-400 border-gray-600 border-2 rounded-md h-1/3'>
+      <div className='relative p-4 min-h-80 m-10 bg-slate-400 border-gray-600 border-2 rounded-md h-1/3'>
         { loading && 
           <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'>
             <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32 animate-ping"></div>
@@ -175,6 +178,15 @@ int func(int x, int y) { //here
         }
         <p className='text-white p-3 rounded-md border border-grey-400 bg-black absolute right-5 top-5'>Tests Passed: {testsPassed} / 10</p>
         <button onClick={handleSubmit} className='absolute bottom-3 right-3 rounded-full p-3 bg-white' >Submit</button>
+      </div>
+      <div className='w-full flex flex-col mb-10 items-center'>
+        <p className='text-white text-2xl'>Tasks:</p>
+        <div className="w-full h-40 pb-10 flex flex-row items-center justify-center space-x-16">
+          <AssessmentStatus status="completed-full" ></AssessmentStatus>
+          <AssessmentStatus status="completed-partial" ></AssessmentStatus>
+          <AssessmentStatus status="attempted" ></AssessmentStatus>
+          <AssessmentStatus status="not-submitted" ></AssessmentStatus>
+        </div>
       </div>
     </div>
   )

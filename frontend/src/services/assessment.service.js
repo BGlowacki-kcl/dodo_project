@@ -72,8 +72,8 @@ export const assessmentService = {
         return data;
     },
 
-    async getTask(appId) {
-        const response = await fetch(`/api/assessment/task?id=${appId}`,{
+    async getTask(appId, taskId) {
+        const response = await fetch(`/api/assessment/task?appId=${appId}?taskId=${taskId}`,{
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -88,6 +88,22 @@ export const assessmentService = {
         console.log("MMMMM: ",data);
         return data;
     },
+
+    async getTasksId(appId){
+        const response = await fetch(`/api/assessment/task?appId=${appId}?taskId=${taskId}`,{
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
+        });
+        checkTokenExpiration(response);
+        if(!response.ok){
+            return response;
+        }
+        const data = await response.json();
+        return data;
+    }
 }  
 
 async function sendCode(code, language){

@@ -25,12 +25,7 @@ const jobApplicationSchema = new Schema({
   submittedAt: {
     type: Date,
     default: Date.now
-  },
-
-  assessments: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Assessment'
-  }],
+  }
 });
 
 export default mongoose.model('Application', jobApplicationSchema);
