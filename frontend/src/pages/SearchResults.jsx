@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getAllJobs, getFilteredJobs } from "../services/jobService";
 import { authService } from '../services/auth.service';
+
 
 const SearchResults = () => {
     const url = useLocation();
     const searchParams = new URLSearchParams(url.search);
+    const navigate = useNavigate();
+    
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    
 
     // Extract query parameters as arrays
     const jobTypes = searchParams.getAll("jobType");
@@ -58,6 +62,10 @@ const SearchResults = () => {
             setLoading(false);
         }
     };
+
+    const handleJobClick = (jobId) => {
+        navigate(`/user/jobs/details/${jobId}`);
+    };
     
     useEffect(() => {
         fetchSearchResults();
@@ -96,7 +104,11 @@ const SearchResults = () => {
                     <p className="text-ltext text-center">Loading search results...</p>
                 ) : searchResults.length > 0 ? (
                     searchResults.map((job) => (
-                        <div key={job._id} className={`bg-white rounded-lg shadow-md flex flex-col justify-between relative ${viewMode === "grid" ? "w-full h-68" : "w-3/4 h-52"}`}>
+                        <div key={job._id} className={`bg-white rounded-lg shadow-md flex flex-col justify-between relative 
+                        ${viewMode === "grid" ? "w-full h-68" : "w-3/4 h-52"}`}
+                        onClick={() => handleJobClick(job._id)}
+                        style={{ cursor: "pointer" }}
+                        >
                             
                             {/* add to shortlist*/}
                             {isLoggedIn && (
