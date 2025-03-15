@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../../services/jobService";
+import { getAllUserApplications } from "../../services/applicationService";
 
 /* 
 JobDetailsPage is used to display the details of a single job using a component called job card
@@ -9,6 +10,8 @@ function JobDetailsPage() {
   const { jobId } = useParams();  // Get job ID from URL parameters
   const navigate = useNavigate();  // Hook to navigate back to the previous page
   const [job, setJob] = useState(null);  // State to store the job details
+  const [applied, setApplied] = useState(false);  // State to check if the user has applied
+
 
   useEffect(() => {
     async function fetchJob() {
@@ -19,7 +22,19 @@ function JobDetailsPage() {
         console.error("Error fetching job details:", err);
       }
     }
+
+    async function checkIfApplied() {
+      try {
+        const userApps = await getAllUserApplications();
+        const alreadyAppliedJobIds = userApps.map((app) => app.job?._id);
+        setApplied(alreadyAppliedJobIds.includes(jobId));
+      } catch (err) {
+        console.error("Error checking applications:", err);
+      }
+    }
+
     fetchJob();
+    checkIfApplied();
   }, [jobId]);
 
   if (!job) {
@@ -93,17 +108,21 @@ function JobDetailsPage() {
 
       {/* Back Button */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/search-results")}
         className="mt-6 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200"
       >
         &larr; Back
       </button>
-      <button
-        onClick={() => navigate(`/apply/${jobId}`)}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
-      >
-        Apply
-      </button>
+      {applied ? (
+          <p className="text-green-600 font-bold text-xl">Applied</p>
+        ) : (
+          <button
+            onClick={() => navigate(`/apply/${jobId}`)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
+          >
+            Apply
+          </button>
+        )}
     </div>
   );
 }
