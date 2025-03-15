@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { readFileSync } from 'fs';
 import "dotenv/config";
 import { faker } from "@faker-js/faker";
 import admin from "firebase-admin";
@@ -18,7 +19,9 @@ import { techCompanies, techJobDetails, techSkills } from "./backend/fixtures/co
 
 
 //  Initialize Firebase Admin SDK
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);  // Have firebase service key path in env file
+const serviceAccountPath = process.env.FIREBASE_PATH; // Make sure firebase path exists in env file
+const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -89,7 +92,8 @@ const generateJobSeekers = async (num) => {
             education: [education],
             experience: [experience],
             skills: skills,
-            resume: generateCV(name, location, [education], [experience], email, skills)
+            resume: generateCV(name, location, [education], [experience], email, skills),
+            phoneNumber: faker.phone.number()
         }));
     }
 
@@ -110,6 +114,7 @@ const generateEmployers =  async () => {
             companyName: company.companyName,
             companyWebsite: company.companyWebsite,
             companyDescription: company.companyDescription,
+            phoneNumber: company.phoneNumber
         }));
     }
 
@@ -172,7 +177,7 @@ const generateShortlists = (jobSeekers, jobs) => {
         const savedJobs = faker.helpers.arrayElements(jobs, numJobs);
 
         shortlists.push({
-            user: jobSeekers[i]._id,
+            user: jobSeekers[i].uid,
             jobs: savedJobs.map(job => job._id)
         });
     }
