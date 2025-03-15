@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get("/", checkRole(["jobSeeker"]), getShortlist);
 
-router.post("/", checkRole(["jobSeeker"]), addJobToShortlist);
+router.post("/:jobId", checkRole(["jobSeeker"]), addJobToShortlist);
 
 router.delete("/:jobId", checkRole(["jobSeeker"]), removeJobFromShortlist);
 

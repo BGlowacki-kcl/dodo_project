@@ -31,7 +31,7 @@ export async function getShortlist() {
 
 // Add a job to a user's shortlist
 export async function addJobToShortlist(jobId) {
-    const response = await fetch(`${BASE_URL}/shortlist`, {
+    const response = await fetch(`${BASE_URL}/shortlist/${jobId}`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({ jobId }),
