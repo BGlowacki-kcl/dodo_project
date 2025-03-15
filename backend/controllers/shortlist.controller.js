@@ -4,13 +4,15 @@ import Job from "../models/job.model.js";
 // Retrieve a user's shortlist
 export const getShortlist = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const userId = req.uid;
+        console.log("Fetching shortlist for user:", userId);
         const shortlist = await Shortlist.findOne({ user: userId }).populate("jobs");
         if (!shortlist) {
             return res.status(404).json({ message: "Shortlist not found" });
         }
         res.json(shortlist);
     } catch (error) {
+        console.error("Error in getShortlist controller:", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -18,8 +20,8 @@ export const getShortlist = async (req, res) => {
 // Add a job to the user's shortlist
 export const addJobToShortlist = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const { jobId } = req.body;
+        const userId = req.uid;
+        const { jobId } = req.params;
 
         // Verify that the job exists
         const job = await Job.findById(jobId);
@@ -49,7 +51,8 @@ export const addJobToShortlist = async (req, res) => {
 // Remove a job from the user's shortlist
 export const removeJobFromShortlist = async (req, res) => {
     try {
-        const { userId, jobId } = req.params;
+        const userId = req.uid;
+        const { jobId } = req.params;
         const shortlist = await Shortlist.findOne({ user: userId });
         if (!shortlist) {
             return res.status(404).json({ message: "Shortlist not found" });
