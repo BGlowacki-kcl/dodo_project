@@ -65,7 +65,7 @@ function App() {
 		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
-		{ path: '/apply/', element: <Apply />, roles: ['jobSeeker'] },
+		{ path: '/apply/:jobId', element: <Apply />, roles: ['jobSeeker'] },
 		
 		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
 
