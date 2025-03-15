@@ -5,7 +5,6 @@ import Job from "../models/job.model.js";
 export const getShortlist = async (req, res) => {
     try {
         const userId = req.uid;
-        console.log("Fetching shortlist for user:", userId);
         const shortlist = await Shortlist.findOne({ user: userId }).populate("jobs");
         if (!shortlist) {
             return res.status(404).json({ message: "Shortlist not found" });
