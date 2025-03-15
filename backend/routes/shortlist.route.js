@@ -1,12 +1,13 @@
 import express from "express";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../controllers/shortlist.controller.js";
+import { checkRole } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/:userId", getShortlist);
+router.get("/", checkRole(["jobSeeker"]), getShortlist);
 
-router.post("/:userId", addJobToShortlist);
+router.post("/:jobId", checkRole(["jobSeeker"]), addJobToShortlist);
 
-router.delete("/:userId/:jobId", removeJobFromShortlist);
+router.delete("/:jobId", checkRole(["jobSeeker"]), removeJobFromShortlist);
 
 export default router;
