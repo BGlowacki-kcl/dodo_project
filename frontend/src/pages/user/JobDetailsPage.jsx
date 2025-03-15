@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../../services/jobService";
 import { getAllUserApplications } from "../../services/applicationService";
+import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
+import { userService } from "../../services/user.service"; // Import a method to get the user ID
 
 /* 
 JobDetailsPage is used to display the details of a single job using a component called job card
@@ -11,7 +13,8 @@ function JobDetailsPage() {
   const navigate = useNavigate();  // Hook to navigate back to the previous page
   const [job, setJob] = useState(null);  // State to store the job details
   const [applied, setApplied] = useState(false);  // State to check if the user has applied
-
+  const [shortlisted, setShortlisted] = useState(false); // State to check if the job is in the shortlist
+  const [userId, setUserId] = useState(null); // State to store the user ID
 
   useEffect(() => {
     async function fetchJob() {
@@ -33,9 +36,47 @@ function JobDetailsPage() {
       }
     }
 
+    async function fetchUserId() {
+      try {
+          const userId = await userService.getUserId();
+          console.log("User ID:", userId);
+          setUserId(userId);
+      } catch (err) {
+          console.error("Error fetching user ID:", err);
+      }
+  }
+
+    async function checkIfShortlisted() {
+      try {
+        const shortlist = await getShortlist(userId); // Replace userId with the actual user ID
+        const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
+        setShortlisted(shortlistedJobIds.includes(jobId));
+      } catch (err) {
+        console.error("Error checking shortlist:", err);
+      }
+    }
+
     fetchJob();
+    fetchUserId();
     checkIfApplied();
-  }, [jobId]);
+    if (userId) {
+      checkIfApplied();
+      checkIfShortlisted();
+    }
+  }, [jobId, userId]);
+
+  const handleShortlistToggle = async () => {
+    try {
+      if (shortlisted) {
+        await removeJobFromShortlist(userId, jobId); // Replace userId with the actual user ID
+      } else {
+        await addJobToShortlist(userId, jobId); // Replace userId with the actual user ID
+      }
+      setShortlisted(!shortlisted);
+    } catch (err) {
+      console.error("Error updating shortlist:", err);
+    }
+  };
 
   if (!job) {
     return (
@@ -123,6 +164,12 @@ function JobDetailsPage() {
             Apply
           </button>
         )}
+      <button
+        onClick={handleShortlistToggle}
+        className={`mt-4 px-4 py-2 ${shortlisted ? "bg-red-600" : "bg-green-600"} text-white rounded hover:${shortlisted ? "bg-red-700" : "bg-green-700"} transition duration-200`}
+      >
+        {shortlisted ? "Remove from Shortlist" : "Add to Shortlist"}
+      </button>
     </div>
   );
 }
