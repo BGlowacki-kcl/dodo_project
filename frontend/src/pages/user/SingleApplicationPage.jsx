@@ -18,32 +18,34 @@ function SingleApplicationPage() {
 
     // Fetches application details
     useEffect(() => {
-        async function fetchApp() {
+      async function fetchApp() {
           if (hasFetched.current) return;
           hasFetched.current = true;
           // Fetch application data from API
-          const data = await getApplicationById(appId);
-          setApplication(data.data);
-          console.log(data.data);
-          // Check if the application status requires a code challenge
-          if(data.data && data.data.status == "code challenge") {
-            setCodeChallenge(true);
+          return await getApplicationById(appId);
+      }
+  
+      fetchApp().then(response => {
+          console.log('Full response:', response); // Log the entire response
+  
+          // Directly use the response object
+          if (response) {
+              setApplication(response);
+              // Check if the application status requires a code challenge
+              if (response.status === "code challenge") {
+                  setCodeChallenge(true);
+              }
+          } else {
+              console.error('Unexpected response structure:', response);
+              showNotification("Failed to fetch application");
+              navigate("/applicant-dashboard");
           }
-          // Handle unauthorized or failed fetch scenarios
-          if (data.status && data.status == 403) {
-              showNotification(data.message);
-              navigate("/user/applications");
-              return;
-          }
-          if(data.status && data.status != 200) {
-            showNotification("Failed to fetch application");
-            navigate("/user/applications");
-            return;
-          }    
-          setApplication(data.data);
-        }
-        fetchApp();
-    }, [appId, navigate]);
+      }).catch(error => {
+          console.error('Error fetching application:', error);
+          showNotification("Failed to fetch application");
+          navigate("/applicant-dashboard");
+      });
+  }, [appId, navigate]);
 
     // Handle withdrawal of application
     const handleWithdraw = async () => {
@@ -53,7 +55,7 @@ function SingleApplicationPage() {
         try {
             await withdrawApplication(appId);
             alert("Application withdrawn successfully!");
-            navigate("/user/applications");
+            navigate("/applicant-dashboard");
         } 
         catch (err) {
             console.error(err);
@@ -129,7 +131,7 @@ function SingleApplicationPage() {
                 <div className="flex items-center space-x-4 mt-6">
                 {/* Can link to another more detailed job details page */}
                 {job?._id && (
-                    <button onClick={() => navigate(`/user/jobs/details/${job._id}`)} className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200" > View Job Listing </button>
+                    <button onClick={() => navigate(`/user/jobs/details/${job._id}`)} className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200" > View Job Details </button>
                 )}
 
                 {codeChallenge && (
@@ -142,7 +144,7 @@ function SingleApplicationPage() {
 
                 {/* BACK LINK */}
                 <div className="mt-6">
-                <button onClick={() => navigate("/user/applications")} className="text-blue-600 hover:underline" > &larr; Back to My Applications </button>
+                <button onClick={() => navigate("/applicant-dashboard")} className="text-blue-600 hover:underline" > &larr; Back to My Applications </button>
                 </div>
       </div>
     </div>
