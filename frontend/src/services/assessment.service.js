@@ -89,8 +89,24 @@ export const assessmentService = {
         return data;
     },
 
-    async getTasksId(appId){
-        const response = await fetch(`/api/assessment/task?appId=${appId}?taskId=${taskId}`,{
+    async getTasksId(appId, taskId){
+        const response = await fetch(`/api/assessment/tasksid?appId=${appId}`,{
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
+        });
+        checkTokenExpiration(response);
+        if(!response.ok){
+            return response;
+        }
+        const data = await response.json();
+        return data;
+    },
+
+    async getAllTasks() {
+        const response = await fetch('/api/assessment/alltasks', {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

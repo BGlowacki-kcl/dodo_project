@@ -2,6 +2,7 @@ import CodeAssessment from "../models/codeAssessment.js";
 import CodeSubmission from "../models/codeSubmission.js";
 import Application from "../models/application.model.js";
 import User from "../models/user/user.model.js";
+import Job from "../models/job.model.js";
 
 const assessmentController = {
     async sendCode(req, res) {
@@ -55,8 +56,8 @@ const assessmentController = {
             if(!id){
                 return res.status(400).json({ message: "No id provided"});
             }
-            const application = Application.findOne({ _id: id })
-            const user = User.findOne({ uid: uid });
+            const application = await Application.findOne({ _id: id })
+            const user = await User.findOne({ uid: uid });
             if(application.applicant != user){
                 return res.status(403).json({ message: "User not authorized" });
             }
@@ -64,7 +65,7 @@ const assessmentController = {
             if(!assessments){
                 return res.status(400).json({ message: "No assessment required for this application" });
             }
-            const submitted = CodeSubmission.find({ taskId: id, uid: uid });
+            const submitted = await CodeSubmission.find({ taskId: id, uid: uid });
             
             res.status(200).json({ message: "Successfully retrived aassessment", data: assessments});
         } catch (err) {
@@ -76,54 +77,77 @@ const assessmentController = {
         try {
             const { appId } = req.query;
             const { uid } = req;
-            if(!id){
-                return res.status(400).json({ message: "No id provided"});
+            if (!appId) {
+                return res.status(400).json({ message: "No id provided" });
             }
-            const application = Application.findOne({ _id: appId })
-            const user = User.findOne({ uid: uid });
+            const application = await Application.findOne({ _id: appId });
+            const user = await User.findOne({ uid: uid });
+            console.log("Application: ", application, " User: ", user);
             if (String(application.applicant) !== String(user._id)) {
                 return res.status(403).json({ message: "User not authorized" });
             }
-            const submissions = await CodeSubmission.find({ applicationId: id, userId: user._id });
-            const assessments = application.assessment;
-
+            const submissions = await CodeSubmission.find({ applicationId: appId, userId: user._id });
+    
+            const jobPost = await Job.findOne({ _id: application.job });
+            const assessments = jobPost.assessments;
+            console.log("Job Post: ", jobPost);
+            console.log("Assessments: ", assessments);
+    
             if (!assessments || assessments.length === 0) {
                 return res.status(400).json({ message: "No assessment required for this application" });
             }
-
+    
             const submissionMap = new Map();
             submissions.forEach(sub => {
-                submissionMap.set(sub.codeAssessmentId.toString(), sub);
+                submissionMap.set(sub.assessment.toString(), sub);
             });
-
-            const assessmentsWithStatus = assessments.map((assessment) => {
-                const submission = submissionMap.get(assessment._id.toString());
-
-                let status = "not-attempted"; // Default status
-
-                if (submission) {
-                    status = submission.testsPassed === assessment.totalTests
-                        ? "completed"
-                        : "attempted";
+            console.log("Submission Map: ", submissionMap);
+    
+            // Fetch CodeAssessment objects for each assessment
+            const assessmentsWithStatus = await Promise.all(assessments.map(async (assessmentId) => {
+                // Fetch the actual CodeAssessment object
+                const assessmentObject = await CodeAssessment.findById(assessmentId);
+                if (!assessmentObject) {
+                    return { title: "Unknown", id: assessmentId, status: "not-attempted" };
                 }
-
+    
+                const submission = submissionMap.get(assessmentId.toString());
+                console.log("Submission: ", submission);
+                let status = "not-attempted";
+    
+                if (submission) {
+                    status = submission.testsPassed === 10 ? "completed" : "attempted";
+                }
+    
                 return {
-                    ...assessment.toObject(), // Convert to plain object
-                    status
+                    title: assessmentObject.title, // Access the title from the fetched CodeAssessment object
+                    id: assessmentObject._id,
+                    status,
                 };
-            });
-            
+            }));
+    
             return res.status(200).json({
                 message: "Successfully retrieved assessments with status",
                 data: assessmentsWithStatus,
             });
         } catch (err) {
-            return res.status(500).json({ message: "Error: "+err.message });
+            return res.status(500).json({ message: "Error: " + err.message });
         }
     },
     
+    
     async submit(req, res){
 
+    },
+
+    async getAllTasks(req, res) {
+        try {
+            const allTasks = await CodeAssessment.find();
+            console.log("Tasks: ",allTasks);
+            return res.status(200).json({ message: "Successfully received code assessments", data: allTasks });
+        } catch (err) {
+            return res.status(500).json({ message: "Internal server error"});
+        }
     },
 
     async createAss(req, res){

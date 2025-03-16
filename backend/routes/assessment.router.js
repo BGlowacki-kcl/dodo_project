@@ -8,7 +8,8 @@ router.get("/status", checkRole(["jobSeeker"]), assessmentController.getStatus);
 router.post("/send", checkRole(["jobSeeker"]), assessmentController.sendCode);
 router.get("/task", checkRole(["jobSeeker"]), assessmentController.getTask);
 router.post("/submit", checkRole(["jobSeeker"]), assessmentController.submit);
-router.get("/tasksId", checkRole(["jobSeeker"]), assessmentController.getTasksId);
+router.get("/tasksid", checkRole(["jobSeeker"]), assessmentController.getTasksId);
 router.post("/create", assessmentController.createAss);
+router.get("/alltasks", checkRole(["employer"]), assessmentController.getAllTasks);
 
 export default router;

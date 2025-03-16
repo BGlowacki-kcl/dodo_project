@@ -7,11 +7,7 @@ import { checkTokenExpiration } from '../../services/auth.service';
 import AssessmentStatus from '../../components/AssessmentStatus';
 
 const CodeAss = () => {
-  const [code, setCode] = useState(`# Write a function that takes number x and y, then returns the sum of x and y
-
-def func(x, y):
-  # Write your code here
-  `);
+  const [code, setCode] = useState(``);
   const [language, setLanguage] = useState("python");
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
@@ -31,13 +27,20 @@ def func(x, y):
   useState(() => {
     const fetchTasks = async () => {
       const response = await assessmentService.getTasksId(appId);
-      // const response = await assessmentService.getTask(appId);
-      // setTask(response.data);
-      // console.log("Task: ", response.data);
+      console.log("Task Ids: ",response.data);
+      setTasksId(response.data);
+      console.log("Task id ----------: ", tasksId);
     }
-    console.log("FETCHING");
+    const setFirstTask = async () => {
+      const response = await assessmentService.getTask(appId, tasksId[0].id);
+    }
     fetchTasks();
+    setFirstTask();
   }, [appId]);
+
+  const handleTaskChange = async () => {
+
+  }
 
   const handleLanguageChange = (e) => {
     const userConfirmed = window.confirm("The current progress will not be saved. Do you wish to proceed?");
@@ -71,7 +74,7 @@ function func(x, y) {
 
 using namespace std;
 
-int func(int x, int y) { //here
+int func(${task.funcForCpp}) { //here
   // Write your code here
 
   return 0;
@@ -182,10 +185,9 @@ int func(int x, int y) { //here
       <div className='w-full flex flex-col mb-10 items-center'>
         <p className='text-white text-2xl'>Tasks:</p>
         <div className="w-full h-40 pb-10 flex flex-row items-center justify-center space-x-16">
-          <AssessmentStatus status="completed-full" ></AssessmentStatus>
-          <AssessmentStatus status="completed-partial" ></AssessmentStatus>
-          <AssessmentStatus status="attempted" ></AssessmentStatus>
-          <AssessmentStatus status="not-submitted" ></AssessmentStatus>
+          {tasksId.map(task => (
+            <AssessmentStatus key={task.id} status={task.status} onlick={handleTaskChange} title={task.title} />
+          ))}
         </div>
       </div>
     </div>
