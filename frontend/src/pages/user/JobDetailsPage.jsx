@@ -68,9 +68,9 @@ function JobDetailsPage() {
   const handleShortlistToggle = async () => {
     try {
       if (shortlisted) {
-        await removeJobFromShortlist(userId, jobId); // Replace userId with the actual user ID
+        await removeJobFromShortlist(jobId); // Replace userId with the actual user ID
       } else {
-        await addJobToShortlist(userId, jobId); // Replace userId with the actual user ID
+        await addJobToShortlist(jobId); // Replace userId with the actual user ID
       }
       setShortlisted(!shortlisted);
     } catch (err) {
