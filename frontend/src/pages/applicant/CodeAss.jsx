@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Editor from "@monaco-editor/react";
 import { assessmentService } from '../../services/assessment.service';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -18,53 +18,54 @@ const CodeAss = () => {
     description: "",
     tests: null,
     funcForCpp: "",
-    funcForCppTests:""
+    funcForCppTests:"",
+    code: ""
   });
   const { appId } = useParams();
   const navigate = useNavigate();
   const showNotification = useNotification();
 
-  useState(() => {
+  useEffect(() => {
     const fetchTasks = async () => {
       const response = await assessmentService.getTasksId(appId);
       console.log("Task Ids: ",response.data);
       setTasksId(response.data);
       console.log("Task id ----------: ", tasksId);
     }
-    const setFirstTask = async () => {
-      const response = await assessmentService.getTask(appId, tasksId[0].id);
-    }
     fetchTasks();
-    setFirstTask();
   }, [appId]);
 
-  const handleTaskChange = async () => {
+  useEffect(() => {
+    const setFirstTask = async () => {
+      console.log("HERE: ",tasksId[0]);
+      const response = await assessmentService.getTask(appId, tasksId[0].id);
+      console.log("Here 2 look: ",response);
+      setTask(response.data.assessment);
+      setCodeForLanguage(language);
+      console.log(tasksId);
+    }
+    setFirstTask();
+  }, [tasksId])
+
+  const handleTaskChange = async (taskId) => {
 
   }
 
-  const handleLanguageChange = (e) => {
-    const userConfirmed = window.confirm("The current progress will not be saved. Do you wish to proceed?");
-    setTestsPassed(0);
-    setOutput("");
-    if(!userConfirmed) {
-      e.target.value = language;
-      return;
-    }
-    setLanguage(e.target.value);
+  const setCodeForLanguage = (lang) => {
     let defText = "";
-    if (e.target.value === "python") {
+    if (lang === "python") {
       defText = `# ${task.description}
 
 def func(x, y):
   # Write your code here`;
-    } else if (e.target.value === "javascript") {
+    } else if (lang === "javascript") {
       defText = `// ${task.description}
 
 function func(x, y) {
   // Write your code here
 
 }`;
-    } else if (e.target.value === "cpp") {
+    } else if (lang === "cpp") {
       defText = `// ${task.description}
 
 #include <vector>
@@ -81,6 +82,19 @@ int func(${task.funcForCpp}) { //here
 }`;
     }
     setCode(defText);
+  }
+
+  const handleLanguageChange = (e) => {
+    const userConfirmed = window.confirm("The current progress will not be saved. Do you wish to proceed?");
+    setTestsPassed(0);
+    setOutput("");
+    if(!userConfirmed) {
+      e.target.value = language;
+      return;
+    }
+    setLanguage(e.target.value);
+    setCodeForLanguage();
+
   }
   
   const runCode = async () => {
@@ -186,7 +200,7 @@ int func(${task.funcForCpp}) { //here
         <p className='text-white text-2xl'>Tasks:</p>
         <div className="w-full h-40 pb-10 flex flex-row items-center justify-center space-x-16">
           {tasksId.map(task => (
-            <AssessmentStatus key={task.id} status={task.status} onlick={handleTaskChange} title={task.title} />
+            <AssessmentStatus key={task.id} status={task.status} onClick={() => handleTaskChange(task.id)} title={task.title} />
           ))}
         </div>
       </div>

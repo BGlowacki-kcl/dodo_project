@@ -53,23 +53,31 @@ const assessmentController = {
         try {
             const { appId, taskId } = req.query;
             const { uid } = req;
-            if(!id){
+            // console.log(appId, taskId);
+            if(!appId || !taskId){
                 return res.status(400).json({ message: "No id provided"});
             }
-            const application = await Application.findOne({ _id: id })
+            const application = await Application.findOne({ _id: appId })
             const user = await User.findOne({ uid: uid });
-            if(application.applicant != user){
+            // console.log("user._id: ", user._id, " application.applicant", application.applicant);
+            if(String(application.applicant) !== String(user._id)){
                 return res.status(403).json({ message: "User not authorized" });
             }
-            const assessments = application.assessment;
-            if(!assessments){
-                return res.status(400).json({ message: "No assessment required for this application" });
+            const assessment = await CodeAssessment.findOne({ _id: taskId });
+            const jobPost = await Job.findOne({ _id: application.job });
+            // console.log("Application: ",application, " User: ", user, " Assessment: ", assessment, " jobPost: ", jobPost);
+            if(!jobPost.assessments || !jobPost.assessments.includes(taskId)){
+                return res.status(400).json({ message: "assessment does not match the job post" });
             }
-            const submitted = await CodeSubmission.find({ taskId: id, uid: uid });
+            const submitted = await CodeSubmission.find({ assessment: taskId, application: appId });
+            if(submitted){
+                return res.status(200).json({ message: "Successfully retrived aassessment", data: { assessment, submission: submitted }});
+            }
             
-            res.status(200).json({ message: "Successfully retrived aassessment", data: assessments});
+            res.status(200).json({ message: "Successfully retrived aassessment", data: { assessment }});
         } catch (err) {
-            return res.status(500).json({ message: "Error: "+err.message });
+            console.error(err.message);
+             res.status(500).json({ message: "Error: "+err.message });
         }
     },
 
@@ -82,7 +90,6 @@ const assessmentController = {
             }
             const application = await Application.findOne({ _id: appId });
             const user = await User.findOne({ uid: uid });
-            console.log("Application: ", application, " User: ", user);
             if (String(application.applicant) !== String(user._id)) {
                 return res.status(403).json({ message: "User not authorized" });
             }
@@ -90,8 +97,6 @@ const assessmentController = {
     
             const jobPost = await Job.findOne({ _id: application.job });
             const assessments = jobPost.assessments;
-            console.log("Job Post: ", jobPost);
-            console.log("Assessments: ", assessments);
     
             if (!assessments || assessments.length === 0) {
                 return res.status(400).json({ message: "No assessment required for this application" });
@@ -101,18 +106,14 @@ const assessmentController = {
             submissions.forEach(sub => {
                 submissionMap.set(sub.assessment.toString(), sub);
             });
-            console.log("Submission Map: ", submissionMap);
     
-            // Fetch CodeAssessment objects for each assessment
             const assessmentsWithStatus = await Promise.all(assessments.map(async (assessmentId) => {
-                // Fetch the actual CodeAssessment object
                 const assessmentObject = await CodeAssessment.findById(assessmentId);
                 if (!assessmentObject) {
                     return { title: "Unknown", id: assessmentId, status: "not-attempted" };
                 }
     
                 const submission = submissionMap.get(assessmentId.toString());
-                console.log("Submission: ", submission);
                 let status = "not-attempted";
     
                 if (submission) {
@@ -120,7 +121,7 @@ const assessmentController = {
                 }
     
                 return {
-                    title: assessmentObject.title, // Access the title from the fetched CodeAssessment object
+                    title: assessmentObject.title, 
                     id: assessmentObject._id,
                     status,
                 };

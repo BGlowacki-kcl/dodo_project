@@ -73,7 +73,7 @@ export const assessmentService = {
     },
 
     async getTask(appId, taskId) {
-        const response = await fetch(`/api/assessment/task?appId=${appId}?taskId=${taskId}`,{
+        const response = await fetch(`/api/assessment/task?appId=${appId}&taskId=${taskId}`,{
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -89,7 +89,7 @@ export const assessmentService = {
         return data;
     },
 
-    async getTasksId(appId, taskId){
+    async getTasksId(appId){
         const response = await fetch(`/api/assessment/tasksid?appId=${appId}`,{
             method: "GET",
             headers: {
@@ -257,6 +257,7 @@ int main() {
 
 
 function generateTestCode(testCases, language) {
+    console.log("Tests: ",testCases);
     const visibleTestCases = testCases.slice(0, 5);
     const hiddenTestCases = testCases.slice(5, 10);
 
