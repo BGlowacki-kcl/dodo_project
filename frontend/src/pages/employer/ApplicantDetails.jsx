@@ -12,11 +12,36 @@ const ApplicantDetails = () => {
     useEffect(() => {
         const fetchApplicantDetails = async () => {
             try {
-                const response = await fetch(`/api/application/applicant/${applicantId}`);
+                const token = sessionStorage.getItem('token');
+                const response = await fetch(`/api/application/byId?id=${applicantId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                });
                 const data = await response.json();
+                console.log('Applicants data:', data.data); // Debug log 7
+
+                
                 
                 if (data.success) {
-                    setApplicant(data.data);
+                    const userResponse = await fetch(`/api/user/${applicantId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const userData = await userResponse.json();
+                    console.log('User data:', userData.data); // Debug log 8
+                    setApplicant({
+                        ...data.data,
+                        education: userData.data.education || [],
+                        experience: userData.data.experience || [],
+                        skills: userData.data.skills || [],
+                        resume: userData.data.resume,
+                        name: userData.data.name,
+                        email: userData.data.email
+                    });
                 } else {
                     throw new Error(data.message || 'Failed to fetch applicant details');
                 }
@@ -106,20 +131,9 @@ const ApplicantDetails = () => {
                             {/* CV/Resume Section */}
                             <div className="mb-8">
                                 <h2 className="text-xl font-semibold mb-4">Resume</h2>
-                                {applicant.resume ? (
-                                    <div className="bg-gray-50 p-4 rounded-lg">
-                                        <a 
-                                            href={applicant.resume} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:text-blue-800"
-                                        >
-                                            View Resume →
-                                        </a>
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500">No resume attached</p>
-                                )}
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    <p className="text-gray-700 whitespace-pre-line">{applicant.resume}</p>
+                                </div>
                             </div>
 
                             {/* Skills */}

@@ -22,6 +22,33 @@ export const userController = {
             res.status(500).json({ success: false, message: "Server error" });
         }
     },
+    async getUserById(req, res) {
+        try {
+            const { userId } = req.params;
+            
+            const user = await User.findById(userId)
+                .select('name email skills education experience resume'); // Only select public fields
+            
+            if (!user) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: "No user found with this ID" 
+                });
+            }
+
+            res.status(200).json({ 
+                success: true, 
+                message: "User found", 
+                data: user 
+            });
+        } catch (error) {
+            console.error("Error fetching user:", error);
+            res.status(500).json({ 
+                success: false, 
+                message: "Server error" 
+            });
+        }
+    },
 
     async getRole(req, res) {
         try {

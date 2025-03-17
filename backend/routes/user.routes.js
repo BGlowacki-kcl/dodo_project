@@ -11,5 +11,6 @@ router.get('/', checkRole(['employer', 'jobSeeker', 'admin']), userController.ge
 router.post('/basic', checkRole(['employer', 'jobSeeker', 'signUp']), userController.createBasicUser);
 router.put('/', checkRole(['employer', 'jobSeeker', 'admin']), userController.updateUser);
 router.delete('/', checkRole(['employer', 'jobSeeker', 'admin']), userController.deleteUser);
+router.get('/:userId', userController.getUserById);
 
 export default router;
