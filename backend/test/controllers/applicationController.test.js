@@ -1,20 +1,11 @@
-/**
- * applicationController.test.js
- * 
- * This updated test file matches your actual applicationController,
- * using "createApplication" (instead of "apply"), "withdrawApplication" (instead of "cancel"),
- * "req.query" in the right places, etc., ensuring higher coverage.
- */
-
 import { applicationController } from "../../controllers/application.controller.js";
 import Application from "../../models/application.model.js";
 import Job from "../../models/job.model.js";
-import User from "../../models/user/user.model.js";  // So we can mock .findOne
+import User from "../../models/user/user.model.js";  
 import { mockApplications } from "../fixtures/application.fixture.js";
 
 jest.mock('../../middlewares/auth.middleware.js', () => ({
   checkRole: () => (req, res, next) => {
-    // typical mock: attach a mock user ID to request
     req.uid = "mock-firebase-uid";
     next();
   }
@@ -28,7 +19,7 @@ describe("applicationController", () => {
       body: {},
       params: {},
       query: {},
-      uid: "mock-firebase-uid", // typically how the controller reads user
+      uid: "mock-firebase-uid", 
     };
     res = {
       status: jest.fn().mockReturnThis(),
@@ -43,9 +34,7 @@ describe("applicationController", () => {
   // ----------------------------------------------------------------
   describe("createApplication", () => {
     it("should return 400 if missing jobId", async () => {
-      // code checks `if (!jobId) return 400;`
       req.body = { jobId: null, coverLetter: "some cover letter" };
-      // no user in DB
       await applicationController.createApplication(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
@@ -58,19 +47,14 @@ describe("applicationController", () => {
     });
 
     it("should create a new application (201) if valid", async () => {
-      // the controller finds the user: User.findOne({ uid })
-      // so we must mock the user
       User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
 
-      // the request
       req.body = {
         jobId: "job123",
         coverLetter: "cover",
       };
       req.uid = "mock-firebase-uid";
 
-      // when we call Application.create, we want it to return a new doc
-      // the code then does newApp.populate("job")
       const mockApp = {
         populate: jest.fn().mockResolvedValue({
           _id: "newAppId",
@@ -81,7 +65,6 @@ describe("applicationController", () => {
 
       await applicationController.createApplication(req, res);
 
-      // check the create call
       expect(Application.create).toHaveBeenCalledWith({
         job: "job123",
         applicant: "someUserId",
@@ -89,10 +72,8 @@ describe("applicationController", () => {
         status: "applied",
       });
 
-      // check we populated the job
       expect(mockApp.populate).toHaveBeenCalledWith("job");
 
-      // check final response
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -106,7 +87,6 @@ describe("applicationController", () => {
       User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
       req.body = { jobId: "job456", coverLetter: "any letter" };
 
-      // DB throws error
       Application.create = jest.fn().mockRejectedValue(new Error("DB error"));
 
       await applicationController.createApplication(req, res);
@@ -115,21 +95,16 @@ describe("applicationController", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "DB error", // from the actual error message
+          message: "DB error", 
         })
       );
     });
   });
 
-  // ----------------------------------------------------------------
-  // GET APPLICATION (controller method: getApplication)
-  // ----------------------------------------------------------------
   describe("getApplication", () => {
     it("should return an application if found", async () => {
-      // code uses req.params.jobId, and app is found by job + applicant
       req.params = { jobId: "job123" };
       req.uid = "mock-uid-user";
-      // mock the findOne
       const mockApp = { _id: "someAppId" };
       Application.findOne = jest.fn().mockResolvedValue(mockApp);
 
@@ -203,7 +178,6 @@ describe("applicationController", () => {
     it("should return 404 if app not found", async () => {
       req.params = { id: "someAppId" };
       req.body = { status: "applied" };
-      // findById => .populate("job") => let's mock that chain
       Application.findById = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue(null),
       });
@@ -223,11 +197,9 @@ describe("applicationController", () => {
       req.uid = "employer-uid"; // code checks postedBy matches this
 
       const mockApp = { _id: "someAppId", save: jest.fn(), job: "mockJobId" };
-      // chain
       Application.findById = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue(mockApp),
       });
-      // next the code calls Job.findById(application.job)
       Job.findById = jest.fn().mockResolvedValue({ postedBy: "employer-uid" });
 
       await applicationController.updateApplicationStatus(req, res);
@@ -245,7 +217,6 @@ describe("applicationController", () => {
     });
 
     it("should return 403 if the employer is not the one who posted the job", async () => {
-      // The code checks postedBy != req.uid => 403
       req.params = { id: "someAppId" };
       req.body = { status: "applied" };
       req.uid = "someone-else-uid";
@@ -254,7 +225,6 @@ describe("applicationController", () => {
       Application.findById = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue(mockApp),
       });
-      // job postedBy is "employer-uid" but we have "someone-else-uid"
       Job.findById = jest.fn().mockResolvedValue({ postedBy: "employer-uid" });
 
       await applicationController.updateApplicationStatus(req, res);
@@ -269,7 +239,6 @@ describe("applicationController", () => {
     it("should return 500 on DB error", async () => {
       req.params = { id: "errorId" };
       req.body = { status: "applied" };
-      // we simulate an error
       Application.findById = jest.fn().mockReturnValue({
         populate: jest.fn().mockRejectedValue(new Error("DB error")),
       });
@@ -280,7 +249,7 @@ describe("applicationController", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "DB error", // from the actual thrown error
+          message: "DB error", 
         })
       );
     });
@@ -292,13 +261,11 @@ describe("applicationController", () => {
   describe("getApplicants", () => {
     it("should return a list of applicants (200)", async () => {
       req.params = { jobId: "someJobId" };
-      // code calls Job.findById(jobId)
       Job.findById = jest.fn().mockResolvedValue({ _id: "someJobId" });
 
       const mockApp = {
         applicant: { _id: "userId", name: "TestUser", email: "test@user.com" },
       };
-      // code calls Application.find({ job: jobId }).populate("applicant", "name email")
       Application.find = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue([mockApp]),
       });
@@ -317,7 +284,6 @@ describe("applicationController", () => {
 
     it("should return 403 if no job found", async () => {
       req.params = { jobId: "invalidJobId" };
-      // code checks if (!job) => 403
       Job.findById = jest.fn().mockResolvedValue(null);
 
       await applicationController.getApplicants(req, res);
@@ -333,7 +299,6 @@ describe("applicationController", () => {
 
     it("should return 500 on error", async () => {
       req.params = { jobId: "errJob" };
-      // Job.findById => throw an error
       Job.findById = jest.fn().mockRejectedValue(new Error("DB error"));
 
       await applicationController.getApplicants(req, res);
@@ -353,10 +318,6 @@ describe("applicationController", () => {
   // ----------------------------------------------------------------
   describe("getAllApplications", () => {
     it("should fetch apps for the user in req.uid", async () => {
-      // The code does:
-      // const user = await User.findOne({ uid: uid });
-      // const filter = { applicant: user._id };
-      // const apps = await Application.find(filter).populate("job");
       User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
       Application.find = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue(mockApplications),
@@ -398,12 +359,10 @@ describe("applicationController", () => {
   // ----------------------------------------------------------------
   describe("getOneApplication", () => {
     it("should return 404 if not found", async () => {
-      // code uses { id } from req.query
       req.query = { id: "someId" };
       req.uid = "mockUserUid";
 
       User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
-      // findById => populate => return null => 404
       Application.findById = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue(null),
       });
@@ -423,7 +382,6 @@ describe("applicationController", () => {
       req.query = { id: "someId" };
       req.uid = "mockUserUid";
 
-      // user => _id = "otherUserId"
       User.findOne = jest.fn().mockResolvedValue({ _id: "otherUserId" });
       Application.findById = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue({
