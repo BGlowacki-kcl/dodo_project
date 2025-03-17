@@ -1,182 +1,195 @@
+/**
+ * applicationController.test.js
+ * 
+ * This updated test file matches your actual applicationController,
+ * using "createApplication" (instead of "apply"), "withdrawApplication" (instead of "cancel"),
+ * "req.query" in the right places, etc., ensuring higher coverage.
+ */
+
 import { applicationController } from "../../controllers/application.controller.js";
-import { Application } from "../../models/application.model.js";
+import Application from "../../models/application.model.js";
+import Job from "../../models/job.model.js";
+import User from "../../models/user/user.model.js";  // So we can mock .findOne
 import { mockApplications } from "../fixtures/application.fixture.js";
 
 jest.mock('../../middlewares/auth.middleware.js', () => ({
-    checkRole: () => (req, res, next) => {
-        req.uid = "mock-firebase-uid"; // Attach mock user ID to request
-        next();
-    }
+  checkRole: () => (req, res, next) => {
+    // typical mock: attach a mock user ID to request
+    req.uid = "mock-firebase-uid";
+    next();
+  }
 }));
 
-describe("Application Controller", () => {
+describe("applicationController", () => {
   let req, res;
 
   beforeEach(() => {
     req = {
-      body: {
-        jobId: mockApplications[0].job,
-        coverLetter: mockApplications[0].coverLetter,
-      },
+      body: {},
+      params: {},
+      query: {},
+      uid: "mock-firebase-uid", // typically how the controller reads user
     };
     res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
+
+    jest.clearAllMocks();
   });
 
-  //  Test: Applying for a Job
-  describe("apply", () => {
-    it("should create a new application and return 201", async () => {
-      Application.create = jest.fn().mockResolvedValue(mockApplications[0]);
+  // ----------------------------------------------------------------
+  // CREATE APPLICATION (controller method: createApplication)
+  // ----------------------------------------------------------------
+  describe("createApplication", () => {
+    it("should return 400 if missing jobId", async () => {
+      // code checks `if (!jobId) return 400;`
+      req.body = { jobId: null, coverLetter: "some cover letter" };
+      // no user in DB
+      await applicationController.createApplication(req, res);
 
-      await applicationController.apply(req, res);
-
-      expect(Application.create).toHaveBeenCalledWith(expect.objectContaining({
-        job: req.body.jobId,
-        coverLetter: req.body.coverLetter,
-      }));
-
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Application started successfully",
-      }));
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Missing jobId in body",
+        })
+      );
     });
 
-    it("should return 500 if an error occurs", async () => {
-      Application.create = jest.fn().mockRejectedValue(new Error("Database error"));
+    it("should create a new application (201) if valid", async () => {
+      // the controller finds the user: User.findOne({ uid })
+      // so we must mock the user
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
 
-      await applicationController.apply(req, res);
+      // the request
+      req.body = {
+        jobId: "job123",
+        coverLetter: "cover",
+      };
+      req.uid = "mock-firebase-uid";
+
+      // when we call Application.create, we want it to return a new doc
+      // the code then does newApp.populate("job")
+      const mockApp = {
+        populate: jest.fn().mockResolvedValue({
+          _id: "newAppId",
+          job: "job123",
+        }),
+      };
+      Application.create = jest.fn().mockResolvedValue(mockApp);
+
+      await applicationController.createApplication(req, res);
+
+      // check the create call
+      expect(Application.create).toHaveBeenCalledWith({
+        job: "job123",
+        applicant: "someUserId",
+        coverLetter: "cover",
+        status: "applied",
+      });
+
+      // check we populated the job
+      expect(mockApp.populate).toHaveBeenCalledWith("job");
+
+      // check final response
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Application created",
+        })
+      );
+    });
+
+    it("should return 500 if DB error", async () => {
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      req.body = { jobId: "job456", coverLetter: "any letter" };
+
+      // DB throws error
+      Application.create = jest.fn().mockRejectedValue(new Error("DB error"));
+
+      await applicationController.createApplication(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: false,
-        message: "Error submitting application",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "DB error", // from the actual error message
+        })
+      );
     });
   });
 
-  //  Test: Retrieving an Application
+  // ----------------------------------------------------------------
+  // GET APPLICATION (controller method: getApplication)
+  // ----------------------------------------------------------------
   describe("getApplication", () => {
     it("should return an application if found", async () => {
-      req.params = { jobId: mockApplications[0].job, userId: mockApplications[0].applicant };
-
-      Application.findOne = jest.fn().mockResolvedValue(mockApplications[0]);
+      // code uses req.params.jobId, and app is found by job + applicant
+      req.params = { jobId: "job123" };
+      req.uid = "mock-uid-user";
+      // mock the findOne
+      const mockApp = { _id: "someAppId" };
+      Application.findOne = jest.fn().mockResolvedValue(mockApp);
 
       await applicationController.getApplication(req, res);
 
       expect(Application.findOne).toHaveBeenCalledWith({
-        job: req.params.jobId,
-        applicant: req.params.userId,
+        job: "job123",
+        applicant: "mock-uid-user",
       });
-
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Application retrieved successfully",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Application retrieved successfully",
+        })
+      );
     });
 
-    it("should return 404 if application not found", async () => {
-      req.params = { jobId: "nonexistent", userId: "unknown" };
+    it("should return 404 if app not found", async () => {
+      req.params = { jobId: "nonexistent" };
+      req.uid = "mock-uid-user";
 
       Application.findOne = jest.fn().mockResolvedValue(null);
 
       await applicationController.getApplication(req, res);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: false,
-        message: "Application not found",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Application not found",
+        })
+      );
     });
 
-    it("should return 500 if an error occurs", async () => {
-      req.params = { jobId: "error", userId: "error" };
+    it("should return 500 if a DB error occurs", async () => {
+      req.params = { jobId: "error" };
+      req.uid = "mock-uid-user";
 
       Application.findOne = jest.fn().mockRejectedValue(new Error("Database failure"));
 
       await applicationController.getApplication(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: false,
-        message: "Error retrieving application",
-      }));
-    });
-  });
-
-
-
-
-  /// cancel tests
-  describe("cancel", () => {
-    it("should return 404 if application not found", async () => {
-      req.params = { applicationId: "fakeId" };
-      Application.findById = jest.fn().mockResolvedValue(null);
-
-      await applicationController.cancel(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: "Application not found",
-      });
-    });
-
-    it("should return 400 if status !== 'applying'", async () => {
-      req.params = { applicationId: "someId" };
-      const mockApp = { status: "applied" };
-      Application.findById = jest.fn().mockResolvedValue(mockApp);
-
-      await applicationController.cancel(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: "Only applications in 'applying' status can be canceled",
-      });
-    });
-
-    it("should delete and return 200 if status = 'applying'", async () => {
-      req.params = { applicationId: "someId" };
-      const mockApp = { status: "applying" };
-      Application.findById = jest.fn().mockResolvedValue(mockApp);
-      Application.findByIdAndDelete = jest.fn().mockResolvedValue(true);
-
-      await applicationController.cancel(req, res);
-
-      expect(Application.findByIdAndDelete).toHaveBeenCalledWith("someId");
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        message: "Application canceled successfully",
-      });
-    });
-
-    it("should return 500 on DB error", async () => {
-      req.params = { applicationId: "someId" };
-      Application.findById = jest.fn().mockRejectedValue(new Error("DB error"));
-
-      await applicationController.cancel(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          //message: "Error canceling application",
-          message: "DB error",
+          message: "Database failure",
         })
       );
     });
   });
 
-  //updating status tests
+  // ----------------------------------------------------------------
+  // UPDATE APPLICATION STATUS (controller method: updateApplicationStatus)
+  // ----------------------------------------------------------------
   describe("updateApplicationStatus", () => {
     it("should return 400 if status is invalid", async () => {
-      req.params = { id: "appId" };
-      req.body = { status: "unknown" };
+      req.params = { id: "someAppId" };
+      req.body = { status: "unknown" }; // not in valid list
 
       await applicationController.updateApplicationStatus(req, res);
 
@@ -187,10 +200,13 @@ describe("Application Controller", () => {
       });
     });
 
-    it("should return 404 if application not found", async () => {
-      req.params = { id: "someId" };
+    it("should return 404 if app not found", async () => {
+      req.params = { id: "someAppId" };
       req.body = { status: "applied" };
-      Application.findById = jest.fn().mockResolvedValue(null);
+      // findById => .populate("job") => let's mock that chain
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
 
       await applicationController.updateApplicationStatus(req, res);
 
@@ -201,16 +217,24 @@ describe("Application Controller", () => {
       });
     });
 
-    it("should update status + return 200 if found", async () => {
-      req.params = { id: "someId" };
+    it("should update status + return 200 if found & authorized", async () => {
+      req.params = { id: "someAppId" };
       req.body = { status: "applied" };
-      const mockApp = { _id: "someId", save: jest.fn() };
-      Application.findById = jest.fn().mockResolvedValue(mockApp);
+      req.uid = "employer-uid"; // code checks postedBy matches this
+
+      const mockApp = { _id: "someAppId", save: jest.fn(), job: "mockJobId" };
+      // chain
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue(mockApp),
+      });
+      // next the code calls Job.findById(application.job)
+      Job.findById = jest.fn().mockResolvedValue({ postedBy: "employer-uid" });
 
       await applicationController.updateApplicationStatus(req, res);
 
       expect(mockApp.status).toBe("applied");
       expect(mockApp.save).toHaveBeenCalled();
+
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -220,10 +244,35 @@ describe("Application Controller", () => {
       );
     });
 
-    it("should return 500 on error", async () => {
+    it("should return 403 if the employer is not the one who posted the job", async () => {
+      // The code checks postedBy != req.uid => 403
+      req.params = { id: "someAppId" };
+      req.body = { status: "applied" };
+      req.uid = "someone-else-uid";
+
+      const mockApp = { _id: "someAppId", save: jest.fn(), job: "mockJobId" };
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue(mockApp),
+      });
+      // job postedBy is "employer-uid" but we have "someone-else-uid"
+      Job.findById = jest.fn().mockResolvedValue({ postedBy: "employer-uid" });
+
+      await applicationController.updateApplicationStatus(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "Unauthorized to update application status",
+      });
+    });
+
+    it("should return 500 on DB error", async () => {
       req.params = { id: "errorId" };
       req.body = { status: "applied" };
-      Application.findById = jest.fn().mockRejectedValue(new Error("DB error"));
+      // we simulate an error
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockRejectedValue(new Error("DB error")),
+      });
 
       await applicationController.updateApplicationStatus(req, res);
 
@@ -231,23 +280,28 @@ describe("Application Controller", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          // message: "Error updating application status",
-          message: "DB error",
+          message: "DB error", // from the actual thrown error
         })
       );
     });
   });
 
-  //// get applicant tests
+  // ----------------------------------------------------------------
+  // GET APPLICANTS (controller method: getApplicants)
+  // ----------------------------------------------------------------
   describe("getApplicants", () => {
     it("should return a list of applicants (200)", async () => {
       req.params = { jobId: "someJobId" };
+      // code calls Job.findById(jobId)
+      Job.findById = jest.fn().mockResolvedValue({ _id: "someJobId" });
+
       const mockApp = {
         applicant: { _id: "userId", name: "TestUser", email: "test@user.com" },
       };
-      Application.find = jest
-        .fn()
-        .mockReturnValue({ populate: jest.fn().mockResolvedValue([mockApp]) });
+      // code calls Application.find({ job: jobId }).populate("applicant", "name email")
+      Application.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue([mockApp]),
+      });
 
       await applicationController.getApplicants(req, res);
 
@@ -261,11 +315,26 @@ describe("Application Controller", () => {
       );
     });
 
+    it("should return 403 if no job found", async () => {
+      req.params = { jobId: "invalidJobId" };
+      // code checks if (!job) => 403
+      Job.findById = jest.fn().mockResolvedValue(null);
+
+      await applicationController.getApplicants(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Unauthorized to view applicants for this job",
+        })
+      );
+    });
+
     it("should return 500 on error", async () => {
       req.params = { jobId: "errJob" };
-      Application.find = jest
-        .fn()
-        .mockReturnValue({ populate: jest.fn().mockRejectedValue(new Error("DB error")) });
+      // Job.findById => throw an error
+      Job.findById = jest.fn().mockRejectedValue(new Error("DB error"));
 
       await applicationController.getApplicants(req, res);
 
@@ -273,22 +342,31 @@ describe("Application Controller", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          // message: "Error retrieving applicants",
           message: "DB error",
         })
       );
     });
   });
 
- /// get all applications tests
+  // ----------------------------------------------------------------
+  // GET ALL APPLICATIONS (controller method: getAllApplications)
+  // ----------------------------------------------------------------
   describe("getAllApplications", () => {
-    it("should fetch all apps if no applicant param", async () => {
-      Application.find = jest.fn().mockReturnValue({ populate: jest.fn().mockResolvedValue(mockApplications) });
-      req.query = {};
+    it("should fetch apps for the user in req.uid", async () => {
+      // The code does:
+      // const user = await User.findOne({ uid: uid });
+      // const filter = { applicant: user._id };
+      // const apps = await Application.find(filter).populate("job");
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      Application.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue(mockApplications),
+      });
 
+      req.uid = "mock-firebase-uid";
       await applicationController.getAllApplications(req, res);
 
-      expect(Application.find).toHaveBeenCalledWith({});
+      expect(User.findOne).toHaveBeenCalledWith({ uid: "mock-firebase-uid" });
+      expect(Application.find).toHaveBeenCalledWith({ applicant: "someUserId" });
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
@@ -297,25 +375,12 @@ describe("Application Controller", () => {
       );
     });
 
-    it("should filter by applicant if query param is present", async () => {
-      req.query = { applicant: "abc123" };
-      Application.find = jest.fn().mockReturnValue({ populate: jest.fn().mockResolvedValue(mockApplications) });
+    it("should return 500 on error", async () => {
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      Application.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockRejectedValue(new Error("DB error")),
+      });
 
-      await applicationController.getAllApplications(req, res);
-
-      expect(Application.find).toHaveBeenCalledWith({ applicant: "abc123" });
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: true,
-          message: "Applications fetched",
-        })
-      );
-    });
-
-    it("should return 500 on DB error", async () => {
-      Application.find = jest.fn().mockReturnValue({ populate: jest.fn().mockRejectedValue(new Error("DB error")) });
-      
-      req.query = {};
       await applicationController.getAllApplications(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -328,13 +393,20 @@ describe("Application Controller", () => {
     });
   });
 
-  /// GET ONE APPLICATION TESTS
+  // ----------------------------------------------------------------
+  // GET ONE APPLICATION (controller method: getOneApplication)
+  // ----------------------------------------------------------------
   describe("getOneApplication", () => {
     it("should return 404 if not found", async () => {
-      req.params = { id: "someId" };
-      Application.findById = jest
-        .fn()
-        .mockReturnValue({ populate: jest.fn().mockResolvedValue(null) });
+      // code uses { id } from req.query
+      req.query = { id: "someId" };
+      req.uid = "mockUserUid";
+
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      // findById => populate => return null => 404
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue(null),
+      });
 
       await applicationController.getOneApplication(req, res);
 
@@ -347,11 +419,41 @@ describe("Application Controller", () => {
       );
     });
 
-    it("should return 200 + app doc if found", async () => {
-      req.params = { id: "someId" };
-      Application.findById = jest
-        .fn()
-        .mockReturnValue({ populate: jest.fn().mockResolvedValue(mockApplications[0]) });
+    it("should return 403 if the user does not own the app", async () => {
+      req.query = { id: "someId" };
+      req.uid = "mockUserUid";
+
+      // user => _id = "otherUserId"
+      User.findOne = jest.fn().mockResolvedValue({ _id: "otherUserId" });
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue({
+          _id: "someId",
+          applicant: "someoneElseId",
+        }),
+      });
+
+      await applicationController.getOneApplication(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Unauthorized",
+        })
+      );
+    });
+
+    it("should return 200 + app doc if found and user matches", async () => {
+      req.query = { id: "someId" };
+      req.uid = "mockUserUid";
+
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockResolvedValue({
+          _id: "someId",
+          applicant: "someUserId",
+        }),
+      });
 
       await applicationController.getOneApplication(req, res);
 
@@ -364,10 +466,13 @@ describe("Application Controller", () => {
     });
 
     it("should return 500 on DB error", async () => {
-      req.params = { id: "errorId" };
-      Application.findById = jest
-        .fn()
-        .mockReturnValue({ populate: jest.fn().mockRejectedValue(new Error("DB error")) });
+      req.query = { id: "errorId" };
+      req.uid = "mockUserUid";
+
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      Application.findById = jest.fn().mockReturnValue({
+        populate: jest.fn().mockRejectedValue(new Error("DB error")),
+      });
 
       await applicationController.getOneApplication(req, res);
 
@@ -381,70 +486,15 @@ describe("Application Controller", () => {
     });
   });
 
-  // CREATE APPLICATION TESTS
-  describe("createApplication", () => {
-    it("should return 400 if missing jobId or applicant", async () => {
-      req.body = { jobId: null, applicant: null };
-      await applicationController.createApplication(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: false,
-          message: "Missing jobId or applicant in body",
-        })
-      );
-    });
-
-    it("should create a new application (201) if valid", async () => {
-      req.body = {
-        jobId: "job123",
-        applicant: "user123",
-        coverLetter: "cover",
-      };
-      const mockSaveApp = {
-        populate: jest.fn().mockResolvedValue({ _id: "newAppId" }),
-      };
-      Application.create = jest.fn().mockResolvedValue(mockSaveApp);
-
-      await applicationController.createApplication(req, res);
-
-      expect(Application.create).toHaveBeenCalledWith({
-        job: "job123",
-        applicant: "user123",
-        coverLetter: "cover",
-        status: "applied",
-      });
-      expect(mockSaveApp.populate).toHaveBeenCalledWith("job");
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: true,
-          message: "Application created",
-        })
-      );
-    });
-
-    it("should return 500 if DB error", async () => {
-      req.body = { jobId: "job456", applicant: "user456" };
-      Application.create = jest.fn().mockRejectedValue(new Error("DB error"));
-
-      await applicationController.createApplication(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: false,
-          message: "DB error",
-        })
-      );
-    });
-  });
-
-  //Withdraw application Tests
+  // ----------------------------------------------------------------
+  // WITHDRAW APPLICATION (controller method: withdrawApplication)
+  // ----------------------------------------------------------------
   describe("withdrawApplication", () => {
     it("should return 404 if app not found", async () => {
-      req.params = { id: "someId" };
+      req.query = { id: "someId" };
+      req.uid = "mockUserUid";
+
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
       Application.findById = jest.fn().mockResolvedValue(null);
 
       await applicationController.withdrawApplication(req, res);
@@ -457,8 +507,11 @@ describe("Application Controller", () => {
     });
 
     it("should delete the application + return success", async () => {
-      req.params = { id: "someId" };
-      const mockApp = { _id: "someId", deleteOne: jest.fn() };
+      req.query = { id: "someId" };
+      req.uid = "mockUserUid";
+
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      const mockApp = { applicant: "someUserId", deleteOne: jest.fn() };
       Application.findById = jest.fn().mockResolvedValue(mockApp);
 
       await applicationController.withdrawApplication(req, res);
@@ -471,8 +524,28 @@ describe("Application Controller", () => {
       });
     });
 
+    it("should return 403 if user is not the owner of the app", async () => {
+      req.query = { id: "someId" };
+      req.uid = "mockUserUid";
+
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
+      const mockApp = { applicant: "someoneElseId", deleteOne: jest.fn() };
+      Application.findById = jest.fn().mockResolvedValue(mockApp);
+
+      await applicationController.withdrawApplication(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "Unauthorized",
+      });
+    });
+
     it("should return 500 on error", async () => {
-      req.params = { id: "errorId" };
+      req.query = { id: "errorId" };
+      req.uid = "mockUserUid";
+
+      User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
       Application.findById = jest.fn().mockRejectedValue(new Error("DB error"));
 
       await applicationController.withdrawApplication(req, res);

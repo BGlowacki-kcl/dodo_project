@@ -1,4 +1,4 @@
-import { Application } from "../../models/application.model.js"; 
+import  Application  from "../../models/application.model.js"; 
 import applicationData from "../fixtures/application.fixture.json";
 
 // Function to seed the database with application test data
