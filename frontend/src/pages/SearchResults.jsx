@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getAllJobs, getFilteredJobs } from "../services/jobService";
-import SwipeFilters from "../components/SwipeFilters";
+import SearchFilters from "../components/SearchFilters";
 import { authService } from "../services/auth.service";
 
 const SearchResults = () => {
@@ -38,10 +38,10 @@ const SearchResults = () => {
         try {
             let data;
             const filters = {};
-            if (jobTypes.length > 0) filters.jobType = jobTypes;
-            if (locations.length > 0) filters.location = locations;
-            if (roles.length > 0) filters.role = roles;
-            if (Object.keys(filters).length > 0) {
+            filters.jobType = jobTypes;
+            filters.location = locations;
+            filters.role = roles;
+            if (Object.keys(filters)) {
                 console.log("Fetching filtered jobs with:", filters);
                 data = await getFilteredJobs(filters);
             } else {
@@ -58,7 +58,35 @@ const SearchResults = () => {
 
     useEffect(() => {
         fetchSearchResults();
-    }, [jobTypes, locations, roles]);
+    }, []);
+
+    const applyFilters = async (selectedJobTypes, selectedTitles, selectedLocations) => {
+        try {
+            setLoading(true);  // Start loading
+            setSearchResults([]); // Clear previous results before applying new filters
+    
+            let data;
+            const filters = {};
+    
+            if (selectedJobTypes) filters.jobType = selectedJobTypes;
+            if (selectedTitles) filters.role = selectedTitles;
+            if (selectedLocations) filters.location = selectedLocations;
+    
+            console.log("Applying filters:", filters);
+    
+            if (Object.values(filters).some(value => value && value.length > 0)) {
+                data = await getFilteredJobs(filters);
+            } else {
+                data = await getAllJobs();
+            }
+    
+            setSearchResults(data);
+        } catch (error) {
+            console.error("Error applying filters:", error);
+        } finally {
+            setLoading(false); // Stop loading after data is fetched
+        }
+    };
 
     const indexOfLastResult = currentPage * resultsPerPage;
     const indexOfFirstResult = indexOfLastResult - resultsPerPage;
@@ -69,7 +97,7 @@ const SearchResults = () => {
     return (
         <div className="flex flex-row max-h-screen">
             <div className="w-30%">
-                <SwipeFilters />
+                <SearchFilters applyFilters={applyFilters} />
             </div>
             <div className="bg-background min-h-screen w-full flex flex-col items-center">
                 {/* PAGE HEADER */}
