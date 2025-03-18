@@ -54,7 +54,7 @@ export const getUserJobRecommendations = async (req, res) => {
         return res.status(400).json({ message: "User CV is missing" });
     }
 
-    const jobs = await Job.find().limit(30);
+    const jobs = await Job.find().limit(50);
 
     const jobMatches = await Promise.all(
         jobs.map(async (job) => {
