@@ -93,10 +93,12 @@ const assessmentController = {
             if (String(application.applicant) !== String(user._id)) {
                 return res.status(403).json({ message: "User not authorized" });
             }
-            const submissions = await CodeSubmission.find({ applicationId: appId, userId: user._id });
+            const submissions = await CodeSubmission.find({ application: appId });
+            console.log(submissions);
     
             const jobPost = await Job.findOne({ _id: application.job });
             const assessments = jobPost.assessments;
+            console.log("ass: ", assessments);
     
             if (!assessments || assessments.length === 0) {
                 return res.status(400).json({ message: "No assessment required for this application" });
@@ -106,23 +108,26 @@ const assessmentController = {
             submissions.forEach(sub => {
                 submissionMap.set(sub.assessment.toString(), sub);
             });
+            console.log(submissionMap);
     
             const assessmentsWithStatus = await Promise.all(assessments.map(async (assessmentId) => {
+                console.log("assId: ", assessmentId);
                 const assessmentObject = await CodeAssessment.findById(assessmentId);
                 if (!assessmentObject) {
-                    return { title: "Unknown", id: assessmentId, status: "not-attempted" };
+                    return { title: "Unknown", id: assessmentId, status: "not-submitted" };
                 }
     
                 const submission = submissionMap.get(assessmentId.toString());
-                let status = "not-attempted";
+                let status = "not-submitted";
+                console.log(submission);
     
                 if (submission) {
-                    status = submission.testsPassed === 10 ? "completed" : "attempted";
+                    status = submission.score === 10 ? "completed-full" : submission.score === 0 ? "attempted" : "completed-partial";
                 }
     
                 return {
                     title: assessmentObject.title, 
-                    id: assessmentObject._id,
+                    id: assessmentId,
                     status,
                 };
             }));
@@ -139,33 +144,48 @@ const assessmentController = {
     
     async submit(req, res){
         try {
-            console.log("SUbmiting");
             const { uid } = req;
-            const { appId, testsPassed, code, language } = req.body;
+            const { appId, testsPassed, code, language, taskId } = req.body;
 
             const user = await User.findOne({ uid });
             const application = await Application.findOne({ _id: appId });
             if(!application || !user || String(application.applicant) !== String(user._id)){
                 return res.status(403).json({ message: "User not authorized" });
             }
-            const assessment = application.assessment;
 
-            if (!assessment) {
-                return res.status(400).json({ message: "Assessment not found" });
+            const previousSubmission = await CodeSubmission.findOne({ application: appId, assessment: taskId });
+            console.log("Prev: ", previousSubmission);
+
+            if (!previousSubmission) {
+                await CodeSubmission.create({
+                    assessment: taskId,
+                    application: application._id,
+                    solutionCode: code,
+                    language,
+                    score: testsPassed,
+                });
+                return res.status(200).json({ success: true, message: "Submitted successfully!" });
             }
-
-            const submission = await CodeSubmission.create({
-                assessment,
-                application: application._id,
-                solutionCode: code,
-                score,
+            
+            // For existing submissions, only update if the new score is higher
+            if (testsPassed > previousSubmission.score) {
+                previousSubmission.solutionCode = code;
+                previousSubmission.language = language;
+                previousSubmission.score = testsPassed;
+                await previousSubmission.save();
+                return res.status(200).json({ success: true, message: "Submitted successfully!" });
+            }
+            
+            // Return without saving if the score isn't higher
+            return res.status(200).json({ 
+                success: true, 
+                message: "Not saved. Highest score: " + previousSubmission.score 
             });
+
         } catch (err) {
             console.error("Submission error: ", error);
             return res.status(500).json({ message: "Internal server error" });
         }
-
-        return res.status(201).json({ message: "Submission successful", submission });
     },
 
     async getAllTasks(req, res) {

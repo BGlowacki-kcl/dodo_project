@@ -15,7 +15,8 @@ const codeAssessmentSchema = new mongoose.Schema({
         }
     ],
     funcForCpp: String,
-    funcForCppTest: String
+    funcForCppTest: String,
+    inputForPythonJS: String,
 });
 
 export default mongoose.model('CodeAssessment', codeAssessmentSchema);

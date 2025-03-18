@@ -9,48 +9,6 @@ export const assessmentService = {
         ) {
             return {data: {stderr: "You cannot use output statement in your code"}};
         }
-        // const tests = [
-        //     {
-        //         input: [1, 2],
-        //         output: 3,
-        //     },
-        //     {
-        //         input: [3, 4],
-        //         output: 7,
-        //     },
-        //     {
-        //         input: [5, 6],
-        //         output: 11,
-        //     },
-        //     {
-        //         input: [10, 6],
-        //         output: 16,
-        //     },
-        //     {
-        //         input: [11, 6],
-        //         output: 17,
-        //     },
-        //     {
-        //         input: [11, 6],
-        //         output: 17,
-        //     },
-        //     {
-        //         input: [11, 6],
-        //         output: 17,
-        //     },
-        //     {
-        //         input: [11, 6],
-        //         output: 17,
-        //     },
-        //     {
-        //         input: [11, 6],
-        //         output: 17,
-        //     },
-        //     {
-        //         input: [11, 6],
-        //         output: 17,
-        //     },
-        // ]
         
         code += constructCode(tests,  language, funcForCppTest);
         console.log("Code: ", code, "...");
@@ -97,6 +55,7 @@ export const assessmentService = {
                 'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
             },
         });
+        console.log("RES: ",response);
         checkTokenExpiration(response);
         if(!response.ok){
             return response;
@@ -121,7 +80,7 @@ export const assessmentService = {
         return data;
     },
 
-    async submit(appId, testsPassed, code, language){
+    async submit(appId, testsPassed, code, language, taskId){
         try {
             const response = await fetch('/api/assessment/submit', {
                 method: 'POST',
@@ -133,13 +92,15 @@ export const assessmentService = {
                     appId,
                     testsPassed,
                     code,
-                    language
+                    language,
+                    taskId
                 })
             })
+            const data = await response.json();
             if(!response.ok){
-                return { success: false, message: "Something went wrong" };
+                return { success: false, message: data.message };
             }
-            return { success: true, message: "Submitted successfully" };
+            return { success: true, message: data.message };
         } catch (err) {
             return { success: false, message: "Server error" };
         }

@@ -1,12 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
-import Editor from "@monaco-editor/react";
-import { assessmentService } from '../../services/assessment.service';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useNotification } from '../../context/notification.context';
-import { checkTokenExpiration } from '../../services/auth.service';
-import AssessmentStatus from '../../components/AssessmentStatus';
+import Editor from "@monaco-editor/react";
+
 import { auth } from '../../firebase.js';
-import { onAuthStateChanged } from 'firebase/auth';
+import { assessmentService } from '../../services/assessment.service';
+import { useNotification } from '../../context/notification.context';
+import AssessmentStatus from '../../components/AssessmentStatus';
 
 const CodeAss = () => {
   const [code, setCode] = useState(``);
@@ -15,12 +14,18 @@ const CodeAss = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
-  const [tasksId, setTasksId] = useState([]);
+  const [tasksId, setTasksId] = useState([{
+    id: "",
+    status: "",
+    title: ""
+  }]);
   const [task, setTask] = useState({
+    _id: "",
     description: "",
     tests: null,
     funcForCpp: "",
-    funcForCppTests:"",
+    funcForCppTest:"",
+    inputForPythonJS:"",
     code: ""
   });
   const { appId } = useParams();
@@ -53,24 +58,25 @@ const CodeAss = () => {
     };
   }, [navigate, showNotification]);
 
+
+  const fetchAndSetFirstTask = async () => {
+    try {
+      const taskResponse = await assessmentService.getTasksId(appId);
+      console.log("Task Ids: ", taskResponse.data);
+      
+      if (taskResponse.data.length === 0) return; 
+      setTasksId(taskResponse.data);
+      
+      const firstTaskResponse = await assessmentService.getTask(appId, taskResponse.data[0].id);
+      console.log("First task: ", firstTaskResponse);
+      
+      setTask(firstTaskResponse.data.assessment);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchAndSetFirstTask = async () => {
-      try {
-        const taskResponse = await assessmentService.getTasksId(appId);
-        console.log("Task Ids: ", taskResponse.data);
-        
-        if (taskResponse.data.length === 0) return; 
-        setTasksId(taskResponse.data);
-        
-        const firstTaskResponse = await assessmentService.getTask(appId, taskResponse.data[0].id);
-        console.log("First task: ", firstTaskResponse);
-        
-        setTask(firstTaskResponse.data.assessment);
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      }
-    };
-    
     fetchAndSetFirstTask();
   }, [appId]);
   
@@ -80,6 +86,7 @@ const CodeAss = () => {
   }, [task, language]);
 
   const handleTaskChange = async (taskId) => {
+    // TODO: get previous submission code
     const response = await assessmentService.getTask(appId, taskId);
     console.log("Task retrived: ", response);
     setTask(response.data.assessment);
@@ -93,12 +100,12 @@ const CodeAss = () => {
     if (lang === "python") {
       defText = `# ${task.description}
 
-def func(x, y):
+def func(${task.inputForPythonJS}):
   # Write your code here`;
     } else if (lang === "javascript") {
       defText = `// ${task.description}
 
-function func(x, y) {
+function func(${task.inputForPythonJS}) {
   // Write your code here
 
 }`;
@@ -112,7 +119,7 @@ function func(x, y) {
 
 using namespace std;
 
-int func(${task.funcForCpp}) { //here
+int func(${task.funcForCpp}) {
   // Write your code here
 
   return 0;
@@ -131,13 +138,19 @@ int func(${task.funcForCpp}) { //here
     }
     setLanguage(e.target.value);
   }
+
+  const submitAll = async () => {
+    // TODO: Change status of application to in review
+    showNotification("Tank you for taking the assessment", "success");
+    navigate("/");
+  }
   
   const runCode = async () => {
     setLoading(true);
     setError("");
     setOutput("");
     console.log("TASKLLLLL: ", task);
-    const response = await assessmentService.runCode(code, language, task.testCases, task.funcForCppTests);
+    const response = await assessmentService.runCode(code, language, task.testCases, task.funcForCppTest);
     console.log("Res: ", response);
     setLoading(false);
 
@@ -170,12 +183,36 @@ int func(${task.funcForCpp}) { //here
 
   const handleSubmit = async () => {
     console.log("SUBMIT");
-    const response = await assessmentService.submit(appId, testsPassed, code, language);
-    if(!response.success){
-      showNotification("Submission not successful", "danger");
-    }
-    showNotification("Submission sucessful", "success");
+    const response = await assessmentService.submit(appId, testsPassed, code, language, task._id);
+    const notificationStatus = response.success ? "success" : "danger";
+    changeIconAfterSubmit();
+    showNotification(response.message, notificationStatus);
   }
+
+  const changeIconAfterSubmit = async () => {
+    const getStatusRank = (status) => {
+        switch (status) {
+            case "completed-full": return 3;
+            case "completed-partial": return 2;
+            case "attempted": return 1;
+            default: return 0;
+        }
+    };
+
+    const newStatus = testsPassed === 10 ? "completed-full" : (testsPassed >= 1 ? "completed-partial" : "attempted");
+
+    setTasksId(prevTasksId => prevTasksId.map(t => {
+        if (t.id === task._id) {
+            const currentRank = getStatusRank(t.status);
+            const newRank = getStatusRank(newStatus);
+
+            if (newRank > currentRank) {
+                return { ...t, status: newStatus };
+            }
+        }
+        return t;
+    }));
+};
 
   return (
     <div className='bg-[#1B2A41] h-fit'>
@@ -244,6 +281,7 @@ int func(${task.funcForCpp}) { //here
             <AssessmentStatus key={task.id} status={task.status} onClick={() => handleTaskChange(task.id)} title={task.title} />
           ))}
         </div>
+        <button className="h-16 w-32 border-white bg-green-600 text-black border-2 rounded-xl mb-10" onClick={submitAll} >Finish assessment!</button>
       </div>
     </div>
   )

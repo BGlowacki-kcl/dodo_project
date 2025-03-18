@@ -21,6 +21,12 @@ const codeSubmissionSchema = new mongoose.Schema({
 
     score: Number,
 
+    language: {
+        type: String,
+        required: true,
+        enum: ['python', 'cpp', 'javascript']
+    },
+
     submittedAt: {
         type: Date,
         default: Date.now

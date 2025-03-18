@@ -26,10 +26,12 @@ import ApplicantDetails from './pages/employer/ApplicantDetails';
 import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
 import { useNotification } from './context/notification.context';
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 function App() {
 	const navigate = useNavigate();
 	const showNotification = useNotification();
+	const location = useLocation();
 
 	useEffect(() => {
         const handleSessionExpired = () => {
@@ -43,6 +45,8 @@ function App() {
             window.removeEventListener("sessionExpired", handleSessionExpired);
         };
     }, [navigate, showNotification]);
+
+	const hideNavbar = location.pathname.startsWith('/codeassessment');
 
 	const routeConfig = [
 		// For unLogged users (landing and authorization pages)
@@ -79,7 +83,7 @@ function App() {
 
 	return (
 		<Box className="bg-background min-h-screen">
-			<Navbar />
+			{ !hideNavbar && <Navbar /> }
 			<Routes>
 				{routeConfig.map((route) => (
 					<Route
