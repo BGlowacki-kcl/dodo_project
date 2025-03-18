@@ -48,6 +48,11 @@ const jobSchema = new Schema({
         default: Date.now
     },
 
+    deadline: {
+        type: Date,
+        default: null
+    },
+
     updatedAt: Date,
 
     applicants: [

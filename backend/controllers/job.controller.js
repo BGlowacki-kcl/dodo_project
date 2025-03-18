@@ -12,8 +12,10 @@ export const createJob = async (req, res) => {
             employmentType,
             requirements,
             experienceLevel,
+            postedBy,
+            deadline,
         } = req.body;
-        const { postedBy } = req;
+        
 
         if (!title || !company || !location || !description || !postedBy) {
             return res.status(400).json({ message: 'All required fields must be filled.' });
@@ -30,6 +32,7 @@ export const createJob = async (req, res) => {
             requirements,
             experienceLevel,
             postedBy,
+            deadline
         });
 
         const createdJob = await job.save();
