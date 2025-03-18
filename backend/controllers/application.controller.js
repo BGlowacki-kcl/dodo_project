@@ -134,7 +134,7 @@ export const applicationController = {
                 status: "applied",
             });
 
-            await Job.findByIdAndUpdate(jobId, { $addToSet: { applicants: newApp._id } });
+            await Job.findByIdAndUpdate(jobId, { $addToSet: { applicants: user._id } });
 
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
