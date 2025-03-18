@@ -57,6 +57,20 @@ const jobSchema = new Schema({
         }
     ],
 
+    questions: [
+        {
+            questionText: {
+                type: String,
+                required: false
+            },
+            required: {
+                type: Boolean,
+                default: false
+            },
+
+        }
+    ]
+
 });
 
 export default mongoose.model('Job', jobSchema);

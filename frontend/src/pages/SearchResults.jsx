@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getAllJobs, getFilteredJobs } from "../services/jobService";
 import SearchFilters from "../components/SearchFilters";
 import { authService } from "../services/auth.service";
@@ -7,6 +7,8 @@ import { authService } from "../services/auth.service";
 const SearchResults = () => {
     const url = useLocation();
     const searchParams = new URLSearchParams(url.search);
+    const navigate = useNavigate();
+    
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
@@ -56,6 +58,10 @@ const SearchResults = () => {
         }
     };
 
+    const handleJobClick = (jobId) => {
+        navigate(`/user/jobs/details/${jobId}`);
+    };
+    
     useEffect(() => {
         fetchSearchResults();
     }, []);
