@@ -28,20 +28,18 @@ const jobSchema = new Schema({
         max: Number
     },
 
-    // can change if needed if we only want 1 employment type
     employmentType: {
-        type: [String],
-        enum: ['full-time', 'part-time', 'internship', 'graduate', 'placement'], // can add more employment types
-        default: ['full-time']
+        type: String,
+        required: true
     },
 
     requirements: [String],
 
-    experienceLevel: String, //such as entry, mid, senior
+    experienceLevel: String,
 
     postedBy: {
         type: Schema.Types.ObjectId,
-        ref: 'User', // can change this if we split employer into its own model
+        ref: 'Employer',
         required: true
     },
 

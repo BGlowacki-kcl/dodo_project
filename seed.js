@@ -1,20 +1,29 @@
 import mongoose from "mongoose";
+import { readFileSync } from 'fs';
 import "dotenv/config";
 import { faker } from "@faker-js/faker";
-import admin from "firebase-admin"; //  Import Firebase Admin SDK
+import admin from "firebase-admin";
+
 import User from "./backend/models/user/user.model.js";
 import { JobSeeker } from "./backend/models/user/jobSeeker.model.js";
 import { Employer } from "./backend/models/user/Employer.model.js";
 import Job from "./backend/models/job.model.js";
 import Application from "./backend/models/application.model.js";
+import Shortlist from "./backend/models/shortlist.model.js";
 
-import { generateCV } from "./backend/fixtures/cvTemplate.js"
+import { generateCV } from "./backend/fixtures/cvTemplate.js";
+import { generateCoverLetter } from "./backend/fixtures/coverLetTemplate.js";
+import { locations } from "./backend/fixtures/locationFixtures.js";
 import { universityNames, degreeTitles, fieldsOfStudy } from "./backend/fixtures/educationFixtures.js";
 import { techCompanies, techJobDetails, techSkills } from "./backend/fixtures/companyFixtures.js";
 
+
 //  Initialize Firebase Admin SDK
+const serviceAccountPath = process.env.FIREBASE_PATH; // Make sure firebase path exists in env file
+const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+
 admin.initializeApp({
-  credential: admin.credential.cert("./backend/config/dodo-project-42d5c-firebase-adminsdk-fbsvc-14414f6ab9.json"), // Make sure this file exists
+  credential: admin.credential.cert(serviceAccount),
 });
 
 //  Connect to MongoDB
@@ -53,18 +62,20 @@ const generateEducation = () => {
     };
 };
 
-const PASSWORD = "Password123";
+const PASSWORD = "Password123"; // Password for all seeded users
 
 // Generate Random JobSeekers
 const generateJobSeekers = async (num) => {
     const jobSeekers = [];
 
     for (let i = 0; i < num; i++) {
-        const email = faker.internet.email();
         const name = faker.person.fullName();
+        const email = faker.internet.email({ firstName: name });
         const firebaseUid = await createFirebaseUser(email, PASSWORD, name);
         if (!firebaseUid) continue;
+        const location = faker.helpers.arrayElement(locations);
         const education = generateEducation();
+        const skills = faker.helpers.arrayElements(techSkills, 5);
         const experience = {
             company: faker.company.name(),
             title: faker.person.jobTitle(),
@@ -77,36 +88,17 @@ const generateJobSeekers = async (num) => {
             email: email,
             role: "jobSeeker",
             name: name,
-            location: faker.location.city(),
+            location: location,
             education: [education],
             experience: [experience],
-            skills: faker.helpers.arrayElement(techSkills),
-            resume: generateCV(name, [education], [experience], email)
+            skills: skills,
+            resume: generateCV(name, location, [education], [experience], email, skills),
+            phoneNumber: faker.phone.number()
         }));
     }
 
     return jobSeekers;
 };
-
-
-// Generate Random Employers
-// const generateRandomEmployers = async (num) => {
-//   const employers = [];
-//
-//   for (let i = 0; i < num; i++) {
-//     employers.push({
-//       uid: faker.string.uuid(),
-//       email: faker.internet.email(),
-//       role: "employer",
-//       name: faker.company.name(),
-//       companyName: faker.company.name(),
-//       companyWebsite: faker.internet.url(),
-//       companyDescription: faker.company.catchPhrase(),
-//     });
-//   }
-//
-//   return employers;
-// };
 
 const generateEmployers =  async () => {
     const employers = [];
@@ -122,6 +114,7 @@ const generateEmployers =  async () => {
             companyName: company.companyName,
             companyWebsite: company.companyWebsite,
             companyDescription: company.companyDescription,
+            phoneNumber: company.phoneNumber
         }));
     }
 
@@ -139,16 +132,16 @@ const generateJobs = (num, employers) => {
         jobs.push({
             title: jobTitle,
             company: employer.companyName,
-            location: faker.location.city(),
+            location: faker.helpers.arrayElement(locations),
             description: techJobDetails[jobTitle],
             salaryRange: {
                 min: faker.number.int({ min: 30000, max: 60000 }),
                 max: faker.number.int({ min: 80000, max: 150000 })
             },
-            employmentType: faker.helpers.arrayElement(["full-time", "part-time", "internship", "contract"]),
-            requirements: faker.helpers.arrayElement(techSkills),
+            employmentType: faker.helpers.arrayElement(['Full-Time', 'Part-Time', 'Internship', 'Graduate', 'Placement']),
+            requirements: faker.helpers.arrayElements(techSkills, 3),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
-            postedBy: employer._id, // Link to employer who posted the job
+            postedBy: employer._id,
         });
     }
 
@@ -166,91 +159,75 @@ const generateApplications = (num, jobSeekers, jobs) => {
         applications.push({
             job: job._id,
             applicant: jobSeeker._id,
-            status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'rejected', 'accepted']),
-            coverLetter: faker.lorem.sentences(2)
+            status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted']),
+            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email)
         });
     }
 
     return applications;
 };
 
-// Code to wipe firebase user authentication record, use carefully, not reversible
-const deleteUsersInBatch = async (uids) => {
-    try {
-        const result = await admin.auth().deleteUsers(uids);
-        console.log(`${result.successCount} users deleted, ${result.failureCount} failed`);
-        if (result.failureCount > 0) {
-            console.log(result.errors);
-        }
-    } catch (error) {
-        console.error("Batch deletion error:", error);
+// Generate Random Shortlisted jobs for each jobSeeker
+const generateShortlists = (jobSeekers, jobs) => {
+    const shortlists = [];
+
+    for (let i = 0; i < jobSeekers.length; i++) {
+        // Choose a random number (1 to 5) of jobs to be saved
+        const numJobs = faker.number.int({ min: 1, max: 10 });
+        const savedJobs = faker.helpers.arrayElements(jobs, numJobs);
+
+        shortlists.push({
+            user: jobSeekers[i].uid,
+            jobs: savedJobs.map(job => job._id)
+        });
     }
+
+    return shortlists;
 };
 
-
-const deleteAllFirebaseUsers = async () => {
-    try {
-        let nextPageToken;
-        do {
-            // List up to 1000 users at a time
-            const listUsersResult = await admin.auth().listUsers(1000, nextPageToken);
-            const uids = listUsersResult.users.map(user => user.uid);
-            if (uids.length > 0) {
-                await deleteUsersInBatch(uids);
-                // Wait 60 seconds before deleting the next batch
-                await new Promise(resolve => setTimeout(resolve, 60000));
-            }
-            nextPageToken = listUsersResult.pageToken;
-        } while (nextPageToken);
-        console.log("All users processed.");
-    } catch (error) {
-        console.error("Error deleting Firebase users:", error);
-    }
-};
-
-//  Seed Database
+// Seed Database
 const seedDatabase = async () => {
-  try {
-    await connectDB();
+    try {
+        await connectDB();
 
-    //  Delete existing data
-    await Application.deleteMany();
-    await Job.deleteMany();
-    await User.deleteMany();
-    await JobSeeker.deleteMany();
-    await Employer.deleteMany();
-    console.log("Existing data deleted");
+        //  Delete existing data
+        await Application.deleteMany();
+        await Job.deleteMany();
+        await User.deleteMany();
+        await JobSeeker.deleteMany();
+        await Employer.deleteMany();
+        console.log("Existing data deleted");
 
-    // await deleteAllFirebaseUsers();
-    // console.log("Deleted firebase records");
+        const jobSeekers = await generateJobSeekers(100); // Generate 100 jobseekers
+        const employers = await generateEmployers(); // Generate employers from fixed list
 
-      const jobSeekers = await generateJobSeekers(100); // Generate 100 jobseekers
-      const employers = await generateEmployers();
+        const createdJobSeekers = await JobSeeker.insertMany(jobSeekers);
+        console.log("JobSeekers added...");
 
-      const createdJobSeekers = await JobSeeker.insertMany(jobSeekers);
-      console.log("JobSeekers added...");
+        const createdEmployers = await Employer.insertMany(employers);
+        console.log("Employers added...");
 
-      const createdEmployers = await Employer.insertMany(employers);
-      console.log("Employers added...");
+        // Generate and insert Jobs
+        const jobs = generateJobs(200, createdEmployers); // 200 Jobs
+        const createdJobs = await Job.insertMany(jobs);
+        console.log("Jobs added...");
 
-      // Generate and insert Jobs
-      const jobs = generateJobs(200, createdEmployers); // 200 Jobs
-      const createdJobs = await Job.insertMany(jobs);
-      console.log("Jobs added...");
+        // Generate and insert Applications
+        const applications = generateApplications(400, createdJobSeekers, createdJobs); // 300 Applications
+        await Application.insertMany(applications);
+        console.log("Applications added...");
 
-      // Generate and insert Applications
-      const applications = generateApplications(300, createdJobSeekers, createdJobs); // 300 Applications
-      await Application.insertMany(applications);
-      console.log("📄 Applications added...");
+        const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
+        await Shortlist.insertMany(shortlistsData);
+        console.log("Shortlists added...");
 
-
-    mongoose.connection.close();
-    console.log(" Database connection closed");
-  } catch (error) {
-    console.error("Seeding error:", error);
-    mongoose.connection.close();
-    process.exit(1);
-  }
+        mongoose.connection.close();
+        console.log(" Database connection closed");
+    } catch (error) {
+        console.error("Seeding error:", error);
+        mongoose.connection.close();
+        process.exit(1);
+    }
 };
 
 //  Run Seeder

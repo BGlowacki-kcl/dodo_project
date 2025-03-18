@@ -130,9 +130,7 @@ export const getJobCountByType = async (req, res) => {
 
 export const getAllJobRoles = async (req, res) => {
     try {
-      console.log("Fetching all job roles");
       const titles = await Job.distinct('title');
-      console.log("Found titles:", titles);
       res.status(200).json(titles);
     } catch (error) {
       console.error("Database error:", error);
@@ -145,9 +143,7 @@ export const getAllJobRoles = async (req, res) => {
 
 export const getAllJobLocations = async (req, res) => {
     try {
-      console.log("Fetching all job locations");
       const locations = await Job.distinct('location');
-      console.log("Found locations:", locations);
       res.status(200).json(locations);
     } catch (error) {
       console.error("Database error:", error);
@@ -157,3 +153,35 @@ export const getAllJobLocations = async (req, res) => {
       });
     }
   };
+
+export const getAllJobTypes = async (req, res) => {
+    try {
+        const employmentType = await Job.distinct('employmentType');
+        res.status(200).json(employmentType);
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ 
+        message: "Failed to fetch job types",
+        error: error.message 
+        });
+    }
+};
+
+export const getFilteredJobs = async (req, res) => {
+    try {
+        const { jobType, location, role } = req.query;
+
+        const filter = {};
+
+        // Convert single values to arrays if needed and apply filters
+        if (jobType) filter.employmentType = Array.isArray(jobType) ? { $in: jobType } : jobType;
+        if (location) filter.location = Array.isArray(location) ? { $in: location } : location;
+        if (role) filter.title = Array.isArray(role) ? { $in: role } : role;
+
+        const jobs = await Job.find(filter);
+        res.status(200).json(jobs);
+    } catch (error) {
+        console.error("Error fetching filtered jobs:", error);
+        res.status(500).json({ message: "Failed to fetch jobs", error: error.message });
+    }
+};

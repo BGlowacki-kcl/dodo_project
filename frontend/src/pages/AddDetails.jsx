@@ -137,7 +137,7 @@ const AddDetails = () => {
         e.preventDefault();
         try {
             await userService.updateUser(userData);
-            navigate("/dashboard");
+            navigate("/");
         } catch (error) {
             console.error("Error updating profile:", error);
         }
