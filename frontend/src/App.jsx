@@ -44,13 +44,13 @@ function App() {
 		{ path: '/codeassessment', element: <CodeAss />, roles: ['jobSeeker'] },
 		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['jobSeeker'] },
+		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
 		
 		// Employer accessible pages
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
-		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
+		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },

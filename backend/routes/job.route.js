@@ -27,6 +27,10 @@ router.post('/create', checkRole(["employer"]), createJob);
 // Get all job posts
 router.get('/', getJobs);
 
+
+
+router.get('/employer', checkRole(['employer']), getJobsByEmployer);
+
 // Get a job post by ID
 router.get('/:id', getJobById);
 
@@ -34,7 +38,7 @@ router.get('/:id', getJobById);
 router.put('/:id', updateJob);
 
 
-router.get('/employer', checkRole(['employer']), getJobsByEmployer);
+
 
 // Delete a job post
 router.delete('/:id', deleteJob);

@@ -10,29 +10,55 @@ const EmployerApplicants = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchApplicants = async () => {
-            try {
-                const response = await fetch(`/api/application/job/${jobId}/applicants`);
-                const data = await response.json();
-                console.log('API Response:', data); // Debug log
-                
-                if (data.success) {
-                    setApplicants(data.data);
-                } else {
-                    throw new Error(data.message || 'Failed to fetch applicants');
-                }
-            } catch (error) {
-                console.error('Error details:', error);
-                setError(error.message);
-            } finally {
-                setLoading(false);
+    const fetchApplicants = async () => {
+        try {
+            console.log('Fetching applicants for jobId:', jobId); // Debug log 1
+            
+            const token = sessionStorage.getItem('token');
+            console.log('Token:', token ? 'exists' : 'missing'); // Debug log 2
+            
+            if (!token) {
+                throw new Error('No authentication token found');
             }
-        };
 
-        if (jobId) {
-            fetchApplicants();
+            console.log('Making fetch request...'); // Debug log 3
+            const response = await fetch(`/api/application/job/${jobId}/applicants`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Response received:', response.status); // Debug log 4
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.log('Error response:', errorData); // Debug log 5
+                throw new Error(errorData.message || 'Failed to fetch applicants');
+            }
+
+            const data = await response.json();
+            console.log('API Response:', data); // Debug log 6
+            console.log('Applicants data:', data.data); // Debug log 7
+
+            if (data.success) {
+                setApplicants(data.data);
+            } else {
+                throw new Error(data.message || 'Failed to fetch applicants');
+            }
+        } catch (error) {
+            console.error('Error in fetchApplicants:', error); // More detailed error logging
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
-    }, [jobId]);
+    };
+
+    if (jobId) {
+        console.log('Starting fetch with jobId:', jobId); // Debug log 8
+        fetchApplicants();
+    }
+}, [jobId]);
 
     return (
         <div className="flex min-h-screen bg-gray-100">
