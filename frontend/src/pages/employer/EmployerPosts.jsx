@@ -11,18 +11,33 @@ const EmployerPostsPage = () => {
   const [jobs, setJobs] = useState([]);
   const navigate = useNavigate();
 
-  const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMP ID FOR NOW WILL CHANGE!!!
-
   useEffect(() => {
-    fetch("/api/job")
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchJobs = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        const response = await fetch("/api/job/employer", {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch jobs');
+        }
+
+        const data = await response.json();
+        // Backend will filter jobs by employer uid from token
         setJobs(data);
         if (data.length > 0) {
           setSelectedJob(data[0]);
         }
-      })
-      .catch((error) => console.error("Error fetching jobs:", error));
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
+    fetchJobs();
   }, []);
 
   const handleEdit = (jobId) => {
