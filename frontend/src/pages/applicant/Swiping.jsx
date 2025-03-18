@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import SwipeBox from "../../components/SwipeBox";
 import { getRecommendedJobs } from "../../services/matcher.service";
-import { addJobToShortlist } from "../../services/shortlist.service"; // import the service
+import { addJobToShortlist } from "../../services/shortlist.service";
 
 const Swiping = () => {
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [interactedJobIds, setInteractedJobIds] = useState([]); // Track interacted jobs
 
   useEffect(() => {
     const auth = getAuth();
@@ -15,7 +16,9 @@ const Swiping = () => {
       if (user) {
         try {
           const jobs = await getRecommendedJobs();
-          setRecommendedJobs(jobs);
+          // Filter out jobs that have been interacted with
+          const filteredJobs = jobs.filter(job => !interactedJobIds.includes(job._id));
+          setRecommendedJobs(filteredJobs);
         } catch (error) {
           console.error("Error fetching jobs:", error);
         } finally {
@@ -28,17 +31,20 @@ const Swiping = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [interactedJobIds]); // Re-fetch jobs when interactedJobIds changes
 
-  // Handler for when a job is short-listed
   const handleShortlist = async (jobId) => {
     try {
-      // If your addJobToShortlist expects only jobId, call it as below:
       await addJobToShortlist(jobId);
       console.log("Job added to shortlist:", jobId);
+      setInteractedJobIds(prevIds => [...prevIds, jobId]);
     } catch (error) {
       console.error("Error adding job to shortlist:", error);
     }
+  };
+
+  const handleSkip = (jobId) => {
+    setInteractedJobIds(prevIds => [...prevIds, jobId]);
   };
 
   const handleSwipe = () => {
@@ -57,8 +63,9 @@ const Swiping = () => {
                   key={currentIndex}
                   {...recommendedJobs[currentIndex]}
                   onSwipe={handleSwipe}
-                  onShortlist={handleShortlist} // pass the shortlist handler
-                  jobId={recommendedJobs[currentIndex]._id} // assuming each job object has _id property
+                  onShortlist={handleShortlist}
+                  onSkip={() => handleSkip(recommendedJobs[currentIndex]._id)} // Pass the skip handler
+                  jobId={recommendedJobs[currentIndex]._id}
               />
           ) : (
               <p>No job recommendations available.</p>
