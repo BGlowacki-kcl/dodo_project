@@ -10,8 +10,8 @@ import {
     getAllJobRoles,
     getAllJobLocations,
     getAllJobTypes,
-    getFilteredJobs
-    getJobsByEmployer,
+    getFilteredJobs,
+    getJobsByEmployer
 } from '../controllers/job.controller.js';
 import { checkRole } from '../middlewares/auth.middleware.js';
 
