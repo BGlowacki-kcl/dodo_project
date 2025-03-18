@@ -6,11 +6,12 @@ const router = express.Router();
 
 // router.get("/byConnection", applicationController.getApplication);
 // router.put("/:id/status", applicationController.updateApplicationStatus);
-// router.get("/job/:jobId/applicants", applicationController.getApplicants);
+
 
 router.get("/all", checkRole(["jobSeeker"]), applicationController.getAllApplications);
-router.get("/byId", checkRole(["jobSeeker"]), applicationController.getOneApplication);
+router.get("/byId", checkRole(["jobSeeker", "employer"]), applicationController.getOneApplication);
 router.post("/apply", checkRole(["jobSeeker"]), applicationController.createApplication);
 router.delete("/withdraw", checkRole(["jobSeeker", "employer"]), applicationController.withdrawApplication);
+router.get("/job/:jobId/applicants", checkRole(["employer"]), applicationController.getApplicants);
 
 export default router;
