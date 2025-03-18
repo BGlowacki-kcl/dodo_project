@@ -119,6 +119,31 @@ export const assessmentService = {
         }
         const data = await response.json();
         return data;
+    },
+
+    async submit(appId, testsPassed, code, language){
+        try {
+            const response = await fetch('/api/assessment/submit', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ 
+                    appId,
+                    testsPassed,
+                    code,
+                    language
+                })
+            })
+            if(!response.ok){
+                return { success: false, message: "Something went wrong" };
+            }
+            return { success: true, message: "Submitted successfully" };
+        } catch (err) {
+            return { success: false, message: "Server error" };
+        }
+
     }
 }  
 
@@ -179,7 +204,7 @@ function generateExecuteTestsCode(language, funcForCpp) {
         return `
 for index, testCase in enumerate(testCases):
     args = testCase["input"]
-    expected_output = testCase["output"]
+    expected_output = testCase["output"][0]
     actual_output = func(*args)
 
     if actual_output == expected_output:
@@ -189,7 +214,7 @@ for index, testCase in enumerate(testCases):
 
 for index, testCase in enumerate(hidden_testCases):
     args = testCase["input"]
-    expected_output = testCase["output"]
+    expected_output = testCase["output"][0]
     actual_output = func(*args)
 
     if actual_output == expected_output:

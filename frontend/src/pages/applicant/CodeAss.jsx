@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Editor from "@monaco-editor/react";
 import { assessmentService } from '../../services/assessment.service';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useNotification } from '../../context/notification.context';
 import { checkTokenExpiration } from '../../services/auth.service';
 import AssessmentStatus from '../../components/AssessmentStatus';
+import { auth } from '../../firebase.js';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const CodeAss = () => {
   const [code, setCode] = useState(``);
@@ -26,32 +28,67 @@ const CodeAss = () => {
   const showNotification = useNotification();
 
   useEffect(() => {
-    const fetchTasks = async () => {
-      const response = await assessmentService.getTasksId(appId);
-      console.log("Task Ids: ",response.data);
-      setTasksId(response.data);
-      console.log("Task id ----------: ", tasksId);
-    }
-    fetchTasks();
-  }, [appId]);
+    const refreshToken = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        
+        if (currentUser) {
+          const newToken = await currentUser.getIdToken(true);
+          
+          sessionStorage.setItem('token', newToken);
+          
+          console.log('Firebase token refreshed successfully');
+        }
+      } catch (error) {
+        console.error('Error refreshing token:', error);
+        showNotification('Session error', 'error');
+      }
+    };
+
+    refreshToken();
+    const tokenRefreshInterval = setInterval(refreshToken, 20 * 60 * 1000);
+
+    return () => {
+      clearInterval(tokenRefreshInterval);
+    };
+  }, [navigate, showNotification]);
 
   useEffect(() => {
-    const setFirstTask = async () => {
-      console.log("HERE: ",tasksId[0]);
-      const response = await assessmentService.getTask(appId, tasksId[0].id);
-      console.log("Here 2 look: ",response);
-      setTask(response.data.assessment);
-      setCodeForLanguage(language);
-      console.log(tasksId);
-    }
-    setFirstTask();
-  }, [tasksId])
+    const fetchAndSetFirstTask = async () => {
+      try {
+        const taskResponse = await assessmentService.getTasksId(appId);
+        console.log("Task Ids: ", taskResponse.data);
+        
+        if (taskResponse.data.length === 0) return; 
+        setTasksId(taskResponse.data);
+        
+        const firstTaskResponse = await assessmentService.getTask(appId, taskResponse.data[0].id);
+        console.log("First task: ", firstTaskResponse);
+        
+        setTask(firstTaskResponse.data.assessment);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+    
+    fetchAndSetFirstTask();
+  }, [appId]);
+  
+  useEffect(() => {
+    console.log("Changing to task: ", task);
+    setCodeForLanguage(language, task);
+  }, [task, language]);
 
   const handleTaskChange = async (taskId) => {
-
+    const response = await assessmentService.getTask(appId, taskId);
+    console.log("Task retrived: ", response);
+    setTask(response.data.assessment);
+    setTestsPassed(0);
+    setOutput("");
+    showNotification("Task Changed", "success");
   }
 
-  const setCodeForLanguage = (lang) => {
+  const setCodeForLanguage = (lang, task) => {
     let defText = "";
     if (lang === "python") {
       defText = `# ${task.description}
@@ -93,15 +130,14 @@ int func(${task.funcForCpp}) { //here
       return;
     }
     setLanguage(e.target.value);
-    setCodeForLanguage();
-
   }
   
   const runCode = async () => {
     setLoading(true);
     setError("");
     setOutput("");
-    const response = await assessmentService.runCode(code, language, task.tests, task.funcForCppTests);
+    console.log("TASKLLLLL: ", task);
+    const response = await assessmentService.runCode(code, language, task.testCases, task.funcForCppTests);
     console.log("Res: ", response);
     setLoading(false);
 
@@ -133,7 +169,12 @@ int func(${task.funcForCpp}) { //here
   }
 
   const handleSubmit = async () => {
-    
+    console.log("SUBMIT");
+    const response = await assessmentService.submit(appId, testsPassed, code, language);
+    if(!response.success){
+      showNotification("Submission not successful", "danger");
+    }
+    showNotification("Submission sucessful", "success");
   }
 
   return (

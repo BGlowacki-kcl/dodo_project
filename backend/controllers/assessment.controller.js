@@ -138,7 +138,34 @@ const assessmentController = {
     
     
     async submit(req, res){
+        try {
+            console.log("SUbmiting");
+            const { uid } = req;
+            const { appId, testsPassed, code, language } = req.body;
 
+            const user = await User.findOne({ uid });
+            const application = await Application.findOne({ _id: appId });
+            if(!application || !user || String(application.applicant) !== String(user._id)){
+                return res.status(403).json({ message: "User not authorized" });
+            }
+            const assessment = application.assessment;
+
+            if (!assessment) {
+                return res.status(400).json({ message: "Assessment not found" });
+            }
+
+            const submission = await CodeSubmission.create({
+                assessment,
+                application: application._id,
+                solutionCode: code,
+                score,
+            });
+        } catch (err) {
+            console.error("Submission error: ", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+
+        return res.status(201).json({ message: "Submission successful", submission });
     },
 
     async getAllTasks(req, res) {
