@@ -103,7 +103,7 @@ const Navbar = () => {
             alt="Logo"
           />
         </Link>
-        <button onClick={handleSignOut} >Sign out</button>
+       
 
         {isEmployer ? (
           // Employer Navigation: Shows the ProfileDropdown
@@ -147,14 +147,6 @@ const Navbar = () => {
                 Home
               </Link>
             </li>
-            <li>
-              <Link
-                to="/about"
-                className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"
-              >
-                About Us
-              </Link>
-            </li>
             <li className="relative group">
               <Link
                 to="#"
@@ -184,6 +176,44 @@ const Navbar = () => {
                 </ul>
               </div>
             </li>
+            {/* For Users (new) */}
+            <li className="relative group">
+              <Link
+                to="#"
+                className="text-gray-800 text-lg font-medium px-3 py-2 rounded-md hover:font-semibold hover:bg-gray-200 transition duration-300"
+              >
+                Jobs
+              </Link>
+              <div
+                className="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg
+                          opacity-0 group-hover:opacity-100
+                          transition-opacity duration-300"
+              >
+                <ul className="py-2">
+                  <li>
+                    <Link
+                      to="/user/jobs"
+                      className="block px-4 py-2 text-gray-800 font-medium
+                                hover:font-semibold hover:bg-gray-200
+                                rounded-md transition duration-300"
+                    >
+                      Browse Jobs
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/user/applications"
+                      className="block px-4 py-2 text-gray-800 font-medium
+                                hover:font-semibold hover:bg-gray-200
+                                rounded-md transition duration-300"
+                    >
+                      My Applications
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </li>
+
             <li>
               <Link
                 to="/contact"

@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { authService } from '../services/auth.service';
 
 const EmployerSideBar = () => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
-    const handleSignOut = () => {
-        navigate('/');
-    };
-
-    const toggleCollapse = () => {
-        setIsCollapsed(!isCollapsed);
+    const handleSignOut = async () => {
+        try {
+            await authService.signOut();
+            navigate('/');
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
     };
 
     const navItems = [
@@ -29,12 +29,9 @@ const EmployerSideBar = () => {
     ];
 
     return (
-        <div className={`fixed left-0 top-0 h-screen ${isCollapsed ? 'w-20' : 'w-64'} bg-[#1B2A41] shadow-lg flex flex-col rounded-r-3xl transition-width duration-300`}>
-            <div className="p-6 flex justify-between items-center">
-                <h2 className={`text-xl font-bold text-white ${isCollapsed ? 'hidden' : 'block'}`}>Employer Panel</h2>
-                <button onClick={toggleCollapse} className="text-white">
-                    {isCollapsed ? '>' : '<'}
-                </button>
+        <div className="fixed left-0 top-15 h-screen w-64 bg-[#1B2A41] shadow-lg flex flex-col">
+            <div className="p-6 flex items-center">
+                <h2 className="text-xl font-bold text-white">Employer Panel</h2>
             </div>
 
             <nav className="flex-1">
@@ -43,20 +40,20 @@ const EmployerSideBar = () => {
                         key={item.path}
                         to={item.path}
                         className={`flex items-center px-6 py-3 text-white hover:bg-gray-200 transition-colors duration-200
-                            ${location.pathname === item.path ? 'bg-white text-gray-700 shadow-sm mr-4 rounded-r-3xl' : ''}`}
+                            ${location.pathname === item.path ? 'bg-white text-gray-700 shadow-sm' : ''}`}
                     >
                         <span className="mr-3">{item.icon}</span>
-                        <span className={`${isCollapsed ? 'hidden' : 'block'}`}>{item.title}</span>
+                        <span>{item.title}</span>
                     </Link>
                 ))}
             </nav>
 
             <button
                 onClick={handleSignOut}
-                className="flex items-center px-6 py-3 mt-auto mb-8 text-white hover:bg-gray-200 transition-colors duration-200 hover:mr-4 hover:rounded-r-3xl"
+                className="flex items-center px-6 py-3 mt-auto mb-8 text-white hover:bg-gray-200 transition-colors duration-200"
             >
                 <span className="mr-3">👋</span>
-                <span className={`${isCollapsed ? 'hidden' : 'block'}`}>Sign Out</span>
+                <span>Sign Out</span>
             </button>
         </div>
     );

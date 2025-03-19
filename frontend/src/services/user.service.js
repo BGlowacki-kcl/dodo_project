@@ -1,3 +1,4 @@
+import { checkTokenExpiration } from "./auth.service";
 const API_BASE_URL = "/api/user";
 
 export const userService = {
@@ -15,8 +16,9 @@ export const userService = {
             if (!response.ok) {
                 throw new Error("Failed to update user profile");
             }
-
-            return await response.json();
+            const responseJSON = await response.json();
+            checkTokenExpiration(responseJSON);
+            return responseJSON;
         } catch (error) {
             console.error("Error updating user:", error);
             throw error;
@@ -25,6 +27,7 @@ export const userService = {
 
     async getUserProfile() {
         try {
+            console.log(sessionStorage.getItem("token"));
             const response = await fetch(`${API_BASE_URL}/`, {
                 method: "GET",
                 headers: {
@@ -33,11 +36,14 @@ export const userService = {
                 },
             });
 
+            console.log(response);
+
             if (!response.ok) {
                 throw new Error("Failed to fetch user profile");
             }
-
-            return await response.json();
+            const responseJSON = await response.json();
+            checkTokenExpiration(responseJSON);
+            return responseJSON;
         } catch (error) {
             console.error("Error fetching user profile:", error);
             throw error;
@@ -62,6 +68,7 @@ export const userService = {
             }
 
             const responseJson =  await response.json();
+            checkTokenExpiration(responseJson);
             const role = responseJson.data;
             return role;
         } catch (error) {
@@ -69,4 +76,27 @@ export const userService = {
             throw error;
         }
     },
+
+    async getUserId() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch user profile");
+            }
+
+            const responseJson = await response.json();
+            checkTokenExpiration(responseJson);
+            return responseJson.data._id;
+        } catch (error) {
+            console.error("Error fetching user ID:", error);
+            throw error;
+        }
+    }
 };

@@ -1,4 +1,5 @@
 import Job from '../models/job.model.js';
+import { Employer } from '../models/user/Employer.model.js';
 
 export const createJob = async (req, res) => {
     try {
@@ -11,8 +12,8 @@ export const createJob = async (req, res) => {
             employmentType,
             requirements,
             experienceLevel,
-            postedBy
         } = req.body;
+        const { postedBy } = req;
 
         if (!title || !company || !location || !description || !postedBy) {
             return res.status(400).json({ message: 'All required fields must be filled.' });
@@ -44,6 +45,26 @@ export const getJobs = async (req, res) => {
         res.status(200).json(jobs);
     } catch (error) {
         console.error(error);
+        res.status(500).json({ message: error.message });
+    }
+};
+export const getJobsByEmployer = async (req, res) => {
+    try {
+        const { uid } = req; // This comes from auth middleware
+        
+        // Find the employer by their uid first
+        const employer = await Employer.findOne({ uid });
+        
+        if (!employer) {
+            return res.status(404).json({ message: 'Employer not found' });
+        }
+
+        // Then find all jobs posted by this employer using their MongoDB _id
+        const jobs = await Job.find({ postedBy: employer._id });
+        
+        res.status(200).json(jobs);
+    } catch (error) {
+        console.error('Error fetching employer jobs:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -94,5 +115,73 @@ export const deleteJob = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: error.message });
+    }
+};
+
+export const getJobCountByType = async (req, res) => {
+    try {
+        const { type } = req.query;
+        const count = await Job.countDocuments({ employmentType: type });
+        res.status(200).json({ count });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const getAllJobRoles = async (req, res) => {
+    try {
+      const titles = await Job.distinct('title');
+      res.status(200).json(titles);
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch job roles",
+        error: error.message 
+      });
+    }
+  };
+
+export const getAllJobLocations = async (req, res) => {
+    try {
+      const locations = await Job.distinct('location');
+      res.status(200).json(locations);
+    } catch (error) {
+      console.error("Database error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch job locations",
+        error: error.message 
+      });
+    }
+  };
+
+export const getAllJobTypes = async (req, res) => {
+    try {
+        const employmentType = await Job.distinct('employmentType');
+        res.status(200).json(employmentType);
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ 
+        message: "Failed to fetch job types",
+        error: error.message 
+        });
+    }
+};
+
+export const getFilteredJobs = async (req, res) => {
+    try {
+        const { jobType, location, role } = req.query;
+
+        const filter = {};
+
+        // Convert single values to arrays if needed and apply filters
+        if (jobType) filter.employmentType = Array.isArray(jobType) ? { $in: jobType } : jobType;
+        if (location) filter.location = Array.isArray(location) ? { $in: location } : location;
+        if (role) filter.title = Array.isArray(role) ? { $in: role } : role;
+
+        const jobs = await Job.find(filter);
+        res.status(200).json(jobs);
+    } catch (error) {
+        console.error("Error fetching filtered jobs:", error);
+        res.status(500).json({ message: "Failed to fetch jobs", error: error.message });
     }
 };

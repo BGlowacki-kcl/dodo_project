@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar';
 import { getAllJobs, deleteJob } from '../../services/jobService';
 
-
 import Metrics from "../../components/Metrics.jsx";
 import EmployerSideBar from "../../components/EmployerSideBar.jsx";
 
@@ -12,19 +11,33 @@ const EmployerPostsPage = () => {
   const [jobs, setJobs] = useState([]);
   const navigate = useNavigate();
 
-
-  const employerId = "67aa6f2ce7d1ee03803ef428"; /// TEMP ID FOR NOW WILL CHANGE!!!
-
   useEffect(() => {
-    fetch("/api/job")
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchJobs = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        const response = await fetch("/api/job/employer", {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch jobs');
+        }
+
+        const data = await response.json();
+        // Backend will filter jobs by employer uid from token
         setJobs(data);
         if (data.length > 0) {
           setSelectedJob(data[0]);
         }
-      })
-      .catch((error) => console.error("Error fetching jobs:", error));
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
+    fetchJobs();
   }, []);
 
   const handleEdit = (jobId) => {
@@ -33,6 +46,22 @@ const EmployerPostsPage = () => {
 
   const handleAddJob = () => {
     navigate("/posts/new");
+  };
+
+  const handleViewApplicants = (jobId) => {
+    navigate(`/employer/applicants/${jobId}`);
+  };
+
+  const handleDelete = async (jobId) => {
+    try {
+      await deleteJob(jobId);
+      setJobs(jobs.filter(job => job._id !== jobId));
+      setSelectedJob(null);
+      alert("Job post deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete job post:", error);
+      alert("Failed to delete job post");
+    }
   };
 
   return (
@@ -78,7 +107,6 @@ const EmployerPostsPage = () => {
           <button
             onClick={handleAddJob}
             className="absolute bottom-25 left-30 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
-            
           >
             Add Job Post
           </button>
@@ -93,6 +121,18 @@ const EmployerPostsPage = () => {
                     className="absolute top-8 right-10 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
                   >
                     Edit Job
+                  </button>
+                  <button
+                    onClick={() => handleViewApplicants(selectedJob._id)}
+                    className="absolute top-8 right-40 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
+                  >
+                    View Applicants
+                  </button>
+                  <button
+                    onClick={() => handleDelete(selectedJob._id)}
+                    className="absolute top-8 left-60 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
+                  >
+                    Delete Job
                   </button>
                   <Metrics selectedJob={selectedJob} />
                 </>
