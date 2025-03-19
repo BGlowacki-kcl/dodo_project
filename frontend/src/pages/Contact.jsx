@@ -35,9 +35,9 @@ const Contact = () => {
   };
 
   return (
-    <div>
+    <div className='h-full w-full flex items-center justify-center bg-slate-900 pb-10'>
       
-      <form onSubmit={handleSubmit} className="max-w-lg mt-10 mx-auto bg-white p-6 rounded-3xl shadow-lg space-y-4">
+      <form onSubmit={handleSubmit} className="max-w-lg mt-10 mx-auto bg-white p-6 rounded-3xl w-1/2 shadow-lg space-y-4">
         <h2 className="text-2xl font-semibold text-gray-800 text-center mb-4">Contact Us</h2>
 
         <FormItem htmlFor="name" name="name" value={formData.name} onChange={handleChange} />
