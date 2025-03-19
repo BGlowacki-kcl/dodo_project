@@ -27,6 +27,7 @@ import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
 import { useNotification } from './context/notification.context';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import Contact from './pages/Contact';
 
 function App() {
 	const navigate = useNavigate();
@@ -56,6 +57,7 @@ function App() {
 		
 		// Pages for any user
 		{ path: '/', element: <LandingPage />, roles: ['unLogged', 'employer', 'jobSeeker'] },
+		{ path: '/contact', element: <Contact />, roles: ['unLogged', 'employer', 'jobSeeker'] },
 		{ path: '/search-results', element: <SearchResults />, roles: ['jobSeeker', 'employer', 'unLogged'] },
 		
 		// Completing profile page, for logged users
