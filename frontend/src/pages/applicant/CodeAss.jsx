@@ -38,8 +38,39 @@ const CodeAss = () => {
   const { appId } = useParams();
   const navigate = useNavigate();
   const showNotification = useNotification();
+  const [timeLeft, setTimeLeft] = useState(3600);
 
   useEffect(() => {
+    const savedTime = localStorage.getItem('assessmentDeadline');
+    if (savedTime) {
+      const remainingTime = Math.floor((Number(savedTime) - Date.now()) / 1000);
+      setTimeLeft(remainingTime > 0 ? remainingTime : 0);
+    } else {
+      localStorage.setItem('assessmentDeadline', Date.now() + 3600 * 1000);
+    }
+  
+    const timerInterval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerInterval);
+          handleSubmit(); 
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  
+    return () => clearInterval(timerInterval);
+  }, []);
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  useEffect(() => {
+    console.log("AppId: ",appId);
     const refreshToken = async () => {
       try {
         const currentUser = auth.currentUser;
@@ -65,6 +96,16 @@ const CodeAss = () => {
     };
   }, [navigate, showNotification]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = 'Are you sure you want to leave? Your not submitted progress will be lost.';
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const fetchAndSetFirstTask = async () => {
     try {
@@ -96,12 +137,13 @@ const CodeAss = () => {
     setTask(response.data.assessment);
     setTestsPassed(0);
     console.log("RESSSS: ",response);
-    if(response.data.submission){
+    if(response.data.submission.length > 0){
       setPrevSubmission(response.data.submission[0]);
       setTestsPassed(response.data.submission[0].score);
       setCode(response.data.submission[0].solutionCode);
       setLanguage(response.data.submission[0].language);
     } else {
+      console.log("NEW RES: ", response.data.assessment);
       setCodeForLanguage(language, response.data.assessment);
     }
     setOutput("");
@@ -241,6 +283,7 @@ int func(${task.funcForCpp}) {
 
   return (
     <div className='bg-[#1B2A41] h-fit'>
+      <p className="fixed top-4 left-4 bg-black text-white p-2 rounded-lg border-white border-2">Time Left: {formatTime(timeLeft)}</p>
       <div className='flex flex-row items-center justify-center'>
         <div className='flex flex-col items-center justify-center w-full p-4 space-y-20'>
           <select

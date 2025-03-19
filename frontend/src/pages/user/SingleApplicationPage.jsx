@@ -90,6 +90,12 @@ function SingleApplicationPage() {
         );
     }
 
+    const handleAssessment = async () => {
+      const userConfirmed = window.confirm("Are you sure you want to proceed to the code assessment?");
+      if (!userConfirmed) return;
+      navigate(`/codeassessment/${appId}`);
+    }
+
     const { job, status, coverLetter, submittedAt } = application;
     const formattedDate = new Date(submittedAt).toLocaleString();
     return (
@@ -133,7 +139,7 @@ function SingleApplicationPage() {
                 )}
 
                 {codeChallenge && (
-                    <button onClick={() => navigate(`/codeassessment/${appId}`)} className="px-4 py-2 bg-green-300 text-gray-800 rounded hover:bg-green-500 transition duration-200" > Proceed to assessment </button>
+                    <button onClick={handleAssessment} className="px-4 py-2 bg-green-300 text-gray-800 rounded hover:bg-green-500 transition duration-200" > Proceed to assessment </button>
                 )}
 
                 {/* WITHDRAW APPLICATION */}
