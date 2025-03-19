@@ -53,7 +53,7 @@ export async function applyToJob({ jobId, coverLetter }) {
     })
   })
   checkTokenExpiration(response);
-  const responseJson = response.json();
+  const responseJson = await response.json();
   if (!responseJson.success) {
     throw new Error(response.data.message || "Failed to apply");
   }

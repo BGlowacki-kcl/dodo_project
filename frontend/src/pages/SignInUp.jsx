@@ -1,5 +1,3 @@
-// SingInUp page handles logging in and signing up forms depending on the url
-
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth.service';
@@ -19,6 +17,7 @@ const AuthForm = () => {
   const showNotification = useNotification();
   const isLogin = location.pathname === '/signin';
 
+  // Reset form fields when switching between sign-in and sign-up
   useEffect(() => {
     setEmail('');
     setPassword('');
@@ -27,7 +26,7 @@ const AuthForm = () => {
     setShowPassword(false);
   }, [location.pathname]);
 
-  // Check if pssword is strong, passes all the t
+  // Password strength validation
   const isPasswordStrong = (password) => {
     return password.length >= 8 && 
            /[A-Z]/.test(password) && 
@@ -35,14 +34,14 @@ const AuthForm = () => {
            /[0-9]/.test(password);
   };
 
-  // Send request to sign user in or up depending on the page's url to the auth service
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      // Check password constraints and missmatch
+      // Client-side validation for sign-up
       if (!isLogin) {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match.");
@@ -52,19 +51,20 @@ const AuthForm = () => {
         }
       }    
 
-      // Always sign up as job seeker
-      await (isLogin 
+      // Call auth service and get response
+      const response = await (isLogin 
         ? authService.signIn(email, password, navigate) 
-        : authService.signUp(email, password, false, navigate));     
-      
-      const successMessage = isLogin ? 'Sign in successful!' : 'Sign up successful! Please complete your profile.';
+        : authService.signUp(email, password, false, navigate));
+
+      // Use server-provided message if available, otherwise fallback
+      const successMessage = response?.message || (isLogin ? 'Logged in successfully!' : 'Signed up successfully! Please complete your profile.');
       showNotification(successMessage, 'success');
 
     } catch (error) {
-      const errorMessage = isLogin ? 'Sign in failed. Please check your email and password.' : 'Sign up failed. Please try again.'; 
-      showNotification(errorMessage, 'error');
+      // Use server-provided error message
+      showNotification(error.message, 'error');
       console.error('Authentication error:', error.message);
-      setError(error.message || 'Something went wrong. Please try again.');
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,6 @@ const AuthForm = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      {/* The main Sign in or up form component */}
       <div className="bg-white shadow-lg rounded-lg p-8 w-96">
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">
           {isLogin ? 'Welcome Back!' : 'Create Job Seeker Account'}
@@ -88,7 +87,6 @@ const AuthForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           {/* Email field */}
           <div>
             <label className="text-sm font-medium text-gray-700">Email</label>
@@ -101,6 +99,7 @@ const AuthForm = () => {
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
             />
           </div>
+
           {/* Password field */}
           <div className="relative">
             <label className="text-sm font-medium text-gray-700">Password</label>
@@ -121,7 +120,7 @@ const AuthForm = () => {
             </button>
           </div>
 
-          {/* Confirm password field (only if signing up) */}
+          {/* Confirm Password field (sign-up only) */}
           {!isLogin && (
             <div>
               <label className="text-sm font-medium text-gray-700">Confirm Password</label>
@@ -136,7 +135,7 @@ const AuthForm = () => {
             </div>
           )}
 
-          {/* Submit form button */}
+          {/* Submit button */}
           <button 
             type="submit" 
             disabled={loading}
@@ -147,7 +146,7 @@ const AuthForm = () => {
             {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up'}
           </button>
           
-          {/* Additional functionality and information */}
+          {/* Additional links/info */}
           <div className="text-center mt-4">
             {isLogin ? (
               <Link to="#" className="text-sm text-blue-500 hover:text-blue-700">
@@ -161,7 +160,7 @@ const AuthForm = () => {
           </div>
         </form>
 
-        {/* Switch between sign in and sign up form */}
+        {/* Switch between sign-in and sign-up */}
         <div className="text-center mt-4">
           <span className="text-gray-600 text-sm">
             {isLogin ? "Don't have an account?" : "Already have an account?"} 
@@ -174,6 +173,7 @@ const AuthForm = () => {
           </Link>
         </div>
 
+        {/* Employer login link */}
         <div className="text-center mt-4">
           <Link to="/employer-login" className="text-sm text-blue-500 hover:text-blue-700">
             Are you an employer? Sign in here

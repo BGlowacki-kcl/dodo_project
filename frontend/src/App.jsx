@@ -23,11 +23,12 @@ import SearchResults from './pages/SearchResults'
 import AddPdf from './pages/addPdf.jsx';
 import EmployerApplicants from './pages/employer/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
-import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
 import { useNotification } from './context/notification.context';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Contact from './pages/Contact';
+import Apply from './pages/applicant/Apply';
+import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
 
 function App() {
 	const navigate = useNavigate();
@@ -67,15 +68,18 @@ function App() {
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
 		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
-		{ path: '/user/applications', element: <UserApplicationsPage />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
+		{ path: '/apply/:jobId', element: <Apply />, roles: ['jobSeeker'] },
+		
 		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
 		
 		// Employer accessible pages
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
-		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },	
-		{ path: '/applicants', element: <EmployerApplicants />, roles: ['employer'] },
-		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
+    { path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
+		//{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },	
+		//{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
+		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },

@@ -5,7 +5,8 @@ export const techCompanies = [
         name: "Google",
         companyName: "Google",
         companyWebsite: "https://careers.google.com",
-        companyDescription: "A global leader in search engines, advertising, and cloud computing."
+        companyDescription: "A global leader in search engines, advertising, and cloud computing.",
+        phoneNumber: "(650) 253-0000"
     },
     {
         email: "careers@meta.com",
@@ -13,7 +14,8 @@ export const techCompanies = [
         name: "Meta",
         companyName: "Meta",
         companyWebsite: "https://www.metacareers.com",
-        companyDescription: "Connecting people and communities through social media platforms."
+        companyDescription: "Connecting people and communities through social media platforms.",
+        phoneNumber: "(650) 543-4800"
     },
     {
         email: "careers@amazon.com",
@@ -21,7 +23,8 @@ export const techCompanies = [
         name: "Amazon",
         companyName: "Amazon",
         companyWebsite: "https://www.amazon.jobs",
-        companyDescription: "World's largest e-commerce and cloud computing company."
+        companyDescription: "World's largest e-commerce and cloud computing company.",
+        phoneNumber: "01604 266878"
     },
     {
         email: "careers@apple.com",
@@ -29,7 +32,8 @@ export const techCompanies = [
         name: "Apple",
         companyName: "Apple",
         companyWebsite: "https://www.apple.com/careers",
-        companyDescription: "Innovator in consumer electronics, software, and online services."
+        companyDescription: "Innovator in consumer electronics, software, and online services.",
+        phoneNumber: "028 9024 9747"
     },
     {
         email: "careers@microsoft.com",
@@ -37,7 +41,8 @@ export const techCompanies = [
         name: "Microsoft",
         companyName: "Microsoft",
         companyWebsite: "https://careers.microsoft.com",
-        companyDescription: "A leader in software, cloud computing, and enterprise solutions."
+        companyDescription: "A leader in software, cloud computing, and enterprise solutions.",
+        phoneNumber: "(0)800 026 0329"
     },
     {
         email: "careers@netflix.com",
@@ -45,7 +50,9 @@ export const techCompanies = [
         name: "Netflix",
         companyName: "Netflix",
         companyWebsite: "https://jobs.netflix.com",
-        companyDescription: "Leading streaming entertainment service with global reach."
+        companyDescription: "Leading streaming entertainment service with global reach.",
+        phoneNumber: "01120 241278"
+
     },
     {
         email: "careers@tesla.com",
@@ -53,7 +60,8 @@ export const techCompanies = [
         name: "Tesla",
         companyName: "Tesla",
         companyWebsite: "https://www.tesla.com/careers",
-        companyDescription: "Electric vehicles, clean energy solutions, and AI-driven automation."
+        companyDescription: "Electric vehicles, clean energy solutions, and AI-driven automation.",
+        phoneNumber: "0162 845 0660"
     },
     {
         email: "careers@spacex.com",
@@ -61,7 +69,8 @@ export const techCompanies = [
         name: "SpaceX",
         companyName: "SpaceX",
         companyWebsite: "https://www.spacex.com/careers",
-        companyDescription: "Revolutionizing space transportation and exploration."
+        companyDescription: "Revolutionizing space transportation and exploration.",
+        phoneNumber: "(310) 363-6000"
     }
 ];
 

@@ -61,6 +61,20 @@ const jobSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Assessment'
     }],
+                             
+    questions: [
+        {
+            questionText: {
+                type: String,
+                required: false
+            },
+            required: {
+                type: Boolean,
+                default: false
+            },
+
+        }
+    ]
 
 });
 
