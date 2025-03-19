@@ -16,6 +16,7 @@ import { generateCoverLetter } from "./backend/fixtures/coverLetTemplate.js";
 import { locations } from "./backend/fixtures/locationFixtures.js";
 import { universityNames, degreeTitles, fieldsOfStudy } from "./backend/fixtures/educationFixtures.js";
 import { techCompanies, techJobDetails, techSkills } from "./backend/fixtures/companyFixtures.js";
+import { jobQuestions } from "./backend/fixtures/jobQuestionFixtures.js";
 
 
 //  Initialize Firebase Admin SDK
@@ -129,7 +130,7 @@ const generateJobs = (num, employers) => {
         const employer = faker.helpers.arrayElement(employers);
         const jobTitle = faker.helpers.arrayElement(Object.keys(techJobDetails));
 
-        jobs.push({
+        const job = ({
             title: jobTitle,
             company: employer.companyName,
             location: faker.helpers.arrayElement(locations),
@@ -142,7 +143,19 @@ const generateJobs = (num, employers) => {
             requirements: faker.helpers.arrayElements(techSkills, 3),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
             postedBy: employer._id,
+            applicants: [],
+            questions: []
         });
+
+        if (faker.datatype.boolean()) {
+            const selectedQuestions = faker.helpers.arrayElements(jobQuestions, faker.number.int({min: 3, max:6}));
+            job.questions = selectedQuestions.map(q => ({
+                questionText: q.questionText,
+                required: faker.datatype.boolean()
+            }));
+        }
+
+        jobs.push(job);
     }
 
     return jobs;
@@ -156,12 +169,25 @@ const generateApplications = (num, jobSeekers, jobs) => {
         const job = faker.helpers.arrayElement(jobs);
         const jobSeeker = faker.helpers.arrayElement(jobSeekers);
 
-        applications.push({
+        const application = {
             job: job._id,
             applicant: jobSeeker._id,
             status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted']),
-            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email)
-        });
+            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email),
+            answers: []
+        };
+
+        // If the job has questions, generate answers for them
+        if (job.questions && job.questions.length > 0) {
+            application.answers = job.questions.map(question => ({
+                questionId: question._id,
+                answerText: jobQuestions.find(q => q.questionText === question.questionText).sampleAnswer
+            }));
+        }
+
+        applications.push(application);
+
+        job.applicants.push(jobSeeker._id);
     }
 
     return applications;
@@ -190,7 +216,7 @@ const seedDatabase = async () => {
     try {
         await connectDB();
 
-        //  Delete existing data
+        // Delete existing data
         await Application.deleteMany();
         await Job.deleteMany();
         await User.deleteMany();
@@ -213,9 +239,15 @@ const seedDatabase = async () => {
         console.log("Jobs added...");
 
         // Generate and insert Applications
-        const applications = generateApplications(400, createdJobSeekers, createdJobs); // 300 Applications
+        const applications = generateApplications(400, createdJobSeekers, createdJobs); // 400 Applications
         await Application.insertMany(applications);
         console.log("Applications added...");
+
+        // Update the applicants field in the Job documents
+        for (const job of createdJobs) {
+            await Job.findByIdAndUpdate(job._id, { applicants: job.applicants });
+        }
+        console.log("Applicants added to jobs...");
 
         const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
         await Shortlist.insertMany(shortlistsData);
