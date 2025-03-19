@@ -14,6 +14,11 @@ const CodeAss = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [testsPassed, setTestsPassed] = useState(0);
+  const [prevSubmission, setPrevSubmission] = useState({
+    solutionCode: "",
+    language: "",
+    score: 0
+  });
   const [tasksId, setTasksId] = useState([{
     id: "",
     status: "",
@@ -26,7 +31,9 @@ const CodeAss = () => {
     funcForCpp: "",
     funcForCppTest:"",
     inputForPythonJS:"",
-    code: ""
+    code: "",
+    input: "",
+    output: "",
   });
   const { appId } = useParams();
   const navigate = useNavigate();
@@ -71,6 +78,7 @@ const CodeAss = () => {
       console.log("First task: ", firstTaskResponse);
       
       setTask(firstTaskResponse.data.assessment);
+      setCodeForLanguage(language, firstTaskResponse.data.assessment);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
@@ -80,17 +88,22 @@ const CodeAss = () => {
     fetchAndSetFirstTask();
   }, [appId]);
   
-  useEffect(() => {
-    console.log("Changing to task: ", task);
-    setCodeForLanguage(language, task);
-  }, [task, language]);
-
   const handleTaskChange = async (taskId) => {
-    // TODO: get previous submission code
+    if (taskId === task._id) return;
+
     const response = await assessmentService.getTask(appId, taskId);
     console.log("Task retrived: ", response);
     setTask(response.data.assessment);
     setTestsPassed(0);
+    console.log("RESSSS: ",response);
+    if(response.data.submission){
+      setPrevSubmission(response.data.submission[0]);
+      setTestsPassed(response.data.submission[0].score);
+      setCode(response.data.submission[0].solutionCode);
+      setLanguage(response.data.submission[0].language);
+    } else {
+      setCodeForLanguage(language, response.data.assessment);
+    }
     setOutput("");
     showNotification("Task Changed", "success");
   }
@@ -99,11 +112,15 @@ const CodeAss = () => {
     let defText = "";
     if (lang === "python") {
       defText = `# ${task.description}
+# Input -> ${task.input}
+# Output -> ${task.output}
 
 def func(${task.inputForPythonJS}):
   # Write your code here`;
     } else if (lang === "javascript") {
       defText = `// ${task.description}
+// Input -> ${task.input}
+// Output -> ${task.output}
 
 function func(${task.inputForPythonJS}) {
   // Write your code here
@@ -111,6 +128,8 @@ function func(${task.inputForPythonJS}) {
 }`;
     } else if (lang === "cpp") {
       defText = `// ${task.description}
+// Input -> ${task.input}
+// Output -> ${task.output}
 
 #include <vector>
 #include <iostream>
@@ -135,6 +154,12 @@ int func(${task.funcForCpp}) {
     if(!userConfirmed) {
       e.target.value = language;
       return;
+    }
+    if(e.target.value === prevSubmission.language){
+      setCode(prevSubmission.solutionCode);
+      setTestsPassed(prevSubmission.score);
+    } else {
+      setCodeForLanguage(e.target.value, task);
     }
     setLanguage(e.target.value);
   }
@@ -219,6 +244,7 @@ int func(${task.funcForCpp}) {
       <div className='flex flex-row items-center justify-center'>
         <div className='flex flex-col items-center justify-center w-full p-4 space-y-20'>
           <select
+            value={language}
             onChange={handleLanguageChange}
             className="px-4 py-2 border-white border bg-gray-900 text-white rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           >
@@ -245,6 +271,7 @@ int func(${task.funcForCpp}) {
                 fontSize: 14,
                 padding: { top: 10 },
                 cursorBlinking: "smooth",
+                wordWrap: "on"
               }}
             />
           </div>
@@ -274,11 +301,11 @@ int func(${task.funcForCpp}) {
         <p className='text-white p-3 rounded-md border border-grey-400 bg-black absolute right-5 top-5'>Tests Passed: {testsPassed} / 10</p>
         <button onClick={handleSubmit} className='absolute bottom-3 right-3 rounded-full p-3 bg-white' >Submit</button>
       </div>
-      <div className='w-full flex flex-col mb-10 items-center'>
+      <div className='w-full flex flex-col items-center'>
         <p className='text-white text-2xl'>Tasks:</p>
         <div className="w-full h-40 pb-10 flex flex-row items-center justify-center space-x-16">
           {tasksId.map(task => (
-            <AssessmentStatus key={task.id} status={task.status} onClick={() => handleTaskChange(task.id)} title={task.title} />
+            <AssessmentStatus disabled={task.id === task._id} key={task.id} status={task.status} onClick={() => handleTaskChange(task.id)} title={task.title} />
           ))}
         </div>
         <button className="h-16 w-32 border-white bg-green-600 text-black border-2 rounded-xl mb-10" onClick={submitAll} >Finish assessment!</button>

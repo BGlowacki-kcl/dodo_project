@@ -192,7 +192,7 @@ testCases.forEach((testCase, index) => {
     const expected_output = testCase.output;
     const actual_output = func(...args);
 
-    if (actual_output === expected_output) {
+    if (actual_output === expected_output[0]) {
         console.log(\`Test \${index + 1}: Test PASSED\`);
     } else {
         console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output}\`);
@@ -204,7 +204,7 @@ hiddenTestCases.forEach((testCase, index) => {
     const expected_output = testCase.output;
     const actual_output = func(...args);
 
-    if (actual_output === expected_output) {
+    if (actual_output === expected_output[0]) {
         console.log(\`Test \${index + 1}: Test PASSED HIDDEN\`);
     } else {
         console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output} HIDDEN\`);

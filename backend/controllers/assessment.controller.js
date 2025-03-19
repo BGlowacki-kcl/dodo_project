@@ -164,7 +164,7 @@ const assessmentController = {
                     language,
                     score: testsPassed,
                 });
-                return res.status(200).json({ success: true, message: "Submitted successfully!" });
+                return res.status(200).json({ success: true, message: "Submitted successfully! Code saved" });
             }
             
             // For existing submissions, only update if the new score is higher
@@ -173,7 +173,7 @@ const assessmentController = {
                 previousSubmission.language = language;
                 previousSubmission.score = testsPassed;
                 await previousSubmission.save();
-                return res.status(200).json({ success: true, message: "Submitted successfully!" });
+                return res.status(200).json({ success: true, message: "Submitted successfully! Code saved" });
             }
             
             // Return without saving if the score isn't higher
@@ -205,7 +205,10 @@ const assessmentController = {
             difficulty,
             testCases,
             funcForCpp,
-            funcForCppTest
+            funcForCppTest,
+            inputForPythonJS,
+            input,
+            output
         } = req.body;
         const newAssessment = new CodeAssessment({
             title,
@@ -213,7 +216,10 @@ const assessmentController = {
             difficulty,
             testCases,
             funcForCpp,
-            funcForCppTest
+            funcForCppTest,
+            inputForPythonJS,
+            input,
+            output
         })
         const assessmentAdded = await newAssessment.save();
         return res.status(200).json({ message: "assessment added successfully", data: assessmentAdded });
