@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createJob } from '../../services/jobService';
 import EmployerSideBar from "../../components/EmployerSideBar";
+import { assessmentService } from '../../services/assessment.service';
 
 function CreateJobPost() {
   const [jobs, setJobs] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [jobData, setJobData] = useState({
   
     title: '',
@@ -18,7 +20,7 @@ function CreateJobPost() {
     employmentType: '',
     requirements: [],
     experienceLevel: '',
-    postedBy: '67aa6f2ce7d1ee03803ef428' // TEMP ID FOR NOW WILL CHANGE!!!
+    assessments: []
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,6 +32,18 @@ function CreateJobPost() {
       .then(response => response.json())
       .then(data => setJobs(data))
       .catch(error => console.error('Error fetching jobs:', error));
+
+      const loadTasks = async () => {
+        try {
+          const taskData = await assessmentService.getAllTasks();
+          console.log(taskData);
+          setTasks(taskData.data);
+        } catch (error) {
+          console.error('Error fetching tasks:', error);
+        }
+      };
+  
+      loadTasks();
   }, []);
 
   const handleChange = (e) => {
@@ -38,6 +52,15 @@ function CreateJobPost() {
       ...prevData,
       [name]: value
     }));
+  };
+
+  const handleAssessmentChange = (taskId) => {
+    setJobData(prevData => {
+      const newAssessments = prevData.assessments.includes(taskId)
+        ? prevData.assessments.filter(id => id !== taskId)
+        : [...prevData.assessments, taskId];
+      return { ...prevData, assessments: newAssessments };
+    });
   };
 
   const handleSalaryChange = (type, value) => {
@@ -228,6 +251,23 @@ function CreateJobPost() {
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Assessments (check no for no assessment)</label>
+                  <div className="mt-2 space-y-2">
+                    {tasks.map(task => (
+                      <label key={task.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          value={task.id}
+                          checked={jobData.assessments.includes(task.id)}
+                          onChange={() => handleAssessmentChange(task.id)}
+                        />
+                        <span>{task.title}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-4">

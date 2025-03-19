@@ -1,21 +1,24 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose from "mongoose";
 
-const codeAssessmentSchema = new Schema({
+const codeAssessmentSchema = new mongoose.Schema({
     title: String,
     description: String,
         
-    prompt: String,
     difficulty: {
         type: String,
         enum: ['easy', 'medium', 'hard']
     },
     testCases: [
         {
-            input: String,
-            output: String
+            input: [mongoose.Schema.Types.Mixed],
+            output: [mongoose.Schema.Types.Mixed]
         }
-    ]
+    ],
+    funcForCpp: String,
+    funcForCppTest: String,
+    inputForPythonJS: String,
+    input: String,
+    output: String,
 });
 
-module.exports = mongoose.model('CodeAssessment', codeAssessmentSchema);
+export default mongoose.model('CodeAssessment', codeAssessmentSchema);
