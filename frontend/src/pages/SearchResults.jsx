@@ -122,12 +122,15 @@ const SearchResults = () => {
                         <p className="text-ltext text-center">Loading search results...</p>
                     ) : currentResults.length > 0 ? (
                         currentResults.map((job) => (
-                            <div key={job._id} className="bg-white rounded-lg shadow-md p-4 w-full relative">
+                            <div key={job._id} className="bg-white rounded-lg shadow-md p-4 w-full relative cursor-pointer" onClick={() => handleJobClick(job._id)}>
                                 {/* Add to shortlist */}
                                 {isLoggedIn && (
                                     <button 
                                         className="absolute top-2 right-2 bg-primary text-secondary rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-secondary hover:text-ltext transition"
-                                        onClick={() => handleAddToShortlist(job._id)}
+                                        onClick={(e) =>{
+                                            e.stopPropagation();
+                                            handleAddToShortlist(job._id)}
+                                        }
                                     >
                                         +
                                     </button>

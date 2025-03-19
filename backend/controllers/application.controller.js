@@ -100,17 +100,17 @@ export const applicationController = {
 
     async getOneApplication(req, res) {
         try {
-            const { id } = req.query; // This is now the user's ID
+            const { id } = req.query; // Application ID
             const { uid } = req;
-            
-            // Get the employer making the request
-            const employer = await User.findOne({ uid });
-            if (!employer) {
+    
+            // Get the requesting user
+            const user = await User.findOne({ uid });
+            if (!user) {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
     
-            // Find application by applicant ID and populate necessary fields
-            const app = await Application.findOne({ applicant: id })
+            // Find the application by ID and populate necessary fields
+            const app = await Application.findById(id)
                 .populate("applicant", "name email skills resume")
                 .populate("job");
     
@@ -118,9 +118,16 @@ export const applicationController = {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
     
-            // Check if employer owns the job
-            
+            // Authorization logic
+            if (app.applicant._id.equals(user._id)) {
+                // If user is the applicant, allow access
+            } else if (app.job.postedBy.equals(user._id)) {
+                // If user is the employer who posted the job, allow access
+            } else {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
     
+            // Structure response data
             const applicationData = {
                 id: app._id,
                 name: app.applicant.name,
@@ -139,7 +146,7 @@ export const applicationController = {
             res.status(500).json(createResponse(false, err.message));
         }
     },
-
+    
     async createApplication(req, res) {
         try {
             const { jobId, coverLetter } = req.body;
