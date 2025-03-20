@@ -75,3 +75,19 @@ export async function withdrawApplication(appId) {
   return response.data.message;
 }
 
+export async function updateStatus(appId, reject) {
+  const sentToReject = reject ? `&reject=true` : '';s
+  const response = await fetch(`/api/application/status/id=${appId}${sentToReject}`, {
+    method: 'PUT',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  });
+  checkTokenExpiration(response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(response.data.message || "Failed to progress with the application");
+  }
+  return responseJson.data;
+}

@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
+import codeAssessment from "../models/codeAssessment.js";
+import codeSubmission from "../models/codeSubmission.js";
 
 const createResponse = (success, message, data = null) => ({
     success,
@@ -139,8 +141,14 @@ export const applicationController = {
                 resume: app.applicant.resume,
                 job: app.job
             };
-    
-            res.json(createResponse(true, "Application found", applicationData));
+
+            const job = await Job.findById(app.job);
+            const assessmentIds = job.assessments;
+            const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
+            const submissions = await codeSubmission.find({ application: app._id });
+            const assessmentSubmission = { assessments, submissions };
+            
+            res.json(createResponse(true, "Application found", applicationData, assessmentSubmission));
         } catch (err) {
             console.error("Error getting application:", err);
             res.status(500).json(createResponse(false, err.message));
@@ -195,4 +203,43 @@ export const applicationController = {
             res.status(500).json(createResponse(false, err.message));
         }
     },
+
+    async updateApplicationStatus(req, res) {
+        try {
+            const { id } = req.query;
+            const { uid } = req;
+            let toReject = false;
+            if(req.query.reject){
+                toReject = true;
+            }
+
+            const user = await User.findOne({ uid });
+            const app = await Application.findById(id).populate("job");
+            if (!app) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+            if (app.job.postedBy.equals(user._id) == false) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
+            if(toReject){
+                app.status = "rejected";
+                return res.json(createResponse(true, "Application rejected", app));
+            }
+            const hasCodeAssessment = app.assessments.length > 0;
+            const statuses = ['applied', 'shortlisted', 'code challenge', 'in review', 'accepted'];
+            const currentIndex = statuses.indexOf(app.status);
+            if (currentIndex === -1 || currentIndex === statuses.length - 1) {
+                return res.status(400).json(createResponse(false, "No further status available"));
+            }
+            app.status = statuses[currentIndex + 1];
+            if(app.status === 'code challenge' && !hasCodeAssessment) {
+                app.status = statuses[currentIndex + 2];
+            }
+            await app.save();
+            res.json(createResponse(true, "Application status updated", app));
+        } catch (err) {
+            console.error("Error updating application status:", err);
+            res.status(500).json(createResponse(false, err.message));
+        }
+    }
 };

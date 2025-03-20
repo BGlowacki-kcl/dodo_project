@@ -154,7 +154,7 @@ export const authService = {
 
             const data = await response.json();
 
-            if (data.redirect) {
+            if (data.redirect && sessionStorage.getItem('role') === 'jobSeeker') {
                 navigate(data.redirect);  // Ensures navigation works
             } else {
                 navigate('/');
