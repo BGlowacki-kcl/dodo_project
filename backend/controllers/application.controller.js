@@ -196,10 +196,8 @@ export const applicationController = {
         try {
             const { uid } = req;
 
-            console.log("Employer ID:", uid);
     
             const employer = await User.findOne({ uid });
-            console.log("Employer:", employer);
 
             if (!employer) {
                 return res.status(404).json({ message: 'Employer not found' });
@@ -207,13 +205,10 @@ export const applicationController = {
     
             // Find all jobs posted by this employer
             const jobs = await Job.find({ postedBy: employer._id });
-            console.log("Jobs:", jobs);
     
             // Aggregate the total number of applicants for these jobs
             const jobIds = jobs.map(job => job._id);
-            console.log("Job IDs:", jobIds);
             const totalApplicants = await Application.countDocuments({ job: { $in: jobIds } });
-            console.log("Total applicants:", totalApplicants);
     
             res.status(200).json({ totalApplicants });
         } catch (error) {
