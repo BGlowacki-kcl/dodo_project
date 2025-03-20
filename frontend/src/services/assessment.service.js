@@ -1,7 +1,7 @@
 import { checkTokenExpiration } from "./auth.service";
 
 export const assessmentService = {
-    async runCode(code, language){
+    async runCode(code, language, tests, funcForCppTest){
         if(
             (code.includes("print") && language === "python") || 
             (code.includes("console.log") && language === "javascript") || 
@@ -9,50 +9,8 @@ export const assessmentService = {
         ) {
             return {data: {stderr: "You cannot use output statement in your code"}};
         }
-        const tests = [
-            {
-                input: [1, 2],
-                output: 3,
-            },
-            {
-                input: [3, 4],
-                output: 7,
-            },
-            {
-                input: [5, 6],
-                output: 11,
-            },
-            {
-                input: [10, 6],
-                output: 16,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-            {
-                input: [11, 6],
-                output: 17,
-            },
-        ]
         
-        code += constructCode(tests,  language);
+        code += constructCode(tests,  language, funcForCppTest);
         console.log("Code: ", code, "...");
 
         const codeSendResponse = await sendCode(code, language);
@@ -72,10 +30,80 @@ export const assessmentService = {
         return data;
     },
 
-    async getTask(appId) {
-        
+    async getTask(appId, taskId) {
+        const response = await fetch(`/api/assessment/task?appId=${appId}&taskId=${taskId}`,{
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
+        });
+        checkTokenExpiration(response);
+        if(!response.ok){
+            return response;
+        }
+        const data = await response.json();
+        console.log("MMMMM: ",data);
+        return data;
     },
-    async getTests() {
+
+    async getTasksId(appId){
+        const response = await fetch(`/api/assessment/tasksid?appId=${appId}`,{
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
+        });
+        console.log("RES: ",response);
+        checkTokenExpiration(response);
+        if(!response.ok){
+            return response;
+        }
+        const data = await response.json();
+        return data;
+    },
+
+    async getAllTasks() {
+        const response = await fetch('/api/assessment/alltasks', {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+            },
+        });
+        checkTokenExpiration(response);
+        if(!response.ok){
+            return response;
+        }
+        const data = await response.json();
+        return data;
+    },
+
+    async submit(appId, testsPassed, code, language, taskId){
+        try {
+            const response = await fetch('/api/assessment/submit', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({ 
+                    appId,
+                    testsPassed,
+                    code,
+                    language,
+                    taskId
+                })
+            })
+            const data = await response.json();
+            if(!response.ok){
+                return { success: false, message: data.message };
+            }
+            return { success: true, message: data.message };
+        } catch (err) {
+            return { success: false, message: "Server error" };
+        }
 
     }
 }  
@@ -101,12 +129,12 @@ async function sendCode(code, language){
     return data;
 }
 
-function constructCode(tests, language) {
+function constructCode(tests, language, funcForCppTest) {
     const testCases = generateTestCode(tests, language)
     if(testCases === "") {
         return {data: {stderr: "Failed to generate test cases"}};
     }
-    const executeTestsCode = generateExecuteTestsCode(language);
+    const executeTestsCode = generateExecuteTestsCode(language, funcForCppTest);
     return testCases + executeTestsCode;
 }
 
@@ -132,12 +160,12 @@ async function getExecutionDetails(id) {
     }
 }
 
-function generateExecuteTestsCode(language) {
+function generateExecuteTestsCode(language, funcForCpp) {
     if(language === "python") {
         return `
 for index, testCase in enumerate(testCases):
     args = testCase["input"]
-    expected_output = testCase["output"]
+    expected_output = testCase["output"][0]
     actual_output = func(*args)
 
     if actual_output == expected_output:
@@ -147,7 +175,7 @@ for index, testCase in enumerate(testCases):
 
 for index, testCase in enumerate(hidden_testCases):
     args = testCase["input"]
-    expected_output = testCase["output"]
+    expected_output = testCase["output"][0]
     actual_output = func(*args)
 
     if actual_output == expected_output:
@@ -164,7 +192,7 @@ testCases.forEach((testCase, index) => {
     const expected_output = testCase.output;
     const actual_output = func(...args);
 
-    if (actual_output === expected_output) {
+    if (actual_output === expected_output[0]) {
         console.log(\`Test \${index + 1}: Test PASSED\`);
     } else {
         console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output}\`);
@@ -176,7 +204,7 @@ hiddenTestCases.forEach((testCase, index) => {
     const expected_output = testCase.output;
     const actual_output = func(...args);
 
-    if (actual_output === expected_output) {
+    if (actual_output === expected_output[0]) {
         console.log(\`Test \${index + 1}: Test PASSED HIDDEN\`);
     } else {
         console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output} HIDDEN\`);
@@ -192,7 +220,7 @@ void runTests(vector<pair<vector<int>, int>> testCases, string testType) {
     for (size_t i = 0; i < testCases.size(); i++) {
         vector<int> args = testCases[i].first;
         int expected_output = testCases[i].second;
-        int actual_output = func(args[0], args[1]); 
+        int actual_output = func(${funcForCpp}); 
 
         if (actual_output == expected_output) {
             cout << "Test " << i + 1 << ": Test PASSED " << testType << endl;
@@ -215,6 +243,7 @@ int main() {
 
 
 function generateTestCode(testCases, language) {
+    console.log("Tests: ",testCases);
     const visibleTestCases = testCases.slice(0, 5);
     const hiddenTestCases = testCases.slice(5, 10);
 

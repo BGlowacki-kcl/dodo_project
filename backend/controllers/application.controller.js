@@ -102,12 +102,12 @@ export const applicationController = {
 
     async getOneApplication(req, res) {
         try {
-            const { id } = req.query; // This is now the user's ID
+            const { id } = req.query; // Application ID
             const { uid } = req;
-            
-            // Get the employer making the request
-            const employer = await User.findOne({ uid });
-            if (!employer) {
+    
+            // Get the requesting user
+            const user = await User.findOne({ uid });
+            if (!user) {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
             
@@ -142,7 +142,7 @@ export const applicationController = {
             res.status(500).json(createResponse(false, err.message));
         }
     },
-
+    
     async createApplication(req, res) {
         try {
             const { jobId, coverLetter } = req.body;

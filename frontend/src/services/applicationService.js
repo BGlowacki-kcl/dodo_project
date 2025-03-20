@@ -55,7 +55,7 @@ export async function getJobApplicants(jobId) {
     if (!responseJson.success) {
       throw new Error(response.data.message || "Failed to fetch applicants");
     }
-    return responseJson.data;
+    return responseJson;
   } catch (error) {
     console.error("Error fetching applicants:", error);
     if (error.response && error.response.status === 403) {

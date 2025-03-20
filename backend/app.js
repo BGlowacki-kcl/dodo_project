@@ -10,6 +10,7 @@ import shortlistRoutes from './routes/shortlist.route.js';
 import chat from "./api/chat.api.js";
 import { checkRole } from './middlewares/auth.middleware.js';
 import assessmentRoutes from "./routes/assessment.router.js"
+import emailRouter from "./routes/email.router.js"
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/application', applicationRoutes);
 app.use('/api/matcher', matcherRoutes);
 app.use('/api/shortlist', shortlistRoutes);
 app.use('/api/assessment', assessmentRoutes);
+app.use('/api/email', emailRouter)
 
 app.post('/api/chat', chat); //add auth middleware
 

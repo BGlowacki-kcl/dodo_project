@@ -25,12 +25,15 @@ import EmployerApplicants from './pages/employer/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
 import { useNotification } from './context/notification.context';
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import Contact from './pages/Contact';
 import Apply from './pages/applicant/Apply';
 import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
 
 function App() {
 	const navigate = useNavigate();
 	const showNotification = useNotification();
+	const location = useLocation();
 
 	useEffect(() => {
         const handleSessionExpired = () => {
@@ -45,6 +48,8 @@ function App() {
         };
     }, [navigate, showNotification]);
 
+	const hideNavbar = location.pathname.startsWith('/codeassessment');
+
 	const routeConfig = [
 		// For unLogged users (landing and authorization pages)
 		{ path: '/signin', element: <SignInUp/>, roles: ['unLogged'] },
@@ -53,6 +58,7 @@ function App() {
 		
 		// Pages for any user
 		{ path: '/', element: <LandingPage />, roles: ['unLogged', 'employer', 'jobSeeker'] },
+		{ path: '/contact', element: <Contact />, roles: ['unLogged', 'employer', 'jobSeeker'] },
 		{ path: '/search-results', element: <SearchResults />, roles: ['jobSeeker', 'employer', 'unLogged'] },
 		
 		// Completing profile page, for logged users
@@ -60,29 +66,28 @@ function App() {
 		
 		// jobSeeker accessible pages
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
-		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
 		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
-		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },		
+		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
 		{ path: '/apply/:jobId', element: <Apply />, roles: ['jobSeeker'] },
 		
 		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
-
-		//JobDetailsPage
+		
 		// Employer accessible pages
 		{ path: '/applicant/:applicationId', element: <ApplicantDetails />, roles: ['employer'] },
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
+		{ path: '/posts/edit/:jobId', element: <EditJobPost />, roles: ['employer']},
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
-		{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
+		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
 
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	  ];
 
 	return (
 		<Box className="bg-background min-h-screen">
-			<Navbar />
+			{ !hideNavbar && <Navbar /> }
 			<Routes>
 				{routeConfig.map((route) => (
 					<Route
