@@ -79,3 +79,31 @@ export const getFilteredJobs = async (filters) => {
   const response = await axios.get(`/api/job/search?${queryParams.toString()}`);
   return response.data;
 };
+
+export async function getJobsByEmployer() {
+  try {
+    const response = await fetch('/api/job/employer', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      }
+    });
+
+    // Check token expiration based on the response (if implemented in checkTokenExpiration)
+    checkTokenExpiration(response);
+
+    // If the HTTP status is not OK, parse the error and throw.
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to fetch employer jobs:", errorData);
+      throw new Error(errorData.message || "Failed to fetch jobs by employer");
+    }
+
+    // For a successful response, the backend returns an array
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching jobs by employer:", error);
+    throw error;
+  }
+}
