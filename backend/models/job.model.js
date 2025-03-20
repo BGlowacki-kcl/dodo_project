@@ -49,13 +49,6 @@ const jobSchema = new Schema({
 
     updatedAt: Date,
 
-    applicants: [
-        {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-        }
-    ],
-
     assessments: [{
         type: Schema.Types.ObjectId,
         ref: 'Assessment'

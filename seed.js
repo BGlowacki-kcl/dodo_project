@@ -146,7 +146,6 @@ const generateJobs = async (num, employers) => {
             requirements: faker.helpers.arrayElements(techSkills, 3),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
             postedBy: employer._id,
-            applicants: [],
             questions: [],
             assessments: faker.helpers.arrayElements(
                 availableAssessments,
@@ -245,7 +244,7 @@ const generateCodeSubmissions = async (jobs, applications) => {
 
                 const solutionCode = answerObj[lang];
 
-                const score = faker.number.int({min: 0, max: 100});
+                const score = 20;
 
                 codeSubmissions.push({
                     assessment: assessment._id,
@@ -289,18 +288,18 @@ const seedDatabase = async () => {
 
         // Generate and insert Applications
         const applications = generateApplications(400, createdJobSeekers, createdJobs); // 400 Applications
-        await Application.insertMany(applications);
+        const createdApplications = await Application.insertMany(applications);
         console.log("Applications added...");
 
-        // Update the applicants field in the Job documents
-        for (const job of createdJobs) {
-            await Job.findByIdAndUpdate(job._id, { applicants: job.applicants });
-        }
         console.log("Applicants added to jobs...");
 
         const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
         await Shortlist.insertMany(shortlistsData);
         console.log("Shortlists added...");
+
+        const codeSubmissionsData = await generateCodeSubmissions(createdJobs, createdApplications);
+        await CodeSubmission.insertMany(codeSubmissionsData);
+        console.log("Code submissions added...");
 
         mongoose.connection.close();
         console.log(" Database connection closed");
