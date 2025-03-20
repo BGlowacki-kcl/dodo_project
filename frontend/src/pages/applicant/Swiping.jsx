@@ -67,7 +67,7 @@ const Swiping = () => {
                   onSkip={() => handleSkip(recommendedJobs[currentIndex]._id)} // Pass the skip handler
                   jobId={recommendedJobs[currentIndex]._id}
               />
-          ) : (
+          ) : (vfg
               <p>No job recommendations available.</p>
           )}
         </div>
