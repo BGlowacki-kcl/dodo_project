@@ -62,8 +62,7 @@ function App() {
 		{ path: '/swipe', element: <Swiping />, roles: ['jobSeeker'] },
 		{ path: '/user/jobs', element: <UserJobsPage />, roles: ['jobSeeker'] },
 		{ path: '/codeassessment/:appId', element: <CodeAss />, roles: ['jobSeeker'] },
-		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },		
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
 		{ path: '/apply/:jobId', element: <Apply />, roles: ['jobSeeker'] },
 		

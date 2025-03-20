@@ -88,7 +88,7 @@ const EmployerApplicants = () => {
                                 
                                 <div className="mt-4 flex space-x-2">
                                     <button
-                                        onClick={() => navigate(`/applicant/${applicant.id}`)}
+                                        onClick={() => navigate(`/applicant/${applicant.applicationId}`)}
                                         className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                     >
                                         View Details
