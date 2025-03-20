@@ -41,6 +41,30 @@ export async function getApplicationById(appId) {
   }
 }
 
+export async function getJobApplicants(jobId) {
+  try {
+    const response = await fetch(`/api/application/job/${jobId}/applicants`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      }
+    });
+    checkTokenExpiration(response);
+    const responseJson = await response.json();
+    if (!responseJson.success) {
+      throw new Error(response.data.message || "Failed to fetch applicants");
+    }
+    return responseJson.data;
+  } catch (error) {
+    console.error("Error fetching applicants:", error);
+    if (error.response && error.response.status === 403) {
+      return {status: 403, message: "You are not authorized to view these applicants"};
+    }
+    return {status: 500, message: "Failed to fetch applicants"};
+  }
+}
+
 export async function applyToJob({ jobId, coverLetter }) {
   const response = await fetch('/api/application/apply', {
     method: 'POST',
