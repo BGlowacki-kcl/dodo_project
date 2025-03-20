@@ -15,11 +15,11 @@ export async function getAllJobs() {
       method: "GET",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error("Failed to fetch all jobs");
     }
     const data = await response.json();
-    checkTokenExpiration(data);
     return data;
   } catch (error) {
     console.error("Error fetching all jobs:", error);
@@ -33,11 +33,11 @@ export async function getJobById(id) {
       method: "GET",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error(`Failed to fetch job with id ${id}`);
     }
     const data = await response.json();
-    checkTokenExpiration(data);
     return data;
   } catch (error) {
     console.error(`Error fetching job by id ${id}:`, error);
@@ -52,11 +52,11 @@ export async function createJob(jobData) {
       headers: getAuthHeaders(),
       body: JSON.stringify(jobData),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error("Failed to create job");
     }
     const data = await response.json();
-    checkTokenExpiration(data);
     return data;
   } catch (error) {
     console.error("Error creating job:", error);
@@ -71,11 +71,11 @@ export async function updateJob(id, jobData) {
       headers: getAuthHeaders(),
       body: JSON.stringify(jobData),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error(`Failed to update job with id ${id}`);
     }
     const data = await response.json();
-    checkTokenExpiration(data);
     return data;
   } catch (error) {
     console.error(`Error updating job with id ${id}:`, error);
@@ -89,11 +89,11 @@ export async function deleteJob(id) {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error(`Failed to delete job with id ${id}`);
     }
     const data = await response.json();
-    checkTokenExpiration(data);
     return data;
   } catch (error) {
     console.error(`Error deleting job with id ${id}:`, error);
@@ -107,6 +107,7 @@ export async function getJobCountByType(jobType) {
       method: "GET",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error(`Failed to get job count for type: ${jobType}`);
     }
@@ -124,6 +125,7 @@ export async function getAllJobRoles() {
       method: "GET",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error("Failed to get all job roles");
     }
@@ -141,6 +143,7 @@ export async function getAllJobLocations() {
       method: "GET",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error("Failed to get all job locations");
     }
@@ -158,6 +161,7 @@ export async function getAllJobTypes() {
       method: "GET",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error("Failed to get all job types");
     }
@@ -181,6 +185,7 @@ export async function getFilteredJobs(filters) {
       method: "GET",
       headers: getAuthHeaders(),
     });
+    checkTokenExpiration(response);
     if (!response.ok) {
       throw new Error("Failed to get filtered jobs");
     }
