@@ -107,3 +107,38 @@ export async function getJobsByEmployer() {
     throw error;
   }
 }
+
+export async function getApplicantsByJobId(jobId) {
+  try {
+    // Validate that jobId is provided
+    if (!jobId) {
+      throw new Error("Job ID is required");
+    }
+
+    // Make the API request
+    const response = await fetch(`/api/job/applicants?jobId=${jobId}`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
+    });
+
+    // Check token expiration based on the response
+    checkTokenExpiration(response);
+
+    // If the HTTP status is not OK, parse the error and throw
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to fetch job applicants:", errorData);
+      throw new Error(errorData.message || "Failed to fetch applicants");
+    }
+
+    // Parse and return the response data
+    const result = await response.json();
+    return result.data || []; // Return applicants array or empty array if null
+  } catch (error) {
+    console.error("Error fetching applicants:", error);
+    throw error;
+  }
+}

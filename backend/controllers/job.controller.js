@@ -188,3 +188,48 @@ export const getFilteredJobs = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch jobs", error: error.message });
     }
 };
+
+export const getJobApplicants = async (req, res) => {
+   try {
+        const { jobId } = req.query;
+        
+        if (!jobId) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Missing jobId parameter"
+            });
+        }
+
+        const job = await Job.findById(jobId).populate('applicants', 'name email');
+        
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                message: "Job not found"
+            });
+        }
+
+        // Check if the employer requesting is the one who posted the job
+        const { uid } = req;
+        const employer = await Employer.findOne({ uid });
+        
+        if (!employer || job.postedBy.toString() !== employer._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized to view applicants for this job"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Applicants retrieved successfully",
+            data: job.applicants
+        });
+   } catch (error) {
+        console.error('Error fetching job applicants:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+   }
+};

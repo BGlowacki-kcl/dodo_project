@@ -62,31 +62,6 @@ export const applicationController = {
         }
     },
 
-    async getApplicants(req, res) {
-        try {
-            const { jobId } = req.params;
-            
-
-            const job = await Job.findById(jobId);
-            if (!job  ) {
-                return res.status(403).json(createResponse(false, "Unauthorized to view applicants for this job"));
-            }
-
-            const applications = await Application.find({ job: jobId }).populate("applicant", "name email");
-
-            const applicants = applications.map(app => ({
-                id: app.applicant._id,
-                name: app.applicant.name,
-                email: app.applicant.email,
-                status: app.status,
-                applicationId: app._id
-            }));
-
-            return res.status(200).json(createResponse(true, "Applicants retrieved successfully", applicants));
-        } catch (error) {
-            return handleError(res, error, "Error retrieving applicants");
-        }
-    },
 
     async getAllApplications(req, res) {
         try {
