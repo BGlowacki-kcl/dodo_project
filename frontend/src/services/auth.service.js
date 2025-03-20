@@ -5,6 +5,7 @@ import {
     getAuth 
 } from "firebase/auth";
 import { auth } from "../firebase";
+import { verifyUserRole } from "./user.service";
 
 export async function checkTokenExpiration(response) {
     if (response.status === 403) {
@@ -56,10 +57,20 @@ export const authService = {
         }
     },
 
-    async signIn(email, password, navigate){
+    async signIn(email, password, navigate, expectedRole){
         if (!email || !password) {
             throw new Error('Email and password are required');
         }
+        
+        if(verifyUserRole(email, expectedRole)){
+            console.log("Wrong login page!");
+            if(expectedRole === 'employer'){
+                throw new Error('Use login page for job seekers');
+            } else {
+                throw new Error('Use login page for employers');
+            }
+        }
+        console.log("What am I doing here?");
 
         const auth = getAuth();
 
@@ -70,57 +81,15 @@ export const authService = {
             console.log("Token: "+idToken);
             window.dispatchEvent(new Event('authChange'));
 
-            //  Fetch role from backend
-            const roleResponse = await fetch('/api/user/role', {
-                method: 'GET',
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${idToken}`,
-                },
-            });
-
-            if (!roleResponse.ok) {
-                throw new Error("Failed to fetch user role");
-            }
-
-            const roleData = await roleResponse.json();
-            sessionStorage.setItem('role', roleData.data);  // Ensure correct storage
+            sessionStorage.setItem('role', expectedRole);  // Ensure correct storage
 
             //  Check if profile is complete
-            await this.checkIfProfileCompleted(navigate);
-
+            if(expectedRole === 'jobSeeker'){
+                await this.checkIfProfileCompleted(navigate);
+            }
         } catch (error) {
             console.error("SignIn error: ", error);
             throw new Error('Invalid email or password');
-        }
-    },
-
-    async verifyUserRole(email, expectedRole) {
-        try {
-            const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/user/role', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            
-
-            const data = await response.json();
-            if (data.data !== expectedRole) {
-                throw new Error(
-                    expectedRole === 'employer' 
-                        ? 'Please use the employer login page' 
-                        : 'Please use the jobseeker login page'
-                );
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Role verification error:', error);
-            throw error;
         }
     },
 

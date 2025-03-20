@@ -53,7 +53,7 @@ const AuthForm = () => {
 
       // Call auth service and get response
       const response = await (isLogin 
-        ? authService.signIn(email, password, navigate) 
+        ? authService.signIn(email, password, navigate, "jobSeeker") 
         : authService.signUp(email, password, false, navigate));
 
       // Use server-provided message if available, otherwise fallback
