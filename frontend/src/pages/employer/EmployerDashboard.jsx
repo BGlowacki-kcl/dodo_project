@@ -1,104 +1,33 @@
 import { useState, useEffect } from "react";
 import EmployerSideBar from '../../components/EmployerSideBar';
+import { getTotalApplicantsByEmployer } from '../../services/applicationService';
 
 const EmployerDashboard = () => {
-    const [stats, setStats] = useState({
-        totalJobs: 0,
-        totalApplicants: 0,
-        positionsFilled: 0
-    });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [totalApplicants, setTotalApplicants] = useState(0);
 
     useEffect(() => {
-        const fetchDashboardStats = async () => {
+        const fetchTotalApplicants = async () => {
             try {
-                const token = sessionStorage.getItem('token');
-                
-                // Fetch employer's jobs
-                const jobsResponse = await fetch("/api/job/employer", {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!jobsResponse.ok) {
-                    throw new Error('Failed to fetch jobs');
-                }
-
-                const jobs = await jobsResponse.json();
-
-                // Fetch applicants count for each job
-                let totalApplicants = 0;
-                for (const job of jobs) {
-                    const applicantsResponse = await fetch(`/api/application/job/${job._id}/applicants`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    if (applicantsResponse.ok) {
-                        const data = await applicantsResponse.json();
-                        totalApplicants += data.data.length;
-                    }
-                }
-
-                setStats({
-                    totalJobs: jobs.length,
-                    totalApplicants: totalApplicants,
-                    
-                });
+                const total = await getTotalApplicantsByEmployer();
+                setTotalApplicants(total);
+                console.log("Total applicants:", total);
             } catch (error) {
-                console.error('Error fetching dashboard stats:', error);
-                setError('Failed to load dashboard statistics');
-            } finally {
-                setLoading(false);
+                console.error("Error fetching total applicants:", error);
             }
         };
 
-        fetchDashboardStats();
+        fetchTotalApplicants();
     }, []);
 
     return (
         <div className="flex min-h-screen bg-gray">
-            <EmployerSideBar />
             
-            <div className="ml-64 p-8 flex-1">
-                <div className="rounded-2xl p-8 min-h-[80vh] relative">
-                    {error && (
-                        <div className="mb-4 p-3 bg-red-100 border border-red-500 text-red-700 rounded">
-                            {error}
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="bg-gray-50 rounded-xl shadow-md p-6">
-                            <h3 className="text-lg font-semibold mb-2">Total Jobs Posted</h3>
-                            {loading ? (
-                                <p className="text-3xl font-bold text-blue-600">...</p>
-                            ) : (
-                                <p className="text-3xl font-bold text-blue-600">{stats.totalJobs}</p>
-                            )}
-                        </div>
-
-                        <div className="bg-gray-50 rounded-xl shadow-md p-6">
-                            <h3 className="text-lg font-semibold mb-2">Total Applicants</h3>
-                            {loading ? (
-                                <p className="text-3xl font-bold text-green-600">...</p>
-                            ) : (
-                                <p className="text-3xl font-bold text-green-600">{stats.totalApplicants}</p>
-                            )}
-                        </div>
-
-                        
-                    </div>
-                </div>
+            <div className="flex-1 p-8">
+                <h1 className="text-3xl font-bold">Employer Dashboard</h1>
+                <p className="mt-4 text-lg">Total Applicants: {totalApplicants}</p>
             </div>
         </div>
     );
 };
 
 export default EmployerDashboard;
-
-
