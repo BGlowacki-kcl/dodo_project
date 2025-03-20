@@ -43,7 +43,7 @@ export async function getApplicationById(appId) {
 
 export async function getJobApplicants(jobId) {
   try {
-    const response = await fetch(`/api/application/job/${jobId}/applicants`, {
+    const response = await fetch(`/api/application/byJobId?jobId=${jobId}`, {
       method: 'GET',
       headers: {
         "Content-Type": "application/json",
