@@ -2,7 +2,7 @@ import { checkTokenExpiration } from './auth.service';
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: '${BASE_URL}',
 });
  
 const getAuthToken = () => {

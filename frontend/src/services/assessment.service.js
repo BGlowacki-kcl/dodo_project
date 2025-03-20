@@ -31,7 +31,7 @@ export const assessmentService = {
     },
 
     async getTask(appId, taskId) {
-        const response = await fetch(`/api/assessment/task?appId=${appId}&taskId=${taskId}`,{
+        const response = await fetch(`${BASE_URL}/assessment/task?appId=${appId}&taskId=${taskId}`,{
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -48,7 +48,7 @@ export const assessmentService = {
     },
 
     async getTasksId(appId){
-        const response = await fetch(`/api/assessment/tasksid?appId=${appId}`,{
+        const response = await fetch(`${BASE_URL}/assessment/tasksid?appId=${appId}`,{
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -65,7 +65,7 @@ export const assessmentService = {
     },
 
     async getAllTasks() {
-        const response = await fetch('/api/assessment/alltasks', {
+        const response = await fetch('${BASE_URL}/assessment/alltasks', {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export const assessmentService = {
 
     async submit(appId, testsPassed, code, language, taskId){
         try {
-            const response = await fetch('/api/assessment/submit', {
+            const response = await fetch('${BASE_URL}/assessment/submit', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -109,7 +109,7 @@ export const assessmentService = {
 }  
 
 async function sendCode(code, language){
-    const response = await fetch('/api/assessment/send', {
+    const response = await fetch('${BASE_URL}/assessment/send', {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
@@ -141,7 +141,7 @@ function constructCode(tests, language, funcForCppTest) {
 async function getExecutionDetails(id) {
 
     try {
-        const response = await fetch(`/api/assessment/status?id=${id}`, {
+        const response = await fetch(`${BASE_URL}/assessment/status?id=${id}`, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",

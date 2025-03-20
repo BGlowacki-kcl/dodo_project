@@ -29,7 +29,7 @@ export const authService = {
         sessionStorage.setItem('token', idToken);
         window.dispatchEvent(new Event('authChange'));
         try {
-            const response = await fetch('/api/user/basic', {
+            const response = await fetch('${BASE_URL}/user/basic', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export const authService = {
             window.dispatchEvent(new Event('authChange'));
 
             //  Fetch role from backend
-            const roleResponse = await fetch('/api/user/role', {
+            const roleResponse = await fetch('${BASE_URL}/user/role', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",
@@ -98,7 +98,7 @@ export const authService = {
     async verifyUserRole(email, expectedRole) {
         try {
             const token = sessionStorage.getItem('token');
-            const response = await fetch('/api/user/role', {
+            const response = await fetch('${BASE_URL}/user/role', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ export const authService = {
 
     async checkIfProfileCompleted(navigate){
         try {
-            const response = await fetch('/api/user/completed', {
+            const response = await fetch('${BASE_URL}/user/completed', {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",

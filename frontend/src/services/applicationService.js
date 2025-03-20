@@ -1,7 +1,7 @@
 import { checkTokenExpiration } from "./auth.service.js";
 
 export async function getAllUserApplications() {
-  const response = await fetch('/api/application/all', {
+  const response = await fetch('${BASE_URL}/application/all', {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",
@@ -19,7 +19,7 @@ export async function getAllUserApplications() {
 
 export async function getApplicationById(appId) {
   try{
-    const response = await fetch(`/api/application/byId?id=${appId}`, {
+    const response = await fetch(`${BASE_URL}/application/byId?id=${appId}`, {
       method: 'GET',
       headers: {
           "Content-Type": "application/json",
@@ -41,7 +41,7 @@ export async function getApplicationById(appId) {
 }
 
 export async function applyToJob({ jobId, coverLetter }) {
-  const response = await fetch('/api/application/apply', {
+  const response = await fetch('${BASE_URL}/application/apply', {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export async function applyToJob({ jobId, coverLetter }) {
 }
 
 export async function withdrawApplication(appId) {
-  const response = await fetch(`/api/application/withdraw?id=${appId}`, {
+  const response = await fetch(`${BASE_URL}/application/withdraw?id=${appId}`, {
     method: 'DELETE',
     headers: {
       "Content-Type": "application/json",
