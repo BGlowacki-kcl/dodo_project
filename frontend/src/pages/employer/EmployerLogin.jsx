@@ -11,7 +11,6 @@ const EmployerLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const showNotification = useNotification();
-  const [isLogin, setIsLogin] = useState(true);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -19,19 +18,22 @@ const EmployerLogin = () => {
     setLoading(true);
 
     try {
-      // First check if user is an employer
+      // Sign in the user
+      const signInResponse = await authService.signIn(email, password, navigate);
       
-  
-      // If they are an employer, proceed with login
-      await authService.signIn(email, password, navigate);
-      await authService.verifyUserRole(email, 'employer');
-      showNotification('Successfully logged in!', 'success');
-      navigate('/employer-dashboard'); // Navigate to employer dashboard after successful login
-  
+      // Verify the user is an employer
+      const roleResponse = await authService.verifyUserRole(email, 'employer');
+
+      // Use server-provided message if available, otherwise fallback
+      const successMessage = roleResponse?.message || signInResponse?.message || 'Successfully logged in as employer!';
+      showNotification(successMessage, 'success');
+      navigate('/employer-dashboard');
+
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.message || 'Invalid credentials');
-      showNotification(error.message || 'Login failed', 'error');
+      const errorMessage = error.message || 'Invalid credentials or not an employer';
+      setError(errorMessage);
+      showNotification(errorMessage, 'danger');
     } finally {
       setLoading(false);
     }
@@ -63,6 +65,7 @@ const EmployerLogin = () => {
               placeholder="Enter your email"
               required
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
+              disabled={loading}
             />
           </div>
 
@@ -75,11 +78,13 @@ const EmployerLogin = () => {
               placeholder="Enter your password"
               required
               className="w-full px-4 py-2 mt-1 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:outline-none"
+              disabled={loading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-10 text-gray-500"
+              disabled={loading}
             >
               {showPassword ? "🙈" : "👁️"}
             </button>
@@ -89,14 +94,12 @@ const EmployerLogin = () => {
             type="submit" 
             disabled={loading}
             className={`w-full bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-300 ${
-              loading && 'opacity-50 cursor-not-allowed'
+              loading ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        
 
         <div className="text-center mt-4">
           <Link to="/signin" className="text-sm text-blue-500 hover:text-blue-700">
