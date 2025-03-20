@@ -127,43 +127,52 @@ const generateEmployers =  async () => {
 
 // Generate Random Jobs
 const generateJobs = async (num, employers) => {
+    // Ensure availableAssessments is awaited so that you get the actual list of assessments
+    const availableAssessments = await CodeAssessment.find();
     const jobs = [];
-    const availableAssessments = CodeAssessment.find();
     for (let i = 0; i < num; i++) {
         const employer = faker.helpers.arrayElement(employers);
         const jobTitle = faker.helpers.arrayElement(Object.keys(techJobDetails));
-
-        const job = ({
+        const job = {
             title: jobTitle,
             company: employer.companyName,
             location: faker.helpers.arrayElement(locations),
             description: techJobDetails[jobTitle],
             salaryRange: {
                 min: faker.number.int({ min: 30000, max: 60000 }),
-                max: faker.number.int({ min: 80000, max: 150000 })
+                max: faker.number.int({ min: 80000, max: 150000 }),
             },
-            employmentType: faker.helpers.arrayElement(['Full-Time', 'Part-Time', 'Internship', 'Graduate', 'Placement']),
+            employmentType: faker.helpers.arrayElement([
+                "Full-Time",
+                "Part-Time",
+                "Internship",
+                "Graduate",
+                "Placement",
+            ]),
             requirements: faker.helpers.arrayElements(techSkills, 3),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
             postedBy: employer._id,
             questions: [],
+            // Randomly select up to 4 assessments from the available list
             assessments: faker.helpers.arrayElements(
                 availableAssessments,
                 faker.number.int({ min: 0, max: 4 })
             ).map(a => a._id),
-        });
+        };
 
         if (faker.datatype.boolean()) {
-            const selectedQuestions = faker.helpers.arrayElements(jobQuestions, faker.number.int({min: 3, max:6}));
+            const selectedQuestions = faker.helpers.arrayElements(
+                jobQuestions,
+                faker.number.int({ min: 3, max: 6 })
+            );
             job.questions = selectedQuestions.map(q => ({
                 questionText: q.questionText,
-                required: faker.datatype.boolean()
+                required: faker.datatype.boolean(),
             }));
         }
 
         jobs.push(job);
     }
-
     return jobs;
 };
 
@@ -192,8 +201,6 @@ const generateApplications = (num, jobSeekers, jobs) => {
         }
 
         applications.push(application);
-
-        job.applicants.push(jobSeeker._id);
     }
 
     return applications;
@@ -244,7 +251,7 @@ const generateCodeSubmissions = async (jobs, applications) => {
 
                 const solutionCode = answerObj[lang];
 
-                const score = 20;
+                const score = 10;
 
                 codeSubmissions.push({
                     assessment: assessment._id,
@@ -256,8 +263,9 @@ const generateCodeSubmissions = async (jobs, applications) => {
                 });
             }
         }
-    }    
-}
+    }
+    return codeSubmissions;
+};
 
 // Seed Database
 const seedDatabase = async () => {
@@ -282,7 +290,7 @@ const seedDatabase = async () => {
         console.log("Employers added...");
 
         // Generate and insert Jobs
-        const jobs = generateJobs(200, createdEmployers); // 200 Jobs
+        const jobs = await generateJobs(200, createdEmployers); // 200 Jobs
         const createdJobs = await Job.insertMany(jobs);
         console.log("Jobs added...");
 
@@ -291,18 +299,23 @@ const seedDatabase = async () => {
         const createdApplications = await Application.insertMany(applications);
         console.log("Applications added...");
 
+        // Update the applicants field in the Job documents
+        for (const job of createdJobs) {
+            await Job.findByIdAndUpdate(job._id, { applicants: job.applicants });
+        }
         console.log("Applicants added to jobs...");
 
         const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
         await Shortlist.insertMany(shortlistsData);
         console.log("Shortlists added...");
 
+        // NEW: Generate and insert Code Submissions based on job assessments
         const codeSubmissionsData = await generateCodeSubmissions(createdJobs, createdApplications);
         await CodeSubmission.insertMany(codeSubmissionsData);
         console.log("Code submissions added...");
 
         mongoose.connection.close();
-        console.log(" Database connection closed");
+        console.log("Database connection closed");
     } catch (error) {
         console.error("Seeding error:", error);
         mongoose.connection.close();

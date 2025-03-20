@@ -57,7 +57,7 @@ export const getUserJobRecommendations = async (req, res) => {
     }
 
     // Fetch jobs excluding the ones in excludeJobIds
-    const jobs = await Job.find({ _id: { $nin: excludeJobIds } }).limit(30);
+    const jobs = await Job.find({ _id: { $nin: excludeJobIds } }).limit(30);  //Limit to 30 jobs to speed up the process
 
     const jobMatches = await Promise.all(
         jobs.map(async (job) => {
