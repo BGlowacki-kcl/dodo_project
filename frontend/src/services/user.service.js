@@ -115,7 +115,6 @@ export const userService = {
             }
             
             const responseJson = await response.json();
-            checkTokenExpiration(responseJson);
             return responseJson.data;
         } catch (error) {
             console.error("Error fetching user profile:", error);

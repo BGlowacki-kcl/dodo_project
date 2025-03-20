@@ -24,7 +24,7 @@ export const userController = {
     },
     async getUserById(req, res) {
         try {
-            const { userId } = req.params;
+            const { userId } = req.query;
             
             const user = await User.findById(userId)
                 .select('name email skills education experience resume'); // Only select public fields

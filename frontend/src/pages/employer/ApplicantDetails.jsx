@@ -7,7 +7,7 @@ import { getApplicationById } from "../../services/applicationService";
 import { userService } from "../../services/user.service";
 
 const ApplicantDetails = () => {
-    const { applicantId } = useParams();
+    const { applicationId } = useParams();
     const [applicant, setApplicant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -16,33 +16,38 @@ const ApplicantDetails = () => {
     useEffect(() => {
         const fetchApplicantDetails = async () => {
             try {
-                // Add a debug log to check the ID being used
-                console.log('Fetching application with ID:', applicantId);
                 
-                const response = await getApplicationById(applicantId);
-                //const userResponse = await userService.getUserById(response.applicantid);
-                //console.log('User response:', userResponse);
+                console.log('Fetching application with ID:', applicationId);
+                
+                const response = await getApplicationById(applicationId);
+                
                 console.log('Raw API response:', response);
-                //const userResponse = await getUserById(response.userId);
-                console.log('User response:', response.applicantid);
+                const applicantId = response.applicantid;
+                console.log('Applicant ID:', applicantId);
+                const userResponse = await userService.getUserById(applicantId);
+                console.log('User response:', userResponse)
                 
                 
-                if (!response) {
+                
+                
+                if (!response && !userResponse) {
                     throw new Error('No application data returned');
                 }
+                
+                
                 
                 
                 // The response is already the data object, not wrapped in {success, data}
                 setApplicant({
                     id: response._id,
-                    applicantId: response._id,
+                    applicationId: response._id,
                     name: response.name || 'No name provided',
                     email: response.email || 'No email provided',
                     status: response.status || 'applied',
                     coverLetter: response.coverLetter || 'No cover letter provided',
                     submittedAt: response.submittedAt || new Date().toISOString(),
-                    skills: response.skills || [],
-                    resume: response.resume || 'No resume available'
+                    skills: userResponse.skills || [],
+                    resume: userResponse.resume || 'No resume available'
                 });
             } catch (error) {
                 console.error('Error fetching application details:', error);
@@ -53,22 +58,22 @@ const ApplicantDetails = () => {
             
         };
     
-        if (applicantId) {
+        if (applicationId) {
             fetchApplicantDetails();
         } else {
             setError('No application ID provided');
             setLoading(false);
         }
-    }, [applicantId]);
+    }, [applicationId]);
 
     const handleStatusUpdate = async (newStatus) => {
         try {
-            if (!applicant || !applicant.applicantId) {
+            if (!applicant || !applicant.applicationId) {
                 throw new Error('Application ID not available');
             }
             
             const token = sessionStorage.getItem('token');
-            const response = await fetch(`/api/application/${applicant.applicantId}/status`, {
+            const response = await fetch(`/api/application/${applicant.applicationId}/status`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -139,6 +144,51 @@ const ApplicantDetails = () => {
                                 <div className="bg-gray-50 p-4 rounded-lg">
                                     <p className="text-gray-700 whitespace-pre-line">{applicant.coverLetter}</p>
                                 </div>
+                            </div>
+                            
+                            {/* Skills */}
+                            <div className="mb-8">
+                                <h2 className="text-xl font-semibold mb-4">Skills</h2>
+                                {applicant.skills && applicant.skills.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {applicant.skills.map((skill, index) => (
+                                            <span 
+                                                key={index} 
+                                                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                                            >
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 italic">No skills listed</p>
+                                )}
+                            </div>
+                            
+                            {/* Resume */}
+                            <div className="mb-8">
+                                <h2 className="text-xl font-semibold mb-4">Resume</h2>
+                                {applicant.resume && applicant.resume !== 'No resume available' ? (
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex items-center justify-between">
+                                            
+                                            {applicant.resume.startsWith('http') ? (
+                                                <a 
+                                                    href={applicant.resume} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                >
+                                                    View Resume
+                                                </a>
+                                            ) : (
+                                                <p className="text-gray-700 whitespace-pre-line">{applicant.resume}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 italic">No resume available</p>
+                                )}
                             </div>
 
                             {/* Rest of your component remains the same */}

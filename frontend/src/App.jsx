@@ -71,7 +71,7 @@ function App() {
 		//JobDetailsPage
 		// Employer accessible pages
 		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/applicant/:applicationId', element: <ApplicantDetails />, roles: ['employer'] },
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
