@@ -44,9 +44,9 @@ const Navbar = () => {
           {/* NAVBAR FOR EMPLOYERS */}
           {isEmployer && (
             <ul className="flex space-x-12 items-center">
-              <li><Link to="/posts" className="">Posts</Link></li>
+              <li><Link to="/employer/posts" className="">Posts</Link></li>
               <li><Link to="/contact" className="">Contact Us</Link></li>
-              <li><Link to="/Employer-dashboard" className="">Dashboard</Link></li>
+              <li><Link to="/employer-dashboard" className="">Dashboard</Link></li>
               <li><button onClick={handleSignOut} className="">Log Out</button></li>
             </ul>
           )}
