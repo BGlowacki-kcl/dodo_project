@@ -65,7 +65,7 @@ export async function getJobApplicants(jobId) {
   }
 }
 
-export async function applyToJob({ jobId, coverLetter }) {
+export async function applyToJob({ jobId, coverLetter, answers }) {
   const response = await fetch('/api/application/apply', {
     method: 'POST',
     headers: {
@@ -74,13 +74,14 @@ export async function applyToJob({ jobId, coverLetter }) {
     },
     body: JSON.stringify({
       jobId,
-      coverLetter
+      coverLetter,
+      answers,
     })
-  })
+  });
   checkTokenExpiration(response);
   const responseJson = await response.json();
   if (!responseJson.success) {
-    throw new Error(response.data.message || "Failed to apply");
+    throw new Error(responseJson.message || "Failed to apply");
   }
   return responseJson.data; 
 }

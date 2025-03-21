@@ -27,8 +27,8 @@ const Apply = () => {
         fetchQuestions();
     }, [jobId, showNotification]);
 
-    const handleAnswerChange = (index, value) => {
-        setAnswers((prev) => ({ ...prev, [index]: value }));
+    const handleAnswerChange = (questionId, value) => {
+        setAnswers((prev) => ({ ...prev, [questionId]: value }));
     };
 
     const handleSubmitApplication = async () => {
@@ -36,7 +36,10 @@ const Apply = () => {
             const applicationData = {
                 jobId,
                 coverLetter,
-                answers,
+                answers: Object.entries(answers).map(([questionId, answerText]) => ({
+                    questionId,
+                    answerText,
+                })),
             };
             await applyToJob(applicationData);
             navigate(`/user/jobs/details/${jobId}`);
@@ -63,13 +66,13 @@ const Apply = () => {
                 {questions.length > 0 && (
                     <div className="mb-4">
                         <h2 className="text-lg font-semibold mb-2">Questions</h2>
-                        {questions.map((question, index) => ( 
-                            <div key={index} className="mb-4">
+                        {questions.map((question) => ( 
+                            <div key={question._id} className="mb-4">
                                 <label className="block text-gray-700 mb-2">{question.questionText}</label>
                                 <input
                                     type="text"
-                                    value={answers[index] || ""}
-                                    onChange={(e) => handleAnswerChange(index, e.target.value)}
+                                    value={answers[question._id] || ""}
+                                    onChange={(e) => handleAnswerChange(question._id, e.target.value)}
                                     className="w-full p-2 border border-gray-300 rounded"
                                     placeholder="Type your answer..."
                                 />

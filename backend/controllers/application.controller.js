@@ -193,22 +193,38 @@ export const applicationController = {
     
     async createApplication(req, res) {
         try {
-            const { jobId, coverLetter } = req.body;
+            const { jobId, coverLetter, answers } = req.body;
             const { uid } = req;
+    
             if (!jobId) {
                 return res.status(400).json(createResponse(false, "Missing jobId in body"));
             }
-            const user = await User.findOne({uid});
+    
+            if (!answers || !Array.isArray(answers) || answers.some(answer => !answer.questionId || !answer.answerText)) {
+                return res.status(400).json(createResponse(false, "Invalid answers format"));
+            }
+    
+            const user = await User.findOne({ uid });
+            if (!user) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
+    
+            // Convert questionId to ObjectId
+            const formattedAnswers = answers.map((answer) => ({
+                questionId: new mongoose.Types.ObjectId(answer.questionId),
+                answerText: answer.answerText,
+            }));
     
             const newApp = await Application.create({
                 job: jobId,
                 applicant: user._id,
                 coverLetter,
+                answers: formattedAnswers,
                 status: "applied",
             });
-
+    
             await Job.findByIdAndUpdate(jobId, { $addToSet: { applicants: user._id } });
-
+    
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
         } catch (err) {
