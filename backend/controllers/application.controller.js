@@ -137,7 +137,8 @@ export const applicationController = {
                 submittedAt: app.submittedAt,
                 skills: app.applicant.skills,
                 resume: app.applicant.resume,
-                job: app.job
+                job: app.job,
+                assessments: null
             };
 
             const job = await Job.findById(app.job);
@@ -145,6 +146,7 @@ export const applicationController = {
             const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
             const submissions = await codeSubmission.find({ application: app._id });
             const assessmentSubmission = { assessments, submissions };
+            console.log("assessmentSubmission: ", assessmentSubmission);
 
             applicationData.assessments = assessmentSubmission;
             
