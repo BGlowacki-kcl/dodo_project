@@ -76,28 +76,26 @@ export async function withdrawApplication(appId) {
   return response.data.message;
 }
 
-export async function getTotalApplicantsByEmployer() {
-  const response = await fetch('/api/application/total-applicants', {
+export async function getDashboardData() {
+  const response = await fetch('/api/application/dashboard', {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",
       'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
     }
   });
-
-  
-
   checkTokenExpiration(response);
 
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || "Failed to fetch total applicants");
+  const responseJson = await response.json();
+  console.log(responseJson);
+  console.log(responseJson.data);
+  console.log(responseJson.jobs);
+  if (!responseJson.success) {
+    throw new Error(response || "Failed to fetch dashboard data");
   }
+  return responseJson.data;
 
-  const responseData = await response.json();
-  console.log("Total applicants:", responseData);
-  return responseData.totalApplicants;
+  
 }
 
 

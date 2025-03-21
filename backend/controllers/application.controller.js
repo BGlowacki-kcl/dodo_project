@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { get } from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
@@ -14,6 +14,8 @@ const handleError = (res, error, defaultMessage = "Server error") => {
     const statusCode = error.status || 500;
     return res.status(statusCode).json(createResponse(false, error.message || defaultMessage));
 };
+
+
 
 export const applicationController = {
   
@@ -191,29 +193,110 @@ export const applicationController = {
             res.status(500).json(createResponse(false, err.message));
         }
     },
-
-    async getTotalApplicantsByEmployer(req, res) {
+        
+    async getDashboardData(req, res) {
         try {
             const { uid } = req;
-
-    
             const employer = await User.findOne({ uid });
 
-            if (!employer) {
-                return res.status(404).json({ message: 'Employer not found' });
+    
+            if (!uid) {
+                return res.status(400).json(createResponse(false, "Bad Request: UID is missing"));
             }
     
-            // Find all jobs posted by this employer
-            const jobs = await Job.find({ postedBy: employer._id });
+            const jobs = await getJobsByEmployerHelper(uid); // Ensure this function is returning valid data
+            if (!jobs || jobs.length === 0) {
+                return res.status(404).json(createResponse(false, "No jobs found for this employer"));
+            }
     
-            // Aggregate the total number of applicants for these jobs
-            const jobIds = jobs.map(job => job._id);
-            const totalApplicants = await Application.countDocuments({ job: { $in: jobIds } });
+            const totalStatus = await getTotalStatus(jobs);
+            const lineGraphData = await getLineGraphData(jobs); // Call the helper function
+
+            const dashboardData = {
+                totalJobs: jobs.length,
+                totalStatus,
+                companyName: employer.companyName || "",
+                jobs,
+                lineGraphData, 
+            };
+
+            console.log("Dashboard data:", dashboardData.jobs);
+           
     
-            res.status(200).json({ totalApplicants });
+            return res.status(200).json(createResponse(true, "Dashboard data retrieved successfully", dashboardData));
         } catch (error) {
-            console.error('Error fetching total applicants:', error);
-            res.status(500).json({ message: 'Failed to fetch total applicants', error: error.message });
+            console.error("Error in getDashboardData:", error);
+            return handleError(res, error, "Error fetching dashboard data");
+        }
+    },
+};
+    
+    
+    // Helper function to get application status counts
+    async function getTotalStatus(jobs) {
+        try {
+            const jobIds = jobs.map(job => job._id);
+            const totalStatus = await Application.aggregate([
+                { $match: { job: { $in: jobIds } } },
+                { $group: { _id: "$status", count: { $sum: 1 } } },
+            ]);
+            return totalStatus;
+        } catch (error) {
+            console.error("Error fetching total status:", error);
+            throw new Error("Failed to fetch total status");
         }
     }
-};
+
+    async function getJobsByEmployerHelper(uid) {
+        try {
+            const employer = await User.findOne({ uid  });
+            if (!employer) {
+                throw new Error("Employer not found");
+            }
+            const jobs = await Job.find({ postedBy: employer._id });
+            return jobs;
+        
+        } catch (error) {
+            console.error("Error fetching employer jobs:", error);
+            throw new Error(error.message);
+        }
+        
+    }
+
+    async function getLineGraphData(jobs) {
+    try {
+        const jobIds = jobs.map(job => job._id);
+        const lineGraphData = await Application.aggregate([
+            { 
+                $match: { 
+                    job: { $in: jobIds }, 
+                    status: { $ne: "applying" } // Exclude applications in the "applying" state
+                } 
+            },
+            { 
+                $group: { 
+                    _id: { 
+                        jobId: "$job", // Include jobId in the grouping
+                        date: { $dateToString: { format: "%Y-%m-%d", date: "$submittedAt" } } // Group by date
+                    }, 
+                    count: { $sum: 1 } // Count applications for each date
+                } 
+            },
+            { $sort: { "_id.date": 1 } }, // Sort by date in ascending order
+            { 
+                $project: { 
+                    jobId: "$_id.jobId", // Include jobId in the final output
+                    date: "$_id.date",
+                    count: 1,
+                    _id: 0 // Remove the _id field
+                } 
+            }
+        ]);
+
+        console.log("Line Graph Data:", lineGraphData); // Debug log to verify the output
+        return lineGraphData;
+    } catch (error) {
+        console.error("Error fetching line graph data:", error);
+        throw new Error("Failed to fetch line graph data");
+    }
+}
