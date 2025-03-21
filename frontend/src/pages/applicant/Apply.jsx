@@ -82,6 +82,16 @@ const Apply = () => {
 
     const handleSubmitApplication = async () => {
         try {
+
+            // Ensure all questions are answered
+            const unansweredQuestions = questions.filter(
+                (question) => !answers[question._id] || answers[question._id].trim() === ""
+            );
+
+            if (unansweredQuestions.length > 0) {
+                showNotification("Please answer all the questions before submitting.", "error");
+                return;
+            }
             if (!applicationId) {
                 showNotification("Application ID is missing. Please try again.", "error");
                 return;
@@ -138,7 +148,9 @@ const Apply = () => {
                         <h2 className="text-lg font-semibold mb-2">Questions</h2>
                         {questions.map((question) => ( 
                             <div key={question._id} className="mb-4">
-                                <label className="block text-gray-700 mb-2">{question.questionText}</label>
+                                <label className="block text-gray-700 mb-2">
+                                    {question.questionText} <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="text"
                                     value={answers[question._id] || ""}
