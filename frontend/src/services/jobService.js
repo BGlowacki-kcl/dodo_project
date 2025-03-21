@@ -54,10 +54,10 @@ export async function createJob(jobData) {
     });
     checkTokenExpiration(response);
     if (!response.ok) {
-      throw new Error("Failed to create job");
+      const errorData = await response.json(); // Parse error response
+      throw new Error(errorData.message || "Failed to create job");
     }
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error creating job:", error);
     throw error;

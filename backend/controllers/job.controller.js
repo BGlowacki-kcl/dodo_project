@@ -14,15 +14,15 @@ export const createJob = async (req, res) => {
             experienceLevel,
             postedBy,
             deadline,
+            questions,
         } = req.body;
-        const { uid } = req;
-        
 
-        if (!title || !company || !location || !description || !uid) {
+        console.log("Received payload:", req.body); // Add this for debugging
+
+        if (!title || !company || !location || !description || !postedBy) {
             return res.status(400).json({ message: 'All required fields must be filled.' });
         }
 
-        // Create the job post
         const job = new Job({
             title,
             company,
@@ -32,14 +32,15 @@ export const createJob = async (req, res) => {
             employmentType,
             requirements,
             experienceLevel,
-            postedBy: uid,
             postedBy,
-            deadline
+            deadline,
+            questions,
         });
 
         const createdJob = await job.save();
         res.status(201).json(createdJob);
     } catch (error) {
+        console.error("Error in createJob:", error); // Add this for debugging
         res.status(500).json({ message: error.message });
     }
 };

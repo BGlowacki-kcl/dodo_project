@@ -63,13 +63,8 @@ const jobSchema = new Schema({
         {
             questionText: {
                 type: String,
-                required: false
-            },
-            required: {
-                type: Boolean,
-                default: false
-            },
-
+                required: true
+            }
         }
     ]
 
