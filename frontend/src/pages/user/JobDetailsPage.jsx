@@ -166,12 +166,7 @@ function JobDetailsPage() {
         &larr; Back
       </button>
       {applied ? (
-        <button
-          onClick={() => navigate(`/apply/${jobId}`)}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
-        >
-          Continue Your Application
-        </button>
+        <p className="mt-4 text-green-500 font-bold">You have already applied for this job.</p>
       ) : (
         <button
           onClick={handleApply}
