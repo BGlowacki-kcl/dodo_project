@@ -15,7 +15,7 @@ const EmployerApplicants = () => {
             try {
                 const response = await getJobApplicants(jobId);
                 console.log(response);
-                setApplicants(response.data);
+                setApplicants(response);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -57,7 +57,7 @@ const EmployerApplicants = () => {
                         >
                             <h2 className="text-xl font-semibold text-gray-800">{applicant.name}</h2>
                             <p className="text-gray-600">{applicant.email}</p>
-                            <p className="text-gray-500 mt-2">
+                            <p className={`text-gray-500 mt-2 font-medium ${applicant.status === 'accepted' ? 'text-green-600' : applicant.status === 'rejected' ? 'text-red-600' : ''}`}>
                                 <span className="font-medium">Status:</span>{" "}
                                 {applicant.status || "No cover letter provided"}
                             </p>

@@ -135,7 +135,7 @@ export const verifyUserRole = async (email, expectedRole) => {
 
 
         if (!response.ok) {
-            throw new Error('Failed to verify role');
+            throw new Error(response.message);
         }
 
         const data = await response.json();

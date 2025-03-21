@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
-import { getApplicationById } from "../../services/applicationService";
+import { getApplicationById, updateStatus } from "../../services/applicationService";
 //
 // 
 import { userService } from "../../services/user.service";
@@ -11,13 +11,12 @@ const ApplicantDetails = () => {
     const [applicant, setApplicant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [codeChallenge, setCodeChallenge] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchApplicantDetails = async () => {
             try {
-                
-                console.log('Fetching application with ID:', applicationId);
                 
                 const response = await getApplicationById(applicationId);
                 
@@ -26,6 +25,8 @@ const ApplicantDetails = () => {
                 console.log('Applicant ID:', applicantId);
                 const userResponse = await userService.getUserById(applicantId);
                 console.log('User response:', userResponse)
+
+                setCodeChallenge(response.assessments);
                 
                 
                 
@@ -33,9 +34,6 @@ const ApplicantDetails = () => {
                 if (!response && !userResponse) {
                     throw new Error('No application data returned');
                 }
-                
-                
-                
                 
                 // The response is already the data object, not wrapped in {success, data}
                 setApplicant({
@@ -55,7 +53,6 @@ const ApplicantDetails = () => {
             } finally {
                 setLoading(false);
             }
-            
         };
     
         if (applicationId) {
@@ -66,33 +63,96 @@ const ApplicantDetails = () => {
         }
     }, [applicationId]);
 
+    const getButtonState = (status) => {
+        let shortlistCaption = "Shortlist";
+        let rejectCaption = "Reject";
+    
+        let isShortlistDisabled = false;
+        let isRejectDisabled = false;
+    
+        switch (status) {
+            case 'applying':
+            case 'accepted':
+            case 'rejected':
+                isShortlistDisabled = true;
+                isRejectDisabled = true;
+                break;
+    
+            case 'code challenge':
+                shortlistCaption = "In Code Challenge";
+                isShortlistDisabled = true;
+                isRejectDisabled = true;
+                break;
+    
+            case 'shortlisted':
+                shortlistCaption = "Move to Code Challenge";
+                break;
+    
+            case 'in review':
+                shortlistCaption = "Accept";
+                break;
+    
+            default:
+                break;
+        }
+    
+        return { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled };
+    };
+    
     const handleStatusUpdate = async (newStatus) => {
+        setLoading(true);
         try {
-            if (!applicant || !applicant.applicationId) {
-                throw new Error('Application ID not available');
-            }
-            
-            const token = sessionStorage.getItem('token');
-            const response = await fetch(`/api/application/${applicant.applicationId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                setApplicant(prev => ({ ...prev, status: newStatus }));
-            } else {
-                throw new Error(data.message || 'Failed to update status');
-            }
+            if (!applicationId) throw new Error('Application ID not available');
+    
+            await updateStatus(applicationId, newStatus === 'rejected');
+    
+            setApplicant((prev) => ({
+                ...prev,
+                status: newStatus,
+            }));
+            window.location.reload();
+    
         } catch (error) {
             console.error('Error updating status:', error);
             setError(`Failed to update status: ${error.message}`);
+        } finally {
+            setLoading(false);
         }
     };
+    
+    useEffect(() => {
+        if (applicant?.status) {
+            console.log('Application status updated to:', applicant.status);
+        }
+    }, [applicant?.status]);
+    
+    const { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled } = getButtonState(applicant?.status);
+    
+
+    // const handleStatusUpdate = async (newStatus) => {
+    //     console.log('Applicant: ', applicationId);
+    //     try {
+    //         if (!applicationId) {
+    //             throw new Error('Application ID not available');
+    //         }
+    //         if(newStatus === 'rejected'){
+    //             updateStatus(applicationId, true);
+    //         } else {
+    //             updateStatus(applicationId, false);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error updating status:', error);
+    //         setError(`Failed to update status: ${error.message}`);
+    //     }
+    // };
+
+    if(loading){
+        return (
+            <div className="flex justify-center items-center">
+                <p className="text-gray-600">Loading applicant details...</p>
+            </div>
+        );
+    }
 
     // Rest of your component remains the same
     return (
@@ -127,14 +187,21 @@ const ApplicantDetails = () => {
                                     <p className="text-gray-600">{applicant.email}</p>
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button onClick={() => handleStatusUpdate('shortlisted')} 
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                        Shortlist
-                                    </button>
-                                    <button onClick={() => handleStatusUpdate('rejected')}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                        Reject
-                                    </button>
+                                <button
+                                    onClick={() => handleStatusUpdate('shortlisted')}
+                                    disabled={isShortlistDisabled}
+                                    className={`px-4 py-2 ${isShortlistDisabled ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg`}
+                                >
+                                    {shortlistCaption}
+                                </button>
+
+                                <button
+                                    onClick={() => handleStatusUpdate('rejected')}
+                                    disabled={isRejectDisabled}
+                                    className={`px-4 py-2 ${isRejectDisabled ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'} text-white rounded-lg`}
+                                >
+                                    {rejectCaption}
+                                </button>
                                 </div>
                             </div>
 
@@ -214,6 +281,44 @@ const ApplicantDetails = () => {
                         <p>No applicant details found.</p>
                     </div>
                 )}
+
+                {codeChallenge.assessments && codeChallenge.assessments.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4 mt-10">Code Challenges</h2>
+                    <div className="space-y-6">
+                        {codeChallenge.assessments.map((assessment, index) => {
+                            // Find the corresponding submission
+                            const submission = codeChallenge.submissions.find(
+                                (sub) => sub.assessment === assessment._id
+                            );
+
+                            return (
+                                <div key={assessment._id} className="bg-gray-50 p-4 rounded-lg shadow">
+                                    <h3 className="text-lg font-medium text-gray-800 mb-2">
+                                        {assessment.title}
+                                    </h3>
+                                    <p className="text-gray-600 mb-4">
+                                        {assessment.description}
+                                    </p>
+                                    {submission ? (
+                                        <div>
+                                            <h4 className="text-md font-semibold mb-2">Submitted Code:</h4>
+                                            <pre className="bg-black text-white p-4 rounded-lg overflow-auto">
+                                                {submission.solutionCode}
+                                            </pre>
+                                            <p className="mt-4 text-sm text-gray-700">
+                                                <strong>Score:</strong> {submission.score}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500 italic">No submission available</p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )} 
             </div>
         </div>
     );
