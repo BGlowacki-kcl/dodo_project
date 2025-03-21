@@ -61,8 +61,9 @@ export const authService = {
         if (!email || !password) {
             throw new Error('Email and password are required');
         }
-        
-        if(!verifyUserRole(email, expectedRole)){
+        const roleVerification = await verifyUserRole(email, expectedRole);
+        console.log("Role verification: "+roleVerification);
+        if(!roleVerification){
             console.log("Wrong login page!");
             if(expectedRole === 'employer'){
                 throw new Error('Use login page for job seekers');

@@ -239,31 +239,29 @@ export const applicationController = {
     async updateApplicationStatus(req, res) {
         try {
             const { id } = req.query;
-            const { uid } = req;
             let toReject = false;
             if(req.query.reject){
                 toReject = true;
             }
 
-            const user = await User.findOne({ uid });
             const app = await Application.findById(id).populate("job");
             if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
-            if (app.job.postedBy.equals(user._id) == false) {
-                return res.status(403).json(createResponse(false, "Unauthorized"));
-            }
+            console.log("toReject: ", toReject);
             if(toReject){
                 app.status = "rejected";
                 return res.json(createResponse(true, "Application rejected", app));
             }
             const hasCodeAssessment = app.assessments.length > 0;
+            console.log("hasCodeAssessment: ", hasCodeAssessment);
             const statuses = ['applied', 'shortlisted', 'code challenge', 'in review', 'accepted'];
             const currentIndex = statuses.indexOf(app.status);
             if (currentIndex === -1 || currentIndex === statuses.length - 1) {
                 return res.status(400).json(createResponse(false, "No further status available"));
             }
             app.status = statuses[currentIndex + 1];
+            console.log("app.status (chnaged): ", app.status);
             if(app.status === 'code challenge' && !hasCodeAssessment) {
                 app.status = statuses[currentIndex + 2];
             }

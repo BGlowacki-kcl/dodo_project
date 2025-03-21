@@ -183,7 +183,7 @@ const assessmentController = {
             });
 
         } catch (err) {
-            console.error("Submission error: ", error);
+            console.error("Submission error: ", err);
             return res.status(500).json({ message: "Internal server error" });
         }
     },

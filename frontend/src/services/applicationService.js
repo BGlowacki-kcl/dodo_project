@@ -31,7 +31,7 @@ export async function getApplicationById(appId) {
     if (!responseJson.success) {
       throw new Error(response.data.message || "Failed to fetch application");
     }
-    return responseJson;
+    return responseJson.data;
   } catch (error) {
     if(error.response.status && error.response.status === 403) {
       return {status: 403, message: "You are not authorized to view this application"};
@@ -88,6 +88,7 @@ export async function getAssessmentDeadline(appId){
   if (!responseJson.success) {
     throw new Error(response.data.message || "Failed to fetch deadline");
   }
+
   return responseJson.data;
 }
 
@@ -109,8 +110,8 @@ export async function setAssessmentDeadline(appId, deadline){
 }
 
 export async function updateStatus(appId, reject) {
-  const sentToReject = reject ? `&reject=true` : '';s
-  const response = await fetch(`/api/application/status/id=${appId}${sentToReject}`, {
+  const sentToReject = reject ? `&reject=true` : '';
+  const response = await fetch(`/api/application/status?id=${appId}${sentToReject}`, {
     method: 'PUT',
     headers: {
       "Content-Type": "application/json",
@@ -118,6 +119,7 @@ export async function updateStatus(appId, reject) {
     }
   });
   checkTokenExpiration(response);
+  console.log("RESSSSS: " + response);
   const responseJson = await response.json();
   if (!responseJson.success) {
     throw new Error(response.data.message || "Failed to progress with the application");

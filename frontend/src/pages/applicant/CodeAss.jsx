@@ -6,7 +6,7 @@ import { auth } from '../../firebase.js';
 import { assessmentService } from '../../services/assessment.service';
 import { useNotification } from '../../context/notification.context';
 import AssessmentStatus from '../../components/AssessmentStatus';
-import { getAssessmentDeadline, setAssessmentDeadline } from '../../services/applicationService.js';
+import { getAssessmentDeadline, setAssessmentDeadline, updateStatus } from '../../services/applicationService.js';
 
 const CodeAss = () => {
   const [code, setCode] = useState(``);
@@ -42,39 +42,42 @@ const CodeAss = () => {
   const [timeLeft, setTimeLeft] = useState(3600);
 
   useEffect(() => {
-    const savedTime = localStorage.getItem('assessmentDeadline');
-    if (savedTime) {
-      const remainingTime = Math.floor((Number(savedTime) - Date.now()) / 1000);
-      setTimeLeft(remainingTime > 0 ? remainingTime : 0);
-    } else {
-      const deadlineFetched = getAssessmentDeadline(appId); // await might be needed here
-      if(deadlineFetched) {
-        const remainingTime = Math.floor((Number(savedTime) - Date.now()) / 1000);
-        if(remainingTime < 0) {
-          showNotification("Assessment time has expired", "error");
-          navigate("/");
-          return;
-        }
-        setTimeLeft(remainingTime);
-        localStorage.setItem('assessmentDeadline', deadlineFetched);
-      } else {
-        const newDeadline = Date.now() + 3600 * 1000;
-        localStorage.setItem('assessmentDeadline', newDeadline);
-        setAssessmentDeadline(appId, newDeadline); // await might be needed here
+
+    const fetchTimer = async () => {
+    const deadlineFetched = await getAssessmentDeadline(appId); // await might be needed here
+    console.log("Deadline fetched: ", deadlineFetched);
+    if(deadlineFetched && deadlineFetched !== -1) {
+      const deadlineInMs = isNaN(deadlineFetched) 
+            ? new Date(deadlineFetched).getTime() 
+            : Number(deadlineFetched);
+      const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
+      console.log("Remaining time: ", remainingTime);
+      if(remainingTime < 0) {
+        showNotification("Assessment time has expired", "error");
+        navigate("/");
+        return;
       }
+      setTimeLeft(remainingTime);
+      localStorage.setItem('assessmentDeadline', deadlineFetched);
+    } else {
+      const newDeadline = Date.now() + 3600 * 1000;
+      localStorage.setItem('assessmentDeadline', newDeadline);
+      await setAssessmentDeadline(appId, newDeadline); // await might be needed here
     }
-  
-    const timerInterval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerInterval);
-          handleSubmit(); 
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  
+  }
+
+  const timerInterval = setInterval(() => {
+    setTimeLeft((prev) => {
+      if (prev <= 1) {
+        clearInterval(timerInterval);
+        handleSubmit(); 
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+    
+    fetchTimer();
     return () => clearInterval(timerInterval);
   }, []);
 
@@ -222,9 +225,13 @@ int func(${task.funcForCpp}) {
   }
 
   const submitAll = async () => {
-    // TODO: Change status of application to in review
     showNotification("Tank you for taking the assessment", "success");
-    navigate("/");
+    navigate("/applicant-dashboard");
+    // Change status of application
+    updateStatus(appId, false);
+
+    // Set timer to now
+    //setAssessmentDeadline(appId, Date.now());
   }
   
   const runCode = async () => {
