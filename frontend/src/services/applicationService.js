@@ -100,6 +100,26 @@ export async function withdrawApplication(appId) {
   return response.data.message;
 }
 
+export async function getDashboardData() {
+  const response = await fetch('/api/application/dashboard', {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  });
+  checkTokenExpiration(response);
+
+  const responseJson = await response.json();
+
+  if (!responseJson.success) {
+    throw new Error(response || "Failed to fetch dashboard data");
+  }
+  return responseJson.data;
+
+  
+}
+
 export async function getAssessmentDeadline(appId){
   const response = await fetch(`/api/application/deadline?id=${appId}`, {
     method: 'GET',
@@ -151,3 +171,4 @@ export async function updateStatus(appId, reject) {
   }
   return responseJson.data;
 }
+

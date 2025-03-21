@@ -16,5 +16,6 @@ router.put("/status", checkRole(["employer", "jobSeeker"]), applicationControlle
 router.put("/deadline", checkRole(["jobSeeker"]), applicationController.setAssessmentDeadline);
 router.get("/deadline", checkRole(["jobSeeker"]), applicationController.getAssessmentDeadline);
 router.get("/byJobId", checkRole(["employer"]), applicationController.getApplicants);
+router.get("/dashboard", checkRole(["employer"]), applicationController.getDashboardData);
 
 export default router;
