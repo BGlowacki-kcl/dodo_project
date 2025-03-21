@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
-import { getApplicationById } from "../../services/applicationService";
+import { getApplicationById, updateStatus } from "../../services/applicationService";
 //
 // 
 import { userService } from "../../services/user.service";
@@ -11,6 +11,7 @@ const ApplicantDetails = () => {
     const [applicant, setApplicant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [codeChallenge, setCodeChallenge] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,7 +36,7 @@ const ApplicantDetails = () => {
                 }
                 
                 
-                
+                setCodeChallenge(response.status === 'code challenge');
                 
                 // The response is already the data object, not wrapped in {success, data}
                 setApplicant({
@@ -67,26 +68,15 @@ const ApplicantDetails = () => {
     }, [applicationId]);
 
     const handleStatusUpdate = async (newStatus) => {
+        console.log('Applicant: ', applicationId);
         try {
-            if (!applicant || !applicant.applicationId) {
+            if (!applicationId) {
                 throw new Error('Application ID not available');
             }
-            
-            const token = sessionStorage.getItem('token');
-            const response = await fetch(`/api/application/${applicant.applicationId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                setApplicant(prev => ({ ...prev, status: newStatus }));
+            if(newStatus === 'rejected'){
+                updateStatus(applicationId, true);
             } else {
-                throw new Error(data.message || 'Failed to update status');
+                updateStatus(applicationId, false);
             }
         } catch (error) {
             console.error('Error updating status:', error);

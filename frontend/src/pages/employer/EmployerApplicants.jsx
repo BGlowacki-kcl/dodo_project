@@ -15,7 +15,7 @@ const EmployerApplicants = () => {
             try {
                 const response = await getJobApplicants(jobId);
                 console.log(response);
-                setApplicants(response.data);
+                setApplicants(response);
             } catch (err) {
                 setError(err.message);
             } finally {

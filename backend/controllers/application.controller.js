@@ -123,6 +123,8 @@ export const applicationController = {
             }
     
             // Check if employer owns the job
+
+
             
             
             const applicationData = {
@@ -143,8 +145,10 @@ export const applicationController = {
             const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
             const submissions = await codeSubmission.find({ application: app._id });
             const assessmentSubmission = { assessments, submissions };
+
+            applicationData.assessments = assessmentSubmission;
             
-            res.json(createResponse(true, "Application found", applicationData, assessmentSubmission));
+            res.json(createResponse(true, "Application found", applicationData));
         } catch (err) {
             console.error("Error getting application:", err);
             res.status(500).json(createResponse(false, err.message));
@@ -236,8 +240,14 @@ export const applicationController = {
         try {
             const { id } = req.query;
             let toReject = false;
+            console.log("req.query: ", req.query);
             if(req.query.reject){
                 toReject = true;
+            }
+            const { uid } = req;
+            const user = await User.findOne({ uid: uid });
+            if (!user) {    
+                return res.status(403).json(createResponse(false, "Unauthorized"));
             }
 
             const app = await Application.findById(id).populate("job");
@@ -246,10 +256,21 @@ export const applicationController = {
             }
             console.log("toReject: ", toReject);
             if(toReject){
+                if(app.status === "accepted"){
+                    return res.status(400).json(createResponse(false, "Cannot reject an accepted application"));
+                }
                 app.status = "rejected";
+                await app.save();
                 return res.json(createResponse(true, "Application rejected", app));
             }
-            const hasCodeAssessment = app.assessments.length > 0;
+            if(app.status.trim() === "code challenge" && user.role.trim() === "employer"){
+                return res.status(400).json(createResponse(false, "Cannot update status"));
+            }
+            if(app.status !== "code Challenge" && user.role === "applicant"){
+                return res.status(400).json(createResponse(false, "Cannot update status"));
+            }
+
+            const hasCodeAssessment = app.job.assessments.length > 0;
             console.log("hasCodeAssessment: ", hasCodeAssessment);
             const statuses = ['applied', 'shortlisted', 'code challenge', 'in review', 'accepted'];
             const currentIndex = statuses.indexOf(app.status);
