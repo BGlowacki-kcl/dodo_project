@@ -4,7 +4,7 @@ import { getJobById, updateJob } from '../../services/jobService';
 import EmployerSideBar from "../../components/EmployerSideBar";
 
 function EditJobPost() {
-  const { id } = useParams();
+  const { jobId } = useParams();
   const navigate = useNavigate();
   const [jobData, setJobData] = useState({
     title: '',
@@ -25,8 +25,10 @@ function EditJobPost() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await fetch(`/api/job/${id}`);
+        console.log("Fetching job with id:", jobId);
+        const response = await fetch(`/api/job/${jobId}`);
         const data = await response.json();
+        console.log("Job Data", data);
         setJobData(data);
       } catch (error) {
         console.error("Error fetching job:", error);
@@ -34,7 +36,7 @@ function EditJobPost() {
       }
     };
     fetchJob();
-  }, [id]);
+  }, [jobId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,7 +67,7 @@ function EditJobPost() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/job/${id}`, {
+      const response = await fetch(`/api/job/${jobId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

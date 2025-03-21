@@ -1,4 +1,4 @@
-import { checkTokenExpiration } from "./auth.service";
+import { checkTokenExpiration } from "./auth.service.js";
 const API_BASE_URL = "/api/user";
 
 export const userService = {
@@ -122,3 +122,31 @@ export const userService = {
         }
     }
 };
+
+export const verifyUserRole = async (email, expectedRole) => {
+    try {
+        const response = await fetch(`/api/user/role?email=${email}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+            }
+        });
+
+
+        if (!response.ok) {
+            throw new Error('Failed to verify role');
+        }
+
+        const data = await response.json();
+        console.log(data.data," = ", expectedRole);
+        if (data.data !== expectedRole) {
+            return false;
+        }
+        console.log("RETURNING TURE: ");
+        return true;
+    } catch (error) {
+        console.error('Role verification error:', error);
+        throw error;
+    }
+}

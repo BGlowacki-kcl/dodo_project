@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAllJobs, getFilteredJobs } from "../services/jobService";
 import SearchFilters from "../components/SearchFilters";
-import { authService } from "../services/auth.service";
+import { addJobToShortlist, getShortlist } from "../services/shortlist.service";
+import { useNotification } from "../context/notification.context";
 
 const SearchResults = () => {
     const url = useLocation();
@@ -14,7 +15,9 @@ const SearchResults = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [shortlistedJobIds, setShortlistedJobIds] = useState(new Set());
     const resultsPerPage = 10;
+    const showNotification = useNotification();
 
     // Extract query parameters as arrays
     const jobTypes = searchParams.getAll("jobType");
@@ -25,6 +28,21 @@ const SearchResults = () => {
         const token = sessionStorage.getItem("token");
         setIsLoggedIn(!!token);
     };
+
+    useEffect(() => {
+        const fetchShortlist = async () => {
+            try {
+                const { jobs } = await getShortlist();
+                setShortlistedJobIds(new Set(jobs.map((job) => job._id)));
+            } catch (err) {
+                console.error("Error fetching shortlist:", err);
+            }
+        };
+
+        fetchShortlist();
+    }, []);
+
+    const checkIfShortlisted = (jobId) => shortlistedJobIds.has(jobId);
 
     useEffect(() => {
         checkAuthStatus();
@@ -61,7 +79,18 @@ const SearchResults = () => {
     const handleJobClick = (jobId) => {
         navigate(`/user/jobs/details/${jobId}`);
     };
-    
+
+    const handleAddToShortlist = async (jobId) => {
+        try {
+            addJobToShortlist(jobId);
+            setShortlistedJobIds((prev) => new Set(prev).add(jobId));
+            showNotification("Job added to shortlist", "success");
+        } catch (err) {
+            console.error("Error updating shortlist:", err);
+            showNotification("Error while adding post to the shortlist", "error");
+        }
+    };
+
     useEffect(() => {
         fetchSearchResults();
     }, []);
@@ -122,16 +151,31 @@ const SearchResults = () => {
                         <p className="text-ltext text-center">Loading search results...</p>
                     ) : currentResults.length > 0 ? (
                         currentResults.map((job) => (
-                            <div key={job._id} className="bg-white rounded-lg shadow-md p-4 w-full relative">
+                            <div key={job._id} className="bg-white rounded-lg shadow-md p-4 w-full relative cursor-pointer" onClick={() => handleJobClick(job._id)}>
                                 {/* Add to shortlist */}
                                 {isLoggedIn && (
-                                    <button 
-                                        className="absolute top-2 right-2 bg-primary text-secondary rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-secondary hover:text-ltext transition"
-                                        onClick={() => handleAddToShortlist(job._id)}
-                                    >
-                                        +
-                                    </button>
+                                    checkIfShortlisted(job._id) ? (
+                                        <button 
+                                            className="absolute top-2 right-2 bg-primary text-secondary rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-secondary hover:text-ltext transition"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleAddToShortlist(job._id);
+                                            }}
+                                            title="Add to shortlist"
+                                        >
+                                            +
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            className="absolute top-2 right-2 text-primary rounded-full w-6 h-6 flex items-center justify-center shadow-md bg-secondary"
+                                            disabled
+                                            title="Already added to shortlist"
+                                        >
+                                            ✓
+                                        </button>
+                                    )
                                 )}
+
                                 <div className="w-full">
                                     <p className="text-medium font-bold">{job.title}</p>
                                     <p className="text-medium font-semibold">Type: {job.employmentType}</p>

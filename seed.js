@@ -1,21 +1,25 @@
 import mongoose from "mongoose";
-import { readFileSync } from 'fs';
+import {readFileSync} from 'fs';
 import "dotenv/config";
-import { faker } from "@faker-js/faker";
+import {faker} from "@faker-js/faker";
 import admin from "firebase-admin";
 
 import User from "./backend/models/user/user.model.js";
-import { JobSeeker } from "./backend/models/user/jobSeeker.model.js";
-import { Employer } from "./backend/models/user/Employer.model.js";
+import {JobSeeker} from "./backend/models/user/jobSeeker.model.js";
+import {Employer} from "./backend/models/user/Employer.model.js";
 import Job from "./backend/models/job.model.js";
 import Application from "./backend/models/application.model.js";
 import Shortlist from "./backend/models/shortlist.model.js";
+import CodeAssessment from "./backend/models/codeAssessment.js";
+import CodeSubmission from "./backend/models/codeSubmission.js";
 
-import { generateCV } from "./backend/fixtures/cvTemplate.js";
-import { generateCoverLetter } from "./backend/fixtures/coverLetTemplate.js";
-import { locations } from "./backend/fixtures/locationFixtures.js";
-import { universityNames, degreeTitles, fieldsOfStudy } from "./backend/fixtures/educationFixtures.js";
-import { techCompanies, techJobDetails, techSkills } from "./backend/fixtures/companyFixtures.js";
+import {generateCV} from "./backend/fixtures/cvTemplate.js";
+import {generateCoverLetter} from "./backend/fixtures/coverLetTemplate.js";
+import {locations} from "./backend/fixtures/locationFixtures.js";
+import {degreeTitles, fieldsOfStudy, universityNames} from "./backend/fixtures/educationFixtures.js";
+import {techCompanies, techJobDetails, techSkills} from "./backend/fixtures/companyFixtures.js";
+import {jobQuestions} from "./backend/fixtures/jobQuestionFixtures.js";
+import {codeAnswers} from "./backend/fixtures/codeSubmissionFixture.js";
 
 
 //  Initialize Firebase Admin SDK
@@ -122,29 +126,53 @@ const generateEmployers =  async () => {
 }
 
 // Generate Random Jobs
-const generateJobs = (num, employers) => {
+const generateJobs = async (num, employers) => {
+    // Ensure availableAssessments is awaited so that you get the actual list of assessments
+    const availableAssessments = await CodeAssessment.find();
     const jobs = [];
-
     for (let i = 0; i < num; i++) {
         const employer = faker.helpers.arrayElement(employers);
         const jobTitle = faker.helpers.arrayElement(Object.keys(techJobDetails));
-
-        jobs.push({
+        const job = {
             title: jobTitle,
             company: employer.companyName,
             location: faker.helpers.arrayElement(locations),
             description: techJobDetails[jobTitle],
             salaryRange: {
                 min: faker.number.int({ min: 30000, max: 60000 }),
-                max: faker.number.int({ min: 80000, max: 150000 })
+                max: faker.number.int({ min: 80000, max: 150000 }),
             },
-            employmentType: faker.helpers.arrayElement(['Full-Time', 'Part-Time', 'Internship', 'Graduate', 'Placement']),
+            employmentType: faker.helpers.arrayElement([
+                "Full-Time",
+                "Part-Time",
+                "Internship",
+                "Graduate",
+                "Placement",
+            ]),
             requirements: faker.helpers.arrayElements(techSkills, 3),
             experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
             postedBy: employer._id,
-        });
-    }
+            questions: [],
+            // Randomly select up to 4 assessments from the available list
+            assessments: faker.helpers.arrayElements(
+                availableAssessments,
+                faker.number.int({ min: 0, max: 4 })
+            ).map(a => a._id),
+        };
 
+        if (faker.datatype.boolean()) {
+            const selectedQuestions = faker.helpers.arrayElements(
+                jobQuestions,
+                faker.number.int({ min: 3, max: 6 })
+            );
+            job.questions = selectedQuestions.map(q => ({
+                questionText: q.questionText,
+                required: faker.datatype.boolean(),
+            }));
+        }
+
+        jobs.push(job);
+    }
     return jobs;
 };
 
@@ -156,12 +184,23 @@ const generateApplications = (num, jobSeekers, jobs) => {
         const job = faker.helpers.arrayElement(jobs);
         const jobSeeker = faker.helpers.arrayElement(jobSeekers);
 
-        applications.push({
+        const application = {
             job: job._id,
             applicant: jobSeeker._id,
             status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted']),
-            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email)
-        });
+            coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email),
+            answers: []
+        };
+
+        // If the job has questions, generate answers for them
+        if (job.questions && job.questions.length > 0) {
+            application.answers = job.questions.map(question => ({
+                questionId: question._id,
+                answerText: jobQuestions.find(q => q.questionText === question.questionText).sampleAnswer
+            }));
+        }
+
+        applications.push(application);
     }
 
     return applications;
@@ -172,7 +211,7 @@ const generateShortlists = (jobSeekers, jobs) => {
     const shortlists = [];
 
     for (let i = 0; i < jobSeekers.length; i++) {
-        // Choose a random number (1 to 5) of jobs to be saved
+        // Choose a random number (1 to 10) of jobs to be saved
         const numJobs = faker.number.int({ min: 1, max: 10 });
         const savedJobs = faker.helpers.arrayElements(jobs, numJobs);
 
@@ -185,12 +224,55 @@ const generateShortlists = (jobSeekers, jobs) => {
     return shortlists;
 };
 
+const generateCodeSubmissions = async (jobs, applications) => {
+    const assessments = await CodeAssessment.find();
+    const assessmentMap = new Map();
+    assessments.forEach(a => assessmentMap.set(a._id.toString(), a));
+
+    // Create a map of job id to job object for easier lookup
+    const jobMap = new Map();
+    jobs.forEach(job => jobMap.set(job._id.toString(), job));
+
+    const languages = ["python", "cpp", "javascript"];
+    const codeSubmissions = [];
+
+    for (const application of applications) {
+        const job = jobMap.get(application.job.toString());
+        if (job && job.assessments && job.assessments.length > 0) {
+            // For each assessment linked to this job, create a code submission.
+            for (const assessmentId of job.assessments) {
+                const assessment = assessmentMap.get(assessmentId.toString());
+                if (!assessment) continue;
+
+                const lang = faker.helpers.arrayElement(languages);
+
+                const answerObj = codeAnswers[assessment.title];
+                if (!answerObj || !answerObj[lang]) continue;
+
+                const solutionCode = answerObj[lang];
+
+                const score = 10;
+
+                codeSubmissions.push({
+                    assessment: assessment._id,
+                    application: application._id,
+                    solutionCode,
+                    score,
+                    language: lang,
+                    submittedAt: new Date(),
+                });
+            }
+        }
+    }
+    return codeSubmissions;
+};
+
 // Seed Database
 const seedDatabase = async () => {
     try {
         await connectDB();
 
-        //  Delete existing data
+        // Delete existing data
         await Application.deleteMany();
         await Job.deleteMany();
         await User.deleteMany();
@@ -208,21 +290,32 @@ const seedDatabase = async () => {
         console.log("Employers added...");
 
         // Generate and insert Jobs
-        const jobs = generateJobs(200, createdEmployers); // 200 Jobs
+        const jobs = await generateJobs(200, createdEmployers); // 200 Jobs
         const createdJobs = await Job.insertMany(jobs);
         console.log("Jobs added...");
 
         // Generate and insert Applications
-        const applications = generateApplications(400, createdJobSeekers, createdJobs); // 300 Applications
-        await Application.insertMany(applications);
+        const applications = generateApplications(400, createdJobSeekers, createdJobs); // 400 Applications
+        const createdApplications = await Application.insertMany(applications);
         console.log("Applications added...");
+
+        // Update the applicants field in the Job documents
+        for (const job of createdJobs) {
+            await Job.findByIdAndUpdate(job._id, { applicants: job.applicants });
+        }
+        console.log("Applicants added to jobs...");
 
         const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
         await Shortlist.insertMany(shortlistsData);
         console.log("Shortlists added...");
 
+        // NEW: Generate and insert Code Submissions based on job assessments
+        const codeSubmissionsData = await generateCodeSubmissions(createdJobs, createdApplications);
+        await CodeSubmission.insertMany(codeSubmissionsData);
+        console.log("Code submissions added...");
+
         mongoose.connection.close();
-        console.log(" Database connection closed");
+        console.log("Database connection closed");
     } catch (error) {
         console.error("Seeding error:", error);
         mongoose.connection.close();

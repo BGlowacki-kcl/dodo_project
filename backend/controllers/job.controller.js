@@ -15,9 +15,10 @@ export const createJob = async (req, res) => {
             postedBy,
             deadline,
         } = req.body;
+        const { uid } = req;
         
 
-        if (!title || !company || !location || !description || !postedBy) {
+        if (!title || !company || !location || !description || !uid) {
             return res.status(400).json({ message: 'All required fields must be filled.' });
         }
 
@@ -31,6 +32,7 @@ export const createJob = async (req, res) => {
             employmentType,
             requirements,
             experienceLevel,
+            postedBy: uid,
             postedBy,
             deadline
         });

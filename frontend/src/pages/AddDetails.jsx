@@ -48,12 +48,14 @@ const AddDetails = () => {
     try {
       const data = await getParsedResume(file);
       if (!data) {
-        throw new Error("No data received from parser!");
+        throw new Error("No data received from the resume parser");
       }
       handleAutoFill(data);
-      showNotification("Resume uploaded and parsed successfully!", "success");
+      // Use server message if available, otherwise fallback
+      const successMessage = data?.message || "Resume uploaded and parsed successfully!";
+      showNotification(successMessage, "success");
     } catch (error) {
-      showNotification(error.message, "error");
+      showNotification(error.message || "Failed to parse resume", "danger");
     } finally {
       setLoading(false);
     }
@@ -142,12 +144,11 @@ const AddDetails = () => {
     setLoading(true);
     try {
       const response = await userService.updateUser(userData);
-      showNotification(response.message, "success");
+      const successMessage = response?.message || "Profile updated successfully!";
+      showNotification(successMessage, "success");
       navigate("/");
     } catch (error) {
-      // Handle network errors or server errors gracefully
-      showNotification(error.message || "Network error or server issue", "error");
-      console.error("Error updating profile:", error);
+      showNotification(error.message || "Failed to update profile", "danger");
     } finally {
       setLoading(false);
     }
@@ -155,11 +156,12 @@ const AddDetails = () => {
 
   const handleSignOut = async () => {
     try {
-      await authService.signOut();
-      showNotification("Logged out successfully!", "success");
+      const response = await authService.signOut();
+      const successMessage = response?.message || "Logged out successfully!";
+      showNotification(successMessage, "success");
       navigate('/');
     } catch (error) {
-      showNotification(error.message, "error");
+      showNotification(error.message || "Failed to sign out", "danger");
     }
   };
 

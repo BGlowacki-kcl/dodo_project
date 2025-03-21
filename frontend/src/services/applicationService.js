@@ -111,9 +111,7 @@ export async function getDashboardData() {
   checkTokenExpiration(response);
 
   const responseJson = await response.json();
-  console.log(responseJson);
-  console.log(responseJson.data);
-  console.log(responseJson.jobs);
+
   if (!responseJson.success) {
     throw new Error(response || "Failed to fetch dashboard data");
   }
@@ -122,4 +120,55 @@ export async function getDashboardData() {
   
 }
 
+export async function getAssessmentDeadline(appId){
+  const response = await fetch(`/api/application/deadline?id=${appId}`, {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  });
+  checkTokenExpiration(response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(response.data.message || "Failed to fetch deadline");
+  }
+
+  return responseJson.data;
+}
+
+export async function setAssessmentDeadline(appId, deadline){
+  const response = await fetch(`/api/application/deadline?id=${appId}`, {
+    method: 'PUT',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({ deadline })
+  });
+  checkTokenExpiration(response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(response.data.message || "Failed to set deadline");
+  }
+  return responseJson.data;
+}
+
+export async function updateStatus(appId, reject) {
+  const sentToReject = reject ? `&reject=true` : '';
+  const response = await fetch(`/api/application/status?id=${appId}${sentToReject}`, {
+    method: 'PUT',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  });
+  checkTokenExpiration(response);
+  console.log("RESSSSS: " + response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(response.data.message || "Failed to progress with the application");
+  }
+  return responseJson.data;
+}
 

@@ -9,6 +9,7 @@ const SwipeBox = ({
                       employmentType,
                       onSwipe,
                       onShortlist,
+                      onSkip,
                       jobId,
                   }) => {
     const [action, setAction] = useState(null);
@@ -17,7 +18,9 @@ const SwipeBox = ({
     const handleAction = (actionType) => {
         setAction(actionType);
         if (actionType === "shortlist" && onShortlist) {
-            onShortlist(jobId); // call the callback with the job's id
+            onShortlist(jobId);
+        } else if (actionType === "skip" && onSkip) {
+            onSkip(jobId);
         }
         setTimeout(onSwipe, 500);
     };

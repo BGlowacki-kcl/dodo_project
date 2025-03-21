@@ -1,37 +1,30 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose from "mongoose";
+import { Schema } from "mongoose";
 
-const codeSubmissionSchema = new Schema({
-    // if we use a third party we can link to a third party submission or something like that
+const codeSubmissionSchema = new mongoose.Schema({
     assessment: {
         type: Schema.Types.ObjectId,
         ref: 'CodeAssessment',
         required: true
     },
 
-    user: {
+    application: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Application',
         required: true
     },
 
-    job: {
-        type: Schema.Types.ObjectId,
-        ref: 'Job'
-    },
-
-    // if its unnecessary and too much space, we dont have to store the solution code
     solutionCode: { 
         type: String,
         required: true
     },
 
-    score: Number, // if we want a score, otherwise can remove
+    score: Number,
 
-    status: {
+    language: {
         type: String,
-        enum: ['passed', 'failed', 'in_review'],
-        default: 'in_review'
+        required: true,
+        enum: ['python', 'cpp', 'javascript']
     },
 
     submittedAt: {
@@ -40,4 +33,4 @@ const codeSubmissionSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('CodeSubmission', codeSubmissionSchema);
+export default mongoose.model('CodeSubmission', codeSubmissionSchema);
