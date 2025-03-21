@@ -24,9 +24,9 @@ const EmployerLogin = () => {
       navigate('/employer-dashboard'); // Navigate to employer dashboard after successful login
     } catch (error) {
       console.error('Login error:', error);
-      const errorMessage = error.message || 'Invalid credentials or not an employer';
+      const errorMessage = error.message || 'Invalid credentials';
       setError(errorMessage);
-      showNotification(errorMessage, 'danger');
+      showNotification(errorMessage, 'error');
     } finally {
       setLoading(false);
     }

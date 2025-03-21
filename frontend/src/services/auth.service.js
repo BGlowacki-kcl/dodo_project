@@ -80,9 +80,9 @@ export const authService = {
             const idToken = await userCredential.user.getIdToken();
             sessionStorage.setItem('token', idToken);
             console.log("Token: "+idToken);
+            sessionStorage.setItem('role', expectedRole);  // Ensure correct storage
             window.dispatchEvent(new Event('authChange'));
 
-            sessionStorage.setItem('role', expectedRole);  // Ensure correct storage
 
             //  Check if profile is complete
             if(expectedRole === 'jobSeeker'){

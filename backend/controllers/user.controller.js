@@ -53,15 +53,16 @@ export const userController = {
     async getRole(req, res) {
         try {
             const { email } = req.query;
+            console.log("EMAIL: ",email);
             if (!email) {
                 return res.status(400).json({ success: false, message: "Email is required" });
             }
 
-            const user = await User.findOne({ email });
+            const user = await User.findOne({ email: email });
+            console.log("USER: ",user);
             if (!user) {
                 return res.status(404).json({ success: false, message: "User not found" });
             }
-            console.log(user.role);
 
             return res.status(200).json({ success: true, message: "User found", data: user.role });
         } catch (error) {
