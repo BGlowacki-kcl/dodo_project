@@ -74,13 +74,11 @@ function App() {
 		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
 		
 		// Employer accessible pages
-		{ path: '/posts', element: <EmployerPosts />, roles: ['employer'] },
-    	{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
-		//{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },	
-		//{ path: '/posts/edit/:id', element: <EditJobPost />, roles: ['employer'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/applicant/:applicationId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
+		{ path: '/posts/edit/:jobId', element: <EditJobPost />, roles: ['employer']},
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
 

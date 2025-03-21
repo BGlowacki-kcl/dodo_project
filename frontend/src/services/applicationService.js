@@ -22,21 +22,46 @@ export async function getApplicationById(appId) {
     const response = await fetch(`/api/application/byId?id=${appId}`, {
       method: 'GET',
       headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        }
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      }
+    });   
+    checkTokenExpiration(response);
+    const responseJson = await response.json();    
+    if (!responseJson.success) {
+      throw new Error(response.data.message || "Failed to fetch application");
+    }   
+    return responseJson.data;
+  } catch (error) {
+    console.error("Error fetching application:", error);
+    if (error.response && error.response.status === 403) {
+      return {status: 403, message: "You are not authorized to view this application"};
+    }
+    return {status: 500, message: "Failed to fetch application"};
+  }
+}
+
+export async function getJobApplicants(jobId) {
+  try {
+    const response = await fetch(`/api/application/byJobId?jobId=${jobId}`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      }
     });
     checkTokenExpiration(response);
     const responseJson = await response.json();
     if (!responseJson.success) {
-      throw new Error(response.data.message || "Failed to fetch application");
+      throw new Error(response.data.message || "Failed to fetch applicants");
     }
     return responseJson;
   } catch (error) {
-    if(error.response.status && error.response.status === 403) {
-      return {status: 403, message: "You are not authorized to view this application"};
-    } 
-    return {status: 500, message: "Failed to fetch application"};
+    console.error("Error fetching applicants:", error);
+    if (error.response && error.response.status === 403) {
+      return {status: 403, message: "You are not authorized to view these applicants"};
+    }
+    return {status: 500, message: "Failed to fetch applicants"};
   }
 }
 
