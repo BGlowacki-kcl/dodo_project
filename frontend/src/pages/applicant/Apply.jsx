@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { applyToJob, saveApplication, getApplicationById, getAllUserApplications, submitApplication } from '../../services/applicationService';
+import { applyToJob, saveApplication, getApplicationById, getAllUserApplications, submitApplication, withdrawApplication } from '../../services/applicationService';
 import { getJobQuestionsById } from '../../services/jobService';
 import { useNotification } from "../../context/notification.context";
 
@@ -12,6 +12,7 @@ const Apply = () => {
     const [answers, setAnswers] = useState({});
     const [loading, setLoading] = useState(true); // Add loading state
     const [applicationId, setApplicationId] = useState(null); // Track the existing application ID
+    const [showModal, setShowModal] = useState(false); // State to control modal visibility
     const showNotification = useNotification();
 
     useEffect(() => {
@@ -129,6 +130,24 @@ const Apply = () => {
         }
     };
 
+    const handleWithdraw = async () => {
+        try {
+            if (!applicationId) {
+                showNotification("Application ID is missing. Please try again.", "error");
+                return;
+            }
+
+            const message = await withdrawApplication(applicationId);
+            showNotification(message, "success");
+            navigate("/applicant-dashboard");
+        } catch (error) {
+            console.error(error);
+            showNotification(error.message || "Failed to withdraw application.", "error");
+        } finally {
+            setShowModal(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
              <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
@@ -174,7 +193,39 @@ const Apply = () => {
                 >
                     Save
                 </button>
+                <button
+                    onClick={() => setShowModal(true)}
+                    className="w-full px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200 mt-2"
+                >
+                    Withdraw
+                </button>
             </div>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+                        <h2 className="text-lg font-bold mb-4">Confirm Withdrawal</h2>
+                        <p className="text-gray-700 mb-4">
+                            Are you sure you want to withdraw this application? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-4">
+                            <button
+                                onClick={() => setShowModal(false)}
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleWithdraw}
+                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
