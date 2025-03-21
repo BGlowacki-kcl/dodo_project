@@ -14,6 +14,7 @@ function SingleApplicationPage() {
   const [application, setApplication] = useState(null); // State to store application details
   const hasFetched = useRef(false); // Ref to prevent multiple fetches
   const [codeChallenge, setCodeChallenge] = useState(false); // State to track if the application requires a code challenge
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
   const showNotification = useNotification();
 
   // Fetches application details
@@ -57,16 +58,15 @@ function SingleApplicationPage() {
     
     // Handle withdrawal of application
     const handleWithdraw = async () => {
-      if (!window.confirm("Are you sure you want to withdraw this application?")) {
-        return;
-      }
       try {
-        await withdrawApplication(appId);
-        alert("Application withdrawn successfully!");
+        const message = await withdrawApplication(appId); // Use the updated service
+        showNotification(message, "success"); // Show success notification
         navigate("/applicant-dashboard");
       } catch (err) {
         console.error(err);
-        alert("Failed to withdraw application.");
+        showNotification(err.message || "Failed to withdraw application.", "error"); // Show error notification
+      } finally {
+        setShowModal(false); // Close the modal after the action
       }
     };
 
@@ -166,7 +166,7 @@ function SingleApplicationPage() {
 
             {/* WITHDRAW APPLICATION */}
             <button
-              onClick={handleWithdraw}
+              onClick={() => setShowModal(true)} // Open the modal
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200"
             >
               Withdraw
@@ -183,6 +183,32 @@ function SingleApplicationPage() {
             </button>
           </div>
         </div>
+
+        {/* Modal */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+              <h2 className="text-lg font-bold mb-4">Confirm Withdrawal</h2>
+              <p className="text-gray-700 mb-4">
+                Are you sure you want to withdraw this application? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => setShowModal(false)} // Close the modal
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleWithdraw} // Proceed with withdrawal
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
   );
 }

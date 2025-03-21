@@ -84,18 +84,20 @@ export async function applyToJob({ jobId, coverLetter, answers }) {
 }
 
 export async function withdrawApplication(appId) {
-  const response = await fetch(`/api/application/withdraw?id=${appId}`, {
-    method: 'DELETE',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    const response = await fetch(`/api/application/withdraw?id=${appId}`, {
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        }
+    });
+    checkTokenExpiration(response);
+
+    const responseJson = await response.json(); // Parse the response JSON
+    if (!responseJson.success) {
+        throw new Error(responseJson.message || "Failed to withdraw application");
     }
-  });
-  checkTokenExpiration(response);
-  if (!response.data.success) {
-    throw new Error(response.data.message || "Failed to withdraw");
-  }
-  return response.data.message;
+    return responseJson.message; // Return the success message
 }
 
 export async function getDashboardData() {
