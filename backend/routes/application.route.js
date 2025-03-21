@@ -12,7 +12,7 @@ router.get("/all", checkRole(["jobSeeker"]), applicationController.getAllApplica
 router.get("/byId", checkRole(["jobSeeker", "employer"]), applicationController.getOneApplication);
 router.post("/apply", checkRole(["jobSeeker"]), applicationController.createApplication);
 router.delete("/withdraw", checkRole(["jobSeeker", "employer"]), applicationController.withdrawApplication);
-router.get("/job/:jobId/applicants", checkRole(["employer"]), applicationController.getApplicants);
+router.get("/byJobId", checkRole(["employer"]), applicationController.getApplicants);
 router.get("/dashboard", checkRole(["employer"]), applicationController.getDashboardData);
 
 export default router;

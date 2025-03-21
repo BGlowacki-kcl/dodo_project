@@ -66,7 +66,7 @@ export const applicationController = {
 
     async getApplicants(req, res) {
         try {
-            const { jobId } = req.params;
+            const { jobId } = req.query;
             
 
             const job = await Job.findById(jobId);
