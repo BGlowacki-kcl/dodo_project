@@ -259,3 +259,31 @@ export async function getApplicantsByJobId(jobId) {
     throw error;
   }
 }
+
+export async function getJobQuestionsById(jobId) {
+  try {
+      const response = await fetch(`/api/job/questions?jobId=${jobId}`, {
+          method: 'GET',
+          headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+          },
+      });
+
+      checkTokenExpiration(response);
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to fetch job questions:", errorData);
+          throw new Error(errorData.message || "Failed to fetch job questions");
+      }
+
+      // Since the controller returns an array, return it directly
+      const result = await response.json();
+      console.log(result);
+      return result;
+  } catch (error) {
+      console.error("Error fetching job questions:", error);
+      throw error;
+  }
+}
