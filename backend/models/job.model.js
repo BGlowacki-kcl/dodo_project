@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const jobSchema = new Schema({
-    // can probably add other fields we may need for the job posting, like specific phone numbers or websited for the posting (employer will have a company email/website/phone numebr linked)
     title: {
         type: String,
         required: true
@@ -54,13 +53,6 @@ const jobSchema = new Schema({
     },
 
     updatedAt: Date,
-
-    applicants: [
-        {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-        }
-    ],
 
     assessments: [{
         type: Schema.Types.ObjectId,

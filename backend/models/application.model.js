@@ -27,11 +27,6 @@ const jobApplicationSchema = new Schema({
     default: Date.now
   },
 
-  assessments: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Assessment'
-  }],
-
   answers: [
     {
       questionId: {
