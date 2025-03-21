@@ -44,7 +44,12 @@ const jobApplicationSchema = new Schema({
         required: true
       }
     }
-  ]
+  ],
+
+  finishAssessmentDate: {
+    type: Date,
+    required: false
+  }
 });
 
 export default mongoose.model('Application', jobApplicationSchema);

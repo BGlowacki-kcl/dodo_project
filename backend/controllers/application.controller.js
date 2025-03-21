@@ -154,6 +154,38 @@ export const applicationController = {
             res.status(500).json(createResponse(false, err.message));
         }
     },
+
+    async getAssessmentDeadline(req, res) {
+        try {
+            const { id } = req.query;
+            const application = await Application.findById(id);
+            if (!application) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+            if(!application.finishAssessmentDate){
+                return res.json(createResponse(true, "No assessment deadline set", -1));
+            }
+            return res.json(createResponse(true, "Job deadline retrieved", application.finishAssessmentDate));
+        } catch (err) {
+            return handleError(res, err, "Error retrieving job deadline");
+        }
+    },
+
+    async setAssessmentDeadline(req, res) {
+        try {
+            const { id } = req.query;
+            const { deadline } = req.body;
+            const application = await Application.findById(id);
+            if (!application) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+            application.finishAssessmentDate = deadline;
+            await application.save();
+            return res.json(createResponse(true, "Assessment deadline set", deadline));
+        } catch (err) {
+            return handleError(res, err, "Error setting assessment deadline");
+        }
+    },
     
     async createApplication(req, res) {
         try {

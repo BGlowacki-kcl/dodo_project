@@ -1,4 +1,4 @@
-import { checkTokenExpiration } from "./auth.service";
+import { checkTokenExpiration } from "./auth.service.js";
 const API_BASE_URL = "/api/user";
 
 export const userService = {

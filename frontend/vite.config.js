@@ -9,9 +9,6 @@ export default defineConfig({
       '/api': 'http://localhost:5000',
     }
   },
-  define: {
-    'process.env': {}
-  },
   test: {
     globals: true,
     environment: 'jsdom',

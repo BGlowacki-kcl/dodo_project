@@ -4,8 +4,8 @@ import {
     signOut, 
     getAuth 
 } from "firebase/auth";
-import { auth } from "../firebase";
-import { verifyUserRole } from "./user.service";
+import { auth } from "../firebase.js";
+import { verifyUserRole } from "./user.service.js";
 
 export async function checkTokenExpiration(response) {
     if (response.status === 403) {
@@ -62,7 +62,7 @@ export const authService = {
             throw new Error('Email and password are required');
         }
         
-        if(verifyUserRole(email, expectedRole)){
+        if(!verifyUserRole(email, expectedRole)){
             console.log("Wrong login page!");
             if(expectedRole === 'employer'){
                 throw new Error('Use login page for job seekers');

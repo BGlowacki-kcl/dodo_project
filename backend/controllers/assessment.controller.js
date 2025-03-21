@@ -99,7 +99,7 @@ const assessmentController = {
             const jobPost = await Job.findOne({ _id: application.job });
             const assessments = jobPost.assessments;
             console.log("ass: ", assessments);
-    
+            
             if (!assessments || assessments.length === 0) {
                 return res.status(400).json({ message: "No assessment required for this application" });
             }
