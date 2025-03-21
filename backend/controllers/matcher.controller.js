@@ -41,6 +41,8 @@ export async function query(cvText, jobDescription) {
 
 export const getUserJobRecommendations = async (req, res) => {
     const { uid } = req;
+    const { excludeJobIds = [] } = req.query; // Get excluded job IDs from query params
+
     if (!uid) {
         return res.status(400).json({ message: "User ID is required" });
     }
@@ -54,7 +56,8 @@ export const getUserJobRecommendations = async (req, res) => {
         return res.status(400).json({ message: "User CV is missing" });
     }
 
-    const jobs = await Job.find().limit(30);
+    // Fetch jobs excluding the ones in excludeJobIds
+    const jobs = await Job.find({ _id: { $nin: excludeJobIds } }).limit(30);  //Limit to 30 jobs to speed up the process
 
     const jobMatches = await Promise.all(
         jobs.map(async (job) => {

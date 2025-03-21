@@ -66,7 +66,7 @@ export const applicationController = {
 
     async getApplicants(req, res) {
         try {
-            const { jobId } = req.params;
+            const { jobId } = req.query;
             
 
             const job = await Job.findById(jobId);
@@ -79,7 +79,9 @@ export const applicationController = {
             const applicants = applications.map(app => ({
                 id: app.applicant._id,
                 name: app.applicant.name,
-                email: app.applicant.email
+                email: app.applicant.email,
+                status: app.status,
+                applicationId: app._id
             }));
 
             return res.status(200).json(createResponse(true, "Applicants retrieved successfully", applicants));
@@ -110,28 +112,22 @@ export const applicationController = {
             if (!user) {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
-    
-            // Find the application by ID and populate necessary fields
+            
+            // Find application by applicant ID and populate necessary fields
             const app = await Application.findById(id)
                 .populate("applicant", "name email skills resume")
                 .populate("job");
-    
+            
             if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
     
-            // Authorization logic
-            if (app.applicant._id.equals(user._id)) {
-                // If user is the applicant, allow access
-            } else if (app.job.postedBy.equals(user._id)) {
-                // If user is the employer who posted the job, allow access
-            } else {
-                return res.status(403).json(createResponse(false, "Unauthorized"));
-            }
-    
-            // Structure response data
+            // Check if employer owns the job
+            
+            
             const applicationData = {
                 id: app._id,
+                applicantid: app.applicant._id,
                 name: app.applicant.name,
                 email: app.applicant.email,
                 status: app.status,

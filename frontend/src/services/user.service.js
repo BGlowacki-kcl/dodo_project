@@ -98,6 +98,28 @@ export const userService = {
             console.error("Error fetching user ID:", error);
             throw error;
         }
+    },
+
+    async getUserById(userId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/ById?userId=${userId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+                },
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to fetch user profile");
+            }
+            
+            const responseJson = await response.json();
+            return responseJson.data;
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            throw error;
+        }
     }
 };
 
