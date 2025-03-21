@@ -52,17 +52,18 @@ export const userController = {
 
     async getRole(req, res) {
         try {
-            if (!req.uid) {
-                return res.status(401).json({ success: false, message: "Unauthorized: No user found" });
+            const { email } = req.query;
+            if (!email) {
+                return res.status(400).json({ success: false, message: "Email is required" });
             }
-            const uid = req.uid;
-            const user = await User.findOne({ uid: uid });
 
+            const user = await User.findOne({ email });
             if (!user) {
-                return res.status(404).json({ success: false, message: "No user found with this ID" });
+                return res.status(404).json({ success: false, message: "User not found" });
             }
+            console.log(user.role);
 
-            res.status(200).json({ success: true, message: "User found", data: user.role });
+            return res.status(200).json({ success: true, message: "User found", data: user.role });
         } catch (error) {
             console.error("Error fetching user role:", error);
             res.status(500).json({ success: false, message: "Server error" });

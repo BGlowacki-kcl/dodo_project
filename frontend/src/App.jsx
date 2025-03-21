@@ -70,7 +70,6 @@ function App() {
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
 		{ path: '/apply/:jobId', element: <Apply />, roles: ['jobSeeker'] },
-		
 		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
 		
 		// Employer accessible pages

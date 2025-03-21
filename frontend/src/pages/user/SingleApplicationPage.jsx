@@ -157,7 +157,7 @@ function SingleApplicationPage() {
 
             {codeChallenge && (
               <button
-                onClick={() => navigate(`/codeassessment/${appId}`)}
+                onClick={handleAssessment}
                 className="px-4 py-2 bg-green-300 text-gray-800 rounded hover:bg-green-500 transition duration-200"
               >
                 Proceed to assessment

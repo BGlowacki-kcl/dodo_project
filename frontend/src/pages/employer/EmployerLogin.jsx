@@ -17,18 +17,11 @@ const EmployerLogin = () => {
     setError(null);
     setLoading(true);
 
-    try {
-      // Sign in the user
-      const signInResponse = await authService.signIn(email, password, navigate);
-      
-      // Verify the user is an employer
-      const roleResponse = await authService.verifyUserRole(email, 'employer');
-
-      // Use server-provided message if available, otherwise fallback
-      const successMessage = roleResponse?.message || signInResponse?.message || 'Successfully logged in as employer!';
-      showNotification(successMessage, 'success');
-      navigate('/employer-dashboard');
-
+    try {  
+      // If they are an employer, proceed with login
+      await authService.signIn(email, password, navigate, 'employer');
+      showNotification('Successfully logged in!', 'success');
+      navigate('/employer-dashboard'); // Navigate to employer dashboard after successful login
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.message || 'Invalid credentials or not an employer';

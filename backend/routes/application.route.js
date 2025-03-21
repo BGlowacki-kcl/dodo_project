@@ -12,6 +12,9 @@ router.get("/all", checkRole(["jobSeeker"]), applicationController.getAllApplica
 router.get("/byId", checkRole(["jobSeeker", "employer"]), applicationController.getOneApplication);
 router.post("/apply", checkRole(["jobSeeker"]), applicationController.createApplication);
 router.delete("/withdraw", checkRole(["jobSeeker", "employer"]), applicationController.withdrawApplication);
+router.put("/status", checkRole(["employer", "jobSeeker"]), applicationController.updateApplicationStatus); // to reject -> /status?id=xxx&reject=true, to progress /status?id=xxx
+router.put("/deadline", checkRole(["jobSeeker"]), applicationController.setAssessmentDeadline);
+router.get("/deadline", checkRole(["jobSeeker"]), applicationController.getAssessmentDeadline);
 router.get("/byJobId", checkRole(["employer"]), applicationController.getApplicants);
 
 export default router;

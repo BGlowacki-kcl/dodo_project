@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
+import codeAssessment from "../models/codeAssessment.js";
+import codeSubmission from "../models/codeSubmission.js";
 
 const createResponse = (success, message, data = null) => ({
     success,
@@ -135,11 +137,49 @@ export const applicationController = {
                 resume: app.applicant.resume,
                 job: app.job
             };
-    
-            res.json(createResponse(true, "Application found", applicationData));
+
+            const job = await Job.findById(app.job);
+            const assessmentIds = job.assessments;
+            const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
+            const submissions = await codeSubmission.find({ application: app._id });
+            const assessmentSubmission = { assessments, submissions };
+            
+            res.json(createResponse(true, "Application found", applicationData, assessmentSubmission));
         } catch (err) {
             console.error("Error getting application:", err);
             res.status(500).json(createResponse(false, err.message));
+        }
+    },
+
+    async getAssessmentDeadline(req, res) {
+        try {
+            const { id } = req.query;
+            const application = await Application.findById(id);
+            if (!application) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+            if(!application.finishAssessmentDate){
+                return res.json(createResponse(true, "No assessment deadline set", -1));
+            }
+            return res.json(createResponse(true, "Job deadline retrieved", application.finishAssessmentDate));
+        } catch (err) {
+            return handleError(res, err, "Error retrieving job deadline");
+        }
+    },
+
+    async setAssessmentDeadline(req, res) {
+        try {
+            const { id } = req.query;
+            const { deadline } = req.body;
+            const application = await Application.findById(id);
+            if (!application) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+            application.finishAssessmentDate = deadline;
+            await application.save();
+            return res.json(createResponse(true, "Assessment deadline set", deadline));
+        } catch (err) {
+            return handleError(res, err, "Error setting assessment deadline");
         }
     },
     
@@ -191,4 +231,41 @@ export const applicationController = {
             res.status(500).json(createResponse(false, err.message));
         }
     },
+
+    async updateApplicationStatus(req, res) {
+        try {
+            const { id } = req.query;
+            let toReject = false;
+            if(req.query.reject){
+                toReject = true;
+            }
+
+            const app = await Application.findById(id).populate("job");
+            if (!app) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+            console.log("toReject: ", toReject);
+            if(toReject){
+                app.status = "rejected";
+                return res.json(createResponse(true, "Application rejected", app));
+            }
+            const hasCodeAssessment = app.assessments.length > 0;
+            console.log("hasCodeAssessment: ", hasCodeAssessment);
+            const statuses = ['applied', 'shortlisted', 'code challenge', 'in review', 'accepted'];
+            const currentIndex = statuses.indexOf(app.status);
+            if (currentIndex === -1 || currentIndex === statuses.length - 1) {
+                return res.status(400).json(createResponse(false, "No further status available"));
+            }
+            app.status = statuses[currentIndex + 1];
+            console.log("app.status (chnaged): ", app.status);
+            if(app.status === 'code challenge' && !hasCodeAssessment) {
+                app.status = statuses[currentIndex + 2];
+            }
+            await app.save();
+            res.json(createResponse(true, "Application status updated", app));
+        } catch (err) {
+            console.error("Error updating application status:", err);
+            res.status(500).json(createResponse(false, err.message));
+        }
+    }
 };

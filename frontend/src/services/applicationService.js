@@ -55,7 +55,7 @@ export async function getJobApplicants(jobId) {
     if (!responseJson.success) {
       throw new Error(response.data.message || "Failed to fetch applicants");
     }
-    return responseJson;
+    return responseJson.data;
   } catch (error) {
     console.error("Error fetching applicants:", error);
     if (error.response && error.response.status === 403) {
@@ -100,3 +100,54 @@ export async function withdrawApplication(appId) {
   return response.data.message;
 }
 
+export async function getAssessmentDeadline(appId){
+  const response = await fetch(`/api/application/deadline?id=${appId}`, {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  });
+  checkTokenExpiration(response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(response.data.message || "Failed to fetch deadline");
+  }
+
+  return responseJson.data;
+}
+
+export async function setAssessmentDeadline(appId, deadline){
+  const response = await fetch(`/api/application/deadline?id=${appId}`, {
+    method: 'PUT',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({ deadline })
+  });
+  checkTokenExpiration(response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(response.data.message || "Failed to set deadline");
+  }
+  return responseJson.data;
+}
+
+export async function updateStatus(appId, reject) {
+  const sentToReject = reject ? `&reject=true` : '';
+  const response = await fetch(`/api/application/status?id=${appId}${sentToReject}`, {
+    method: 'PUT',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    }
+  });
+  checkTokenExpiration(response);
+  console.log("RESSSSS: " + response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(response.data.message || "Failed to progress with the application");
+  }
+  return responseJson.data;
+}
