@@ -21,9 +21,9 @@ const Landing = () => {
     const [types, setTypes] = useState([]);
 
     // Job type counters
-    const [internshipCounter, setInternshipCount] = useState(0);
-    const [placementCounter, setPlacementCount] = useState(0);
-    const [graduateCounter, setGraduateCount] = useState(0);
+    const [internshipCounter, setInternshipCount] = useState(null);
+    const [placementCounter, setPlacementCount] = useState(null);
+    const [graduateCounter, setGraduateCount] = useState(null);
 
     // Loading state
     const [isLoading, setIsLoading] = useState(true);
@@ -83,7 +83,7 @@ const Landing = () => {
             {/* Dropdown Filters */}
             <WhiteBox className="mb-12">
                 <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Search for Jobs</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-0"> {/* Removed gap to make them touch */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                     <ComboBox
                         label="Job Type"
                         options={types}
@@ -111,30 +111,24 @@ const Landing = () => {
             <WhiteBox>
                 <h2 className="text-2xl font-semibold text-center mb-6">Explore Job Types</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {isLoading ? (
-                        <p className="text-center text-gray-500">Loading...</p>
-                    ) : (
-                        <>
-                            <Box
-                                image={internship}
-                                text={"Internships"}
-                                counter={internshipCounter}
-                                onClick={() => boxSearch("Internship")}
-                            />
-                            <Box
-                                image={placement}
-                                text={"Placements"}
-                                counter={placementCounter}
-                                onClick={() => boxSearch("Placement")}
-                            />
-                            <Box
-                                image={job}
-                                text={"Graduate"}
-                                counter={graduateCounter}
-                                onClick={() => boxSearch("Graduate")}
-                            />
-                        </>
-                    )}
+                    <Box
+                        image={internship}
+                        text={"Internships"}
+                        counter={internshipCounter !== null ? internshipCounter : "Loading..."}
+                        onClick={() => boxSearch("Internship")}
+                    />
+                    <Box
+                        image={placement}
+                        text={"Placements"}
+                        counter={placementCounter !== null ? placementCounter : "Loading..."}
+                        onClick={() => boxSearch("Placement")}
+                    />
+                    <Box
+                        image={job}
+                        text={"Graduate"}
+                        counter={graduateCounter !== null ? graduateCounter : "Loading..."}
+                        onClick={() => boxSearch("Graduate")}
+                    />
                 </div>
             </WhiteBox>
         </div>
