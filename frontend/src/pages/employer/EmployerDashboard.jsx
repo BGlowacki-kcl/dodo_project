@@ -3,15 +3,16 @@ import { Pie, Line } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from "chart.js";
 import { getDashboardData } from '../../services/applicationService';
 import { FaChartPie, FaClipboardList } from "react-icons/fa";
+import WhiteBox from "../../components/WhiteBox";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 // Reusable component for displaying statistics
 const StatBox = ({ title, value, color }) => (
-    <div className="bg-white shadow-lg rounded-lg p-4 text-center">
+    <WhiteBox className="text-center">
         <h2 className="text-sm font-semibold text-black">{title}</h2>
         <p className={`text-2xl font-bold mt-2 ${color} text-black`}>{value}</p>
-    </div>
+    </WhiteBox>
 );
 
 const EmployerDashboard = () => {
@@ -237,7 +238,7 @@ const EmployerDashboard = () => {
                     />
                 </div>
                 <div className="flex gap-4">
-                    <div className="bg-white shadow-lg rounded-lg p-2 max-w-md">
+                    <WhiteBox className="max-w-md md:p-4"> 
                         <h2 className="text-xl font-semibold text-black mb-4 flex items-center pt-2">
                             <FaChartPie className="mr-2" /> Status Overview
                         </h2>
@@ -262,8 +263,8 @@ const EmployerDashboard = () => {
                                     ))}
                             </div>
                         </div>
-                    </div>
-                    <div className="bg-white shadow-lg rounded-lg p-4 flex-1">
+                    </WhiteBox>
+                    <WhiteBox className="flex-1 md:p-4">
                         <div className="flex items-center mb-4">
                             <h2 className="text-xl font-semibold text-black mr-2 flex items-center">
                                 <FaClipboardList className="mr-2" /> Applications for:
@@ -293,15 +294,15 @@ const EmployerDashboard = () => {
                                 />
                             </div>
                         </div>
-                        <div className="flex items-center justify-center h-80 w-full">
+                        <div className="flex justify-center h-80 w-full">
                             <Line data={lineData} options={lineOptions} />
                         </div>
-                    </div>
+                    </WhiteBox>
                 </div>
                 {error && (
-                    <div className="mt-6 bg-red-100 text-red-600 p-4 rounded-lg">
+                    <WhiteBox className="mt-6 bg-red-100 text-red-600 p-4 rounded-lg">
                         <p>{error}</p>
-                    </div>
+                    </WhiteBox>
                 )}
             </div>
         </div>

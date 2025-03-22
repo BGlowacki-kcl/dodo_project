@@ -3,6 +3,7 @@ import { getAllUserApplications } from '../services/applicationService';
 import ApplicationCards from './ApplicationCards';
 import { FaFolderOpen } from 'react-icons/fa'; 
 import { useNavigate } from 'react-router-dom';
+import WhiteBox from './WhiteBox';
 
 const ApplicantActivity = ({ userId }) => {
     const [applications, setApplications] = useState([]);
@@ -32,7 +33,7 @@ const ApplicantActivity = ({ userId }) => {
             <h1 className="text-4xl font-bold mb-8 text-left text-black">
                 Activity
             </h1>
-            <div className="bg-white p-6 rounded-xl shadow-sm">
+            <WhiteBox>
                 <div className="grid grid-cols-3 gap-4">
                     <div className="bg-blue-100 p-6 shadow rounded">
                         <h3 className="text-lg font-bold">Applications Sent</h3>
@@ -47,9 +48,9 @@ const ApplicantActivity = ({ userId }) => {
                         <p className="text-xl">{acceptances}</p>
                     </div>
                 </div>
-            </div>
+            </WhiteBox>
         
-            <div className="bg-white p-6 rounded-xl shadow-sm mt-8">
+            <WhiteBox className="mt-8">
                 <h2 className="text-2xl font-semibold mb-4 flex items-center">
                     <FaFolderOpen className="mr-2" /> My Applications
                 </h2>
@@ -59,7 +60,7 @@ const ApplicantActivity = ({ userId }) => {
                         onClick: app.status === "applying" ? () => navigate(`/apply/${app.job._id}`) : null,
                     }))}
                 />
-            </div>
+            </WhiteBox>
         </div>
     );
 };
