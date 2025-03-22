@@ -9,7 +9,7 @@ import {
     getAuth 
   } from "firebase/auth";
   import { auth } from "../firebase.js";
-  import { verifyUserRole, checkProfileCompletion, createBasicUser } from "./user.service.js";
+  import { verifyUserRole, checkProfileCompletion, userService } from "./user.service.js";
   import { makeApiRequest } from "./helper.js";
 import { createShortlist } from "./shortlist.service.js";
   

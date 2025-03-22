@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { userService } from '../services/user.service';
+import { userService } from '../services/user.service.js';
 import { FaUser, FaGraduationCap, FaBriefcase, FaTools, FaFileAlt, FaEdit, FaSave, FaPlus, FaTrash } from 'react-icons/fa'; 
 import { useNavigate } from 'react-router-dom';
 
