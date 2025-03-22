@@ -1,213 +1,212 @@
+/**
+ * Application Service
+ * Handles all API interactions related to application management
+ */
 import { checkTokenExpiration } from "./auth.service.js";
 
-export async function getAllUserApplications() {
-  const response = await fetch('/api/application/all', {
-    method: 'GET',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    }
-  })
+/**
+ * Base API request handler with common configuration
+ * @param {string} endpoint - API endpoint
+ * @param {string} method - HTTP method
+ * @param {Object} [body] - Request body (optional)
+ * @returns {Promise<Object>} - API response data
+ * @throws {Error} - If request fails
+ */
+async function makeApiRequest(endpoint, method, body = null) {
+  const headers = {
+    "Content-Type": "application/json",
+    'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+  };
+
+  const requestOptions = {
+    method,
+    headers,
+  };
+
+  if (body) {
+    requestOptions.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(endpoint, requestOptions);
   checkTokenExpiration(response);
 
   const responseJson = await response.json();
   if (!responseJson.success) {
-    throw new Error(response.data.message || "Failed to fetch applications");
+    throw new Error(responseJson.message || `Failed to ${method.toLowerCase()} ${endpoint}`);
   }
+
   return responseJson.data;
 }
 
-export async function getApplicationById(appId) {
-    try {
-        const response = await fetch(`/api/application/byId?id=${appId}`, {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            }
-        });
-        checkTokenExpiration(response);
-        const responseJson = await response.json();
-        if (!responseJson.success) {
-            throw new Error(responseJson.message || "Failed to fetch application");
-        }
-        return responseJson.data;
-    } catch (error) {
-        console.error("Error fetching application:", error);
-        throw error;
-    }
+/**
+ * Handles API request errors consistently
+ * @param {Error} error - The caught error 
+ * @param {string} errorMessage - Custom error message
+ * @returns {Object} - Standardized error response
+ */
+function handleApiError(error, errorMessage) {
+  if (error.response && error.response.status === 403) {
+    return { status: 403, message: "You are not authorized to perform this action" };
+  }
+  return { status: 500, message: errorMessage };
 }
 
+/**
+ * Retrieves all applications for the current user
+ * @returns {Promise<Array>} - List of all user applications
+ */
+export async function getAllUserApplications() {
+  try {
+    return await makeApiRequest('/api/application/all', 'GET');
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Retrieves an application by its ID
+ * @param {string} appId - Application ID
+ * @returns {Promise<Object>} - Application details
+ */
+export async function getApplicationById(appId) {
+  try {
+    return await makeApiRequest(`/api/application/byId?id=${appId}`, 'GET');
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Retrieves all applicants for a specific job
+ * @param {string} jobId - Job ID
+ * @returns {Promise<Array|Object>} - List of applicants or error object
+ */
 export async function getJobApplicants(jobId) {
   try {
-    const response = await fetch(`/api/application/byJobId?jobId=${jobId}`, {
-      method: 'GET',
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-      }
-    });
-    checkTokenExpiration(response);
-    const responseJson = await response.json();
-    if (!responseJson.success) {
-      throw new Error(response.data.message || "Failed to fetch applicants");
-    }
-    return responseJson.data;
+    return await makeApiRequest(`/api/application/byJobId?jobId=${jobId}`, 'GET');
   } catch (error) {
-    console.error("Error fetching applicants:", error);
-    if (error.response && error.response.status === 403) {
-      return {status: 403, message: "You are not authorized to view these applicants"};
-    }
-    return {status: 500, message: "Failed to fetch applicants"};
+    return handleApiError(error, "Failed to fetch applicants");
   }
 }
 
+/**
+ * Submits a new job application
+ * @param {Object} applicationData - Application data
+ * @param {string} applicationData.jobId - Job ID
+ * @param {string} applicationData.coverLetter - Cover letter text
+ * @param {Array} applicationData.answers - Answers to application questions
+ * @returns {Promise<Object>} - Created application data
+ */
 export async function applyToJob({ jobId, coverLetter, answers }) {
-  const response = await fetch('/api/application/apply', {
-    method: 'POST',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    },
-    body: JSON.stringify({
+  try {
+    return await makeApiRequest('/api/application/apply', 'POST', {
       jobId,
       coverLetter,
       answers,
-    })
-  });
-  checkTokenExpiration(response);
-  const responseJson = await response.json();
-  if (!responseJson.success) {
-    throw new Error(responseJson.message || "Failed to apply");
+    });
+  } catch (error) {
+    throw error;
   }
-  return responseJson.data; 
 }
 
+/**
+ * Withdraws an existing application
+ * @param {string} appId - Application ID
+ * @returns {Promise<string>} - Success message
+ */
 export async function withdrawApplication(appId) {
-    const response = await fetch(`/api/application/withdraw?id=${appId}`, {
-        method: 'DELETE',
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        }
-    });
-    checkTokenExpiration(response);
-
-    const responseJson = await response.json(); // Parse the response JSON
-    if (!responseJson.success) {
-        throw new Error(responseJson.message || "Failed to withdraw application");
-    }
-    return responseJson.message; // Return the success message
+  try {
+    return await makeApiRequest(`/api/application/withdraw?id=${appId}`, 'DELETE');
+  } catch (error) {
+    throw error;
+  }
 }
 
+/**
+ * Retrieves dashboard data for the current user
+ * @returns {Promise<Object>} - Dashboard statistics and data
+ */
 export async function getDashboardData() {
-  const response = await fetch('/api/application/dashboard', {
-    method: 'GET',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    }
-  });
-  checkTokenExpiration(response);
-
-  const responseJson = await response.json();
-
-  if (!responseJson.success) {
-    throw new Error(response || "Failed to fetch dashboard data");
+  try {
+    return await makeApiRequest('/api/application/dashboard', 'GET');
+  } catch (error) {
+    throw error;
   }
-  return responseJson.data;
-
-  
 }
 
-export async function getAssessmentDeadline(appId){
-  const response = await fetch(`/api/application/deadline?id=${appId}`, {
-    method: 'GET',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    }
-  });
-  checkTokenExpiration(response);
-  const responseJson = await response.json();
-  if (!responseJson.success) {
-    throw new Error(response.data.message || "Failed to fetch deadline");
+/**
+ * Retrieves assessment deadline for an application
+ * @param {string} appId - Application ID
+ * @returns {Promise<Object>} - Deadline information
+ */
+export async function getAssessmentDeadline(appId) {
+  try {
+    return await makeApiRequest(`/api/application/deadline?id=${appId}`, 'GET');
+  } catch (error) {
+    throw error;
   }
-
-  return responseJson.data;
 }
 
-export async function setAssessmentDeadline(appId, deadline){
-  const response = await fetch(`/api/application/deadline?id=${appId}`, {
-    method: 'PUT',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    },
-    body: JSON.stringify({ deadline })
-  });
-  checkTokenExpiration(response);
-  const responseJson = await response.json();
-  if (!responseJson.success) {
-    throw new Error(response.data.message || "Failed to set deadline");
+/**
+ * Sets deadline for the code assessment submission
+ * @param {string} appId - Application ID
+ * @param {string} deadline - Deadline date
+ * @returns {Promise<Object>} - Updated deadline information
+ */
+export async function setAssessmentDeadline(appId, deadline) {
+  try {
+    return await makeApiRequest(`/api/application/deadline?id=${appId}`, 'PUT', { deadline });
+  } catch (error) {
+    throw error;
   }
-  return responseJson.data;
 }
 
+/**
+ * Updates application status (approve or reject)
+ * @param {string} appId - Application ID
+ * @param {boolean} reject - Whether to reject the application
+ * @returns {Promise<Object>} - Updated application data
+ */
 export async function updateStatus(appId, reject) {
-  const sentToReject = reject ? `&reject=true` : '';
-  const response = await fetch(`/api/application/status?id=${appId}${sentToReject}`, {
-    method: 'PUT',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    }
-  });
-  checkTokenExpiration(response);
-  console.log("RESSSSS: " + response);
-  const responseJson = await response.json();
-  if (!responseJson.success) {
-    throw new Error(response.data.message || "Failed to progress with the application");
+  try {
+    const queryParams = reject ? `?id=${appId}&reject=true` : `?id=${appId}`;
+    return await makeApiRequest(`/api/application/status${queryParams}`, 'PUT');
+  } catch (error) {
+    throw error;
   }
-  return responseJson.data;
 }
 
+/**
+ * Saves application draft
+ * @param {Object} applicationData - Application data
+ * @param {string} applicationData.applicationId - Application ID
+ * @param {string} applicationData.jobId - Job ID
+ * @param {string} applicationData.coverLetter - Cover letter text
+ * @param {Array} applicationData.answers - Answers to application questions
+ * @returns {Promise<Object>} - Saved application data
+ */
 export async function saveApplication({ applicationId, jobId, coverLetter, answers }) {
-  const response = await fetch('/api/application/save', {
-    method: 'PUT',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    },
-    body: JSON.stringify({
-      applicationId, // Include applicationId in the request body
+  try {
+    return await makeApiRequest('/api/application/save', 'PUT', {
+      applicationId,
       jobId,
       coverLetter,
       answers,
-    }),
-  });
-  checkTokenExpiration(response);
-  const responseJson = await response.json();
-  if (!responseJson.success) {
-    throw new Error(responseJson.message || "Failed to save application");
-  }
-  return responseJson.data;
-}
-
-export async function submitApplication(applicationId) {
-    const response = await fetch('/api/application/submit', {
-        method: 'PUT',
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
-        body: JSON.stringify({ applicationId }), // Send only the applicationId
     });
-    checkTokenExpiration(response);
-    const responseJson = await response.json();
-    if (!responseJson.success) {
-        throw new Error(responseJson.message || "Failed to submit application");
-    }
-    return responseJson.data;
+  } catch (error) {
+    throw error;
+  }
 }
 
+/**
+ * Submits a drafted application
+ * @param {string} applicationId - Application ID
+ * @returns {Promise<Object>} - Submitted application data
+ */
+export async function submitApplication(applicationId) {
+  try {
+    return await makeApiRequest('/api/application/submit', 'PUT', { applicationId });
+  } catch (error) {
+    throw error;
+  }
+}

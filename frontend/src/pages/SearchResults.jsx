@@ -10,7 +10,6 @@ const SearchResults = () => {
     const searchParams = new URLSearchParams(url.search);
     const navigate = useNavigate();
     
-
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -151,7 +150,11 @@ const SearchResults = () => {
                         <p className="text-ltext text-center">Loading search results...</p>
                     ) : currentResults.length > 0 ? (
                         currentResults.map((job) => (
-                            <div key={job._id} className="bg-white rounded-lg shadow-md p-4 w-full relative cursor-pointer" onClick={() => handleJobClick(job._id)}>
+                            <div
+                                key={job._id}
+                                className={`bg-white rounded-lg shadow-md p-4 w-full relative ${isLoggedIn ? 'cursor-pointer' : ''}`}
+                                {...(isLoggedIn ? { onClick: () => handleJobClick(job._id) } : {})}
+                            >
                                 {/* Add to shortlist */}
                                 {isLoggedIn && (
                                     checkIfShortlisted(job._id) ? (
