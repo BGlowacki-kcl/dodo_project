@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../../services/jobService";
-import { getAllUserApplications } from "../../services/applicationService";
+import { getAllUserApplications, applyToJob } from "../../services/applicationService";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
 import { userService } from "../../services/user.service"; // Import a method to get the user ID
 
@@ -77,6 +77,17 @@ function JobDetailsPage() {
       console.error("Error updating shortlist:", err);
     }
   };
+
+  async function handleApply() {
+    try {
+      if (!applied) {
+        await applyToJob({ jobId, coverLetter: "", answers: [] }); // Create application in "applying" status
+      }
+      navigate(`/apply/${jobId}`); // Navigate to Apply page
+    } catch (err) {
+      console.error("Error applying to job:", err);
+    }
+  }
 
   if (!job) {
     return (
@@ -155,15 +166,15 @@ function JobDetailsPage() {
         &larr; Back
       </button>
       {applied ? (
-          <p className="text-green-600 font-bold text-xl">Applied</p>
-        ) : (
-          <button
-            onClick={() => navigate(`/apply/${jobId}`)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
-          >
-            Apply
-          </button>
-        )}
+        <p className="mt-4 text-green-500 font-bold">You have already applied for this job.</p>
+      ) : (
+        <button
+          onClick={handleApply}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
+        >
+          Apply
+        </button>
+      )}
       <button
         onClick={handleShortlistToggle}
         className={`mt-4 px-4 py-2 ${shortlisted ? "bg-red-600" : "bg-green-600"} text-white rounded hover:${shortlisted ? "bg-red-700" : "bg-green-700"} transition duration-200`}

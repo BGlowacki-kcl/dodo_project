@@ -5,6 +5,8 @@ import { getAllJobs, deleteJob } from '../../services/jobService';
 
 import Metrics from "../../components/Metrics.jsx";
 import EmployerSideBar from "../../components/EmployerSideBar.jsx";
+import { getJobsByEmployer } from "../../services/jobService";
+
 
 const EmployerPostsPage = () => {
   const [selectedJob, setSelectedJob] = useState(null);
@@ -14,29 +16,16 @@ const EmployerPostsPage = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const response = await fetch("/api/job/employer", {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch jobs');
-        }
-
-        const data = await response.json();
-        // Backend will filter jobs by employer uid from token
-        setJobs(data);
-        if (data.length > 0) {
-          setSelectedJob(data[0]);
+        const jobsData = await getJobsByEmployer();
+        setJobs(jobsData);
+        if (jobsData.length > 0) {
+          setSelectedJob(jobsData[0]);
         }
       } catch (error) {
         console.error("Error fetching jobs:", error);
       }
     };
-
+  
     fetchJobs();
   }, []);
 
@@ -67,9 +56,7 @@ const EmployerPostsPage = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar with fixed width */}
-      <div className="w-64 bg-white shadow-lg">
-        <EmployerSideBar />
-      </div>
+      
 
       {/* Main Content - Takes up remaining space */}
       <div className="flex-1 p-8">

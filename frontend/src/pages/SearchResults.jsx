@@ -4,6 +4,8 @@ import { getAllJobs, getFilteredJobs } from "../services/jobService";
 import SearchFilters from "../components/SearchFilters";
 import JobCard from "../components/JobCard";
 import ReactPaginate from "react-paginate";
+import { addJobToShortlist, getShortlist } from "../services/shortlist.service";
+import { useNotification } from "../context/notification.context";
 
 const SearchResults = () => {
     const url = useLocation();
@@ -14,7 +16,9 @@ const SearchResults = () => {
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
+    const [shortlistedJobIds, setShortlistedJobIds] = useState(new Set());
     const resultsPerPage = 10;
+    const showNotification = useNotification();
 
     // Extract query parameters
     const jobTypes = searchParams.getAll("jobType");
@@ -26,6 +30,21 @@ const SearchResults = () => {
         const token = sessionStorage.getItem("token");
         setIsLoggedIn(!!token);
     };
+
+    useEffect(() => {
+        const fetchShortlist = async () => {
+            try {
+                const { jobs } = await getShortlist();
+                setShortlistedJobIds(new Set(jobs.map((job) => job._id)));
+            } catch (err) {
+                console.error("Error fetching shortlist:", err);
+            }
+        };
+
+        fetchShortlist();
+    }, []);
+
+    const checkIfShortlisted = (jobId) => shortlistedJobIds.has(jobId);
 
     useEffect(() => {
         checkAuthStatus();
@@ -62,7 +81,18 @@ const SearchResults = () => {
         const url = `/user/jobs/details/${jobId}`;
         window.open(url, "_blank");
     };
-    
+
+    const handleAddToShortlist = async (jobId) => {
+        try {
+            addJobToShortlist(jobId);
+            setShortlistedJobIds((prev) => new Set(prev).add(jobId));
+            showNotification("Job added to shortlist", "success");
+        } catch (err) {
+            console.error("Error updating shortlist:", err);
+            showNotification("Error while adding post to the shortlist", "error");
+        }
+    };
+
     useEffect(() => {
         fetchSearchResults();
     }, []);

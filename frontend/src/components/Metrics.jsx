@@ -24,6 +24,21 @@ const Metrics = ({ selectedJob }) => {
           <p>{selectedJob.description}</p>
         </div>
         <div>
+          <h3 className="font-medium">Employment Type</h3>
+          <p>{selectedJob.employmentType}</p>
+        </div>
+        <div>
+          <h3 className="font-medium">Application Deadline</h3>
+          <p>
+            {selectedJob.deadline ? new Date(selectedJob.deadline).toLocaleDateString('en-GB', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : 'Rolling deadline'}
+          </p>
+        </div>
+        <div>
           <h3 className="font-medium">Salary Range</h3>
           <p>
             {selectedJob.salaryRange ? 

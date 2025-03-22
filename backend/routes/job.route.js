@@ -12,7 +12,8 @@ import {
     getAllJobTypes,
     getFilteredJobs,
     getJobsByEmployer,
-    getAllCompanies
+    getAllCompanies,
+    getJobQuestionsById
 } from '../controllers/job.controller.js';
 import { checkRole } from '../middlewares/auth.middleware.js';
 
@@ -29,6 +30,9 @@ router.get('/employmentType', getAllJobTypes);
 router.get('/company', getAllCompanies);
 
 router.get('/search', getFilteredJobs);
+
+router.get('/questions', getJobQuestionsById);
+
 
 // Create a job post
 router.post('/create', checkRole(["employer"]), createJob);

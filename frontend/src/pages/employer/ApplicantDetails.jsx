@@ -1,81 +1,134 @@
 import React, { useEffect, useState } from "react";
 import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
+import { getApplicationById, updateStatus } from "../../services/applicationService";
+import { userService } from "../../services/user.service";
 
 const ApplicantDetails = () => {
-    const { applicantId } = useParams();
+    const { applicationId } = useParams();
     const [applicant, setApplicant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [codeChallenge, setCodeChallenge] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchApplicantDetails = async () => {
             try {
-                const token = sessionStorage.getItem('token');
-                const response = await fetch(`/api/application/byId?id=${applicantId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                });
-                const data = await response.json();
-                console.log('Applicants data:', data.data); // Debug log 7
+                const response = await getApplicationById(applicationId);
+                const applicantId = response.applicantid;
+                const userResponse = await userService.getUserById(applicantId);
 
-                
-                
-                if (data.success) {
-                    const userResponse = await fetch(`/api/user/${applicantId}`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    const userData = await userResponse.json();
-                    console.log('User data:', userData.data); // Debug log 8
-                    setApplicant({
-                        ...data.data,
-                        education: userData.data.education || [],
-                        experience: userData.data.experience || [],
-                        skills: userData.data.skills || [],
-                        resume: userData.data.resume,
-                        name: userData.data.name,
-                        email: userData.data.email
-                    });
-                } else {
-                    throw new Error(data.message || 'Failed to fetch applicant details');
+                setCodeChallenge(response.assessments);
+
+                if (!response && !userResponse) {
+                    throw new Error('No application data returned');
                 }
+
+                setApplicant({
+                    id: response._id,
+                    applicationId: response._id,
+                    name: response.name || 'No name provided',
+                    email: response.email || 'No email provided',
+                    status: response.status || 'applied',
+                    coverLetter: response.coverLetter || 'No cover letter provided',
+                    submittedAt: response.submittedAt || new Date().toISOString(),
+                    skills: userResponse.skills || [],
+                    resume: userResponse.resume || 'No resume available',
+                    answers: response.answers || [], // Include answers
+                    questions: response.job.questions || [], // Include job questions
+                });
+
+                console.log('Applicant details:', response.answers);
             } catch (error) {
-                console.error('Error details:', error);
-                setError(error.message);
+                console.error('Error fetching application details:', error);
+                setError(`Failed to load application: ${error.message || 'Unknown error'}`);
             } finally {
                 setLoading(false);
             }
         };
 
-        if (applicantId) {
+        if (applicationId) {
             fetchApplicantDetails();
+        } else {
+            setError('No application ID provided');
+            setLoading(false);
         }
-    }, [applicantId]);
+    }, [applicationId]);
 
+    const getButtonState = (status) => {
+        let shortlistCaption = "Shortlist";
+        let rejectCaption = "Reject";
+    
+        let isShortlistDisabled = false;
+        let isRejectDisabled = false;
+    
+        switch (status) {
+            case 'applying':
+            case 'accepted':
+            case 'rejected':
+                isShortlistDisabled = true;
+                isRejectDisabled = true;
+                break;
+    
+            case 'code challenge':
+                shortlistCaption = "In Code Challenge";
+                isShortlistDisabled = true;
+                isRejectDisabled = true;
+                break;
+    
+            case 'shortlisted':
+                shortlistCaption = "Move to Code Challenge";
+                break;
+    
+            case 'in review':
+                shortlistCaption = "Accept";
+                break;
+    
+            default:
+                break;
+        }
+    
+        return { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled };
+    };
+    
     const handleStatusUpdate = async (newStatus) => {
+        setLoading(true);
         try {
-            const response = await fetch(`/api/application/${applicant.applicationId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                setApplicant(prev => ({ ...prev, status: newStatus }));
-            }
+            if (!applicationId) throw new Error('Application ID not available');
+    
+            await updateStatus(applicationId, newStatus === 'rejected');
+    
+            setApplicant((prev) => ({
+                ...prev,
+                status: newStatus,
+            }));
+            window.location.reload();
+    
         } catch (error) {
-            setError('Failed to update status');
+            console.error('Error updating status:', error);
+            setError(`Failed to update status: ${error.message}`);
+        } finally {
+            setLoading(false);
         }
     };
+    
+    useEffect(() => {
+        if (applicant?.status) {
+            console.log('Application status updated to:', applicant.status);
+        }
+    }, [applicant?.status]);
+    
+    const { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled } = getButtonState(applicant?.status);
+    
+
+    if(loading){
+        return (
+            <div className="flex justify-center items-center">
+                <p className="text-gray-600">Loading applicant details...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -109,14 +162,21 @@ const ApplicantDetails = () => {
                                     <p className="text-gray-600">{applicant.email}</p>
                                 </div>
                                 <div className="flex space-x-2">
-                                    <button onClick={() => handleStatusUpdate('shortlisted')} 
-                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                        Shortlist
-                                    </button>
-                                    <button onClick={() => handleStatusUpdate('rejected')}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                        Reject
-                                    </button>
+                                <button
+                                    onClick={() => handleStatusUpdate('shortlisted')}
+                                    disabled={isShortlistDisabled}
+                                    className={`px-4 py-2 ${isShortlistDisabled ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg`}
+                                >
+                                    {shortlistCaption}
+                                </button>
+
+                                <button
+                                    onClick={() => handleStatusUpdate('rejected')}
+                                    disabled={isRejectDisabled}
+                                    className={`px-4 py-2 ${isRejectDisabled ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'} text-white rounded-lg`}
+                                >
+                                    {rejectCaption}
+                                </button>
                                 </div>
                             </div>
 
@@ -128,30 +188,80 @@ const ApplicantDetails = () => {
                                 </div>
                             </div>
 
-                            {/* CV/Resume Section */}
+                            {/* Questions and Answers */}
                             <div className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4">Resume</h2>
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-gray-700 whitespace-pre-line">{applicant.resume}</p>
-                                </div>
+                                <h2 className="text-xl font-semibold mb-4">Questions and Answers</h2>
+                                {applicant.questions.length > 0 ? (
+                                    <ul className="list-disc pl-6">
+                                        {applicant.questions.map((question, index) => {
+                                            const answer = applicant.answers.find(
+                                                (ans) => ans.questionId === question._id
+                                            );
+                                            return (
+                                                <li key={question._id} className="mb-4">
+                                                    <p className="font-medium text-gray-800">
+                                                        <strong>Question:</strong> {question.questionText}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <strong>Answer:</strong> {answer?.answerText || "No answer provided"}
+                                                    </p>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500 italic">No questions available for this job.</p>
+                                )}
                             </div>
 
                             {/* Skills */}
                             <div className="mb-8">
                                 <h2 className="text-xl font-semibold mb-4">Skills</h2>
-                                <div className="flex flex-wrap gap-2">
-                                    {applicant.skills?.map((skill, index) => (
-                                        <span 
-                                            key={index}
-                                            className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                                        >
-                                            {skill}
-                                        </span>
-                                    ))}
-                                </div>
+                                {applicant.skills && applicant.skills.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {applicant.skills.map((skill, index) => (
+                                            <span 
+                                                key={index} 
+                                                className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                                            >
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 italic">No skills listed</p>
+                                )}
                             </div>
-                        </div>
+                            
+                            {/* Resume */}
+                            <div className="mb-8">
+                                <h2 className="text-xl font-semibold mb-4">Resume</h2>
+                                {applicant.resume && applicant.resume !== 'No resume available' ? (
+                                    <div className="bg-gray-50 p-4 rounded-lg">
+                                        <div className="flex items-center justify-between">
+                                            
+                                            {applicant.resume.startsWith('http') ? (
+                                                <a 
+                                                    href={applicant.resume} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                >
+                                                    View Resume
+                                                </a>
+                                            ) : (
+                                                <p className="text-gray-700 whitespace-pre-line">{applicant.resume}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 italic">No resume available</p>
+                                )}
+                            </div>
 
+                            {/* Rest of your component remains the same */}
+                        </div>
+                        
                         {/* Status Card */}
                         <div className="bg-white rounded-lg shadow-lg p-6 h-fit">
                             <h2 className="text-xl font-semibold mb-4">Application Status</h2>
@@ -172,6 +282,44 @@ const ApplicantDetails = () => {
                         <p>No applicant details found.</p>
                     </div>
                 )}
+
+                {codeChallenge.assessments && codeChallenge.assessments.length > 0 && (
+                <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4 mt-10">Code Challenges</h2>
+                    <div className="space-y-6">
+                        {codeChallenge.assessments.map((assessment, index) => {
+                            // Find the corresponding submission
+                            const submission = codeChallenge.submissions.find(
+                                (sub) => sub.assessment === assessment._id
+                            );
+
+                            return (
+                                <div key={assessment._id} className="bg-gray-50 p-4 rounded-lg shadow">
+                                    <h3 className="text-lg font-medium text-gray-800 mb-2">
+                                        {assessment.title}
+                                    </h3>
+                                    <p className="text-gray-600 mb-4">
+                                        {assessment.description}
+                                    </p>
+                                    {submission ? (
+                                        <div>
+                                            <h4 className="text-md font-semibold mb-2">Submitted Code:</h4>
+                                            <pre className="bg-black text-white p-4 rounded-lg overflow-auto">
+                                                {submission.solutionCode}
+                                            </pre>
+                                            <p className="mt-4 text-sm text-gray-700">
+                                                <strong>Score:</strong> {submission.score}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500 italic">No submission available</p>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )} 
             </div>
         </div>
     );

@@ -54,10 +54,10 @@ export async function createJob(jobData) {
     });
     checkTokenExpiration(response);
     if (!response.ok) {
-      throw new Error("Failed to create job");
+      const errorData = await response.json(); // Parse error response
+      throw new Error(errorData.message || "Failed to create job");
     }
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error creating job:", error);
     throw error;
@@ -213,5 +213,96 @@ export async function getFilteredJobs(filters) {
   } catch (error) {
     console.error("Error fetching filtered jobs:", error);
     throw error;
+  }
+}
+
+export async function getJobsByEmployer() {
+  try {
+    const response = await fetch('/api/job/employer', {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      }
+    });
+
+    // Check token expiration based on the response (if implemented in checkTokenExpiration)
+    checkTokenExpiration(response);
+
+    // If the HTTP status is not OK, parse the error and throw.
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to fetch employer jobs:", errorData);
+      throw new Error(errorData.message || "Failed to fetch jobs by employer");
+    }
+
+    // For a successful response, the backend returns an array
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching jobs by employer:", error);
+    throw error;
+  }
+}
+
+export async function getApplicantsByJobId(jobId) {
+  try {
+    // Validate that jobId is provided
+    if (!jobId) {
+      throw new Error("Job ID is required");
+    }
+
+    // Make the API request
+    const response = await fetch(`/api/job/applicants?jobId=${jobId}`, {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/json",
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
+    });
+
+    // Check token expiration based on the response
+    checkTokenExpiration(response);
+
+    // If the HTTP status is not OK, parse the error and throw
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to fetch job applicants:", errorData);
+      throw new Error(errorData.message || "Failed to fetch applicants");
+    }
+
+    // Parse and return the response data
+    const result = await response.json();
+    return result.data || []; // Return applicants array or empty array if null
+  } catch (error) {
+    console.error("Error fetching applicants:", error);
+    throw error;
+  }
+}
+
+export async function getJobQuestionsById(jobId) {
+  try {
+      const response = await fetch(`/api/job/questions?jobId=${jobId}`, {
+          method: 'GET',
+          headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+          },
+      });
+
+      checkTokenExpiration(response);
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to fetch job questions:", errorData);
+          throw new Error(errorData.message || "Failed to fetch job questions");
+      }
+
+      // Since the controller returns an array, return it directly
+      const result = await response.json();
+      console.log(result);
+      return result;
+  } catch (error) {
+      console.error("Error fetching job questions:", error);
+      throw error;
   }
 }
