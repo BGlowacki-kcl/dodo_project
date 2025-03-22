@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { userService } from '../services/user.service';
+import { userService } from '../services/user.service.js';
 import { FaUser, FaGraduationCap, FaBriefcase, FaTools, FaFileAlt, FaEdit, FaSave, FaPlus, FaTrash } from 'react-icons/fa'; 
 import WhiteBox from './WhiteBox';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = ({ editable }) => { 
     const [user, setUser] = useState({});
@@ -15,16 +16,18 @@ const Profile = ({ editable }) => {
         resume: editable || false
     });
     const [editableUser, setEditableUser] = useState({});
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchUserProfile() {
             try {
                 const userData = await userService.getUserProfile();
-                setUser(userData);
-                setEditableUser(userData.data);
-                setLoading(false);
+                setUser({data: userData});
+                setEditableUser(userData);
+                console.log("userData: ",userData);
             } catch (error) {
                 setError(error);
+            } finally {
                 setLoading(false);
             }
         }
@@ -121,9 +124,15 @@ const Profile = ({ editable }) => {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-4xl font-bold mb-8 text-left text-black">
-                Profile
-            </h1>
+            <div className="flex flex-row items-center mb-8 mr-20" >
+                <h1 className="text-4xl font-bold text-left text-black mr-20">
+                    Profile
+                </h1>
+                <div className="flex flex-row bg-gray-400 p-3 border-1 border-black rounded-xl cursor-pointer" onClick={() => navigate('/addDetails') } >
+                    <FaSave className="cursor-pointer mr-5 mt-1" onClick={() => handleSaveClick('personal')} />
+                    Update whole profile
+                </div>
+            </div>
             <WhiteBox>
                 <div className="flex justify-between items-center">
                     <h2 className="text-2xl font-semibold mb-4 text-black">
@@ -136,7 +145,7 @@ const Profile = ({ editable }) => {
                     )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <p className="text-black"><strong>Name:</strong> {isEditing.personal ? <input type="text" name="name" value={editableUser.name || ""} onChange={handleInputChange} className="border p-1" /> : user.data.name}</p>
+                    <p className="text-black"><strong>Name:</strong> {isEditing.personal ? <input type="text" name="name" value={editableUser?.name || ""} onChange={handleInputChange} className="border p-1" /> : user.data.name}</p>
                     <p className="text-black"><strong style={{ marginLeft: '-50px' }}>LinkedIn:</strong> {isEditing.personal ? <input type="text" name="linkedin" value={editableUser.linkedin || ""} onChange={handleInputChange} className="border p-1" /> : <a href={user.data.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-500">{user.data.linkedin}</a>}</p>
                     <p className="text-black"><strong>Email:</strong> {isEditing.personal ? <input type="text" name="email" value={editableUser.email || ""} onChange={handleInputChange} className="border p-1" /> : user.data.email}</p>
                     <p className="text-black"><strong style={{ marginLeft: '-50px' }}>GitHub:</strong> {isEditing.personal ? <input type="text" name="github" value={editableUser.github || ""} onChange={handleInputChange} className="border p-1" /> : <a href={user.data.github} target="_blank" rel="noopener noreferrer" className="text-blue-500">{user.data.github}</a>}</p>

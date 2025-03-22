@@ -133,11 +133,12 @@ const assessmentController = {
             }));
     
             return res.status(200).json({
+                success: true,
                 message: "Successfully retrieved assessments with status",
                 data: assessmentsWithStatus,
             });
         } catch (err) {
-            return res.status(500).json({ message: "Error: " + err.message });
+            return res.status(500).json({ success: false, message: "Error: " + err.message });
         }
     },
     
@@ -150,7 +151,7 @@ const assessmentController = {
             const user = await User.findOne({ uid });
             const application = await Application.findOne({ _id: appId });
             if(!application || !user || String(application.applicant) !== String(user._id)){
-                return res.status(403).json({ message: "User not authorized" });
+                return res.status(403).json({ success: false, message: "User not authorized" });
             }
 
             const previousSubmission = await CodeSubmission.findOne({ application: appId, assessment: taskId });
@@ -192,9 +193,9 @@ const assessmentController = {
         try {
             const allTasks = await CodeAssessment.find();
             console.log("Tasks: ",allTasks);
-            return res.status(200).json({ message: "Successfully received code assessments", data: allTasks });
+            return res.status(200).json({ success: true, message: "Successfully received code assessments", data: allTasks });
         } catch (err) {
-            return res.status(500).json({ message: "Internal server error"});
+            return res.status(500).json({ success: false, message: "Internal server error"});
         }
     },
 

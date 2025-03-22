@@ -73,6 +73,7 @@ export const userController = {
 
     async checkProfileCompletion(req, res) {
         try {
+            console.log("Checking profile completion");
             const { uid } = req;
             if (!uid) {
                 return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -82,20 +83,25 @@ export const userController = {
             if (!user) {
                 return res.status(404).json({ success: false, message: "User not found" });
             }
+            console.log("User:", user);
 
             const requiredFields = ["name", "phoneNumber", "location"];
             const missingFields = requiredFields.filter(field => !user[field]);
-
+            console.log("Missing fields:", missingFields);
             if (missingFields.length > 0) {
                 return res.status(200).json({ 
                     success: true,
                     message: "Profile incomplete, redirecting to addDetails",
-                    redirect: "/addDetails",
-                    missingFields 
+                    // redirect: "/addDetails",
+                    // missingFields,
+                    data: {
+                        status: false,
+                        redirect: "/addDetails",
+                    }
                 });
             }
-
-            res.status(200).json({ success: true, message: "User's profile is completed!" });
+            console.log("User's profile is completed!");
+            return res.status(200).json({ success: true, message: "User's profile is completed!", data: { status: true } });
         } catch (error) {
             console.error("Error checking profile completion:", error);
             res.status(500).json({ success: false, message: "Server error" });
