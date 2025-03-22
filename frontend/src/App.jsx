@@ -1,13 +1,21 @@
-import './App.css';
+/**
+ * Main Application Component
+ * Handles routing and application structure
+ */
 import Box from '@mui/material/Box';
-import SignInUp from './pages/SignInUp';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { useNotification } from './context/notification.context';
+import { useEffect } from 'react';
+
+// Importing components
 import Navbar from './components/Navbar';
+import AuthGuard from './guards/auth.guard';
+
+// Importing pages
+import SignInUp from './pages/SignInUp';
 import LandingPage from './pages/applicant/Landing.jsx';
 import ApplicantDashboard from "./pages/applicant/ApplicantDashboard.jsx";
 import EmployerDashboard from "./pages/employer/EmployerDashboard.jsx";
-import { Routes, Route, useNavigate } from 'react-router-dom';
-import Dashboard from './pages/Dashboard';
-import AuthGuard from './guards/auth.guard';
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
 import Swiping from './pages/applicant/Swiping.jsx';
 import CreateJobPost from './pages/employer/CreateJobPost.jsx';
@@ -19,38 +27,75 @@ import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAss';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
-import SearchResults from './pages/SearchResults'
-import AddPdf from './pages/addPdf.jsx';
+import SearchResults from './pages/SearchResults';
 import EmployerApplicants from './pages/employer/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
-import { useNotification } from './context/notification.context';
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import Contact from './pages/Contact';
 import Apply from './pages/applicant/Apply';
 import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
 
+/**
+ * Main application component
+ * @returns {JSX.Element} - The application UI
+ */
 function App() {
 	const navigate = useNavigate();
 	const showNotification = useNotification();
 	const location = useLocation();
 
+	// Set up session expiration handler
 	useEffect(() => {
-        const handleSessionExpired = () => {
-            showNotification("Session expired. Please sign in again", "error");
-            navigate("/signin");
-        };
-
-        window.addEventListener("sessionExpired", handleSessionExpired);
-
+        setupSessionExpirationHandler();
+        
         return () => {
-            window.removeEventListener("sessionExpired", handleSessionExpired);
+            cleanupSessionExpirationHandler();
         };
     }, [navigate, showNotification]);
 
+	/**
+	 * Sets up event listener for session expiration
+	 */
+	const setupSessionExpirationHandler = () => {
+		window.addEventListener("sessionExpired", handleSessionExpired);
+	};
+
+	/**
+	 * Removes event listener for session expiration
+	 */
+	const cleanupSessionExpirationHandler = () => {
+		window.removeEventListener("sessionExpired", handleSessionExpired);
+	};
+
+	/**
+	 * Handles session expiration event
+	 */
+	const handleSessionExpired = () => {
+		showNotification("Session expired. Please sign in again", "error");
+		navigate("/signin");
+	};
+
+	// Determine if navbar should be hidden on certain routes
 	const hideNavbar = location.pathname.startsWith('/codeassessment');
 
-	const routeConfig = [
+	// Route configuration
+	const routeConfig = defineRouteConfig();
+
+	return (
+		<Box className="bg-background min-h-screen">
+			{!hideNavbar && <Navbar />}
+			<Routes>
+				{renderRoutes(routeConfig)}
+			</Routes>
+		</Box>
+	);
+}
+
+/**
+ * Defines the application route configuration
+ * @returns {Array} - Array of route configuration objects
+ */
+function defineRouteConfig() {
+	return [
 		// For unLogged users (landing and authorization pages)
 		{ path: '/signin', element: <SignInUp/>, roles: ['unLogged'] },
 		{ path: '/signup', element: <SignInUp/>, roles: ['unLogged'] },
@@ -82,28 +127,28 @@ function App() {
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
 
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
-	  ];
+	];
+}
 
-	return (
-		<Box className="bg-background min-h-screen">
-			{ !hideNavbar && <Navbar /> }
-			<Routes>
-				{routeConfig.map((route) => (
-					<Route
-						key={route.path}
-						path={route.path}
-						element={
-							route.dontCheck ? (
-								route.element
-							) : (
-								<AuthGuard roles={route.roles}>{route.element}</AuthGuard>
-							)
-						}
-					/>
-				))}
-			</Routes>
-		</Box>
-	);
+/**
+ * Renders route components based on configuration
+ * @param {Array} routeConfig - Array of route configuration objects
+ * @returns {Array} - Array of Route components
+ */
+function renderRoutes(routeConfig) {
+	return routeConfig.map((route) => (
+		<Route
+			key={route.path}
+			path={route.path}
+			element={
+				route.dontCheck ? (
+					route.element
+				) : (
+					<AuthGuard roles={route.roles}>{route.element}</AuthGuard>
+				)
+			}
+		/>
+	));
 }
 
 export default App;

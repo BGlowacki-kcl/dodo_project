@@ -10,7 +10,6 @@ const SearchResults = () => {
     const searchParams = new URLSearchParams(url.search);
     const navigate = useNavigate();
     
-
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,9 +37,10 @@ const SearchResults = () => {
                 console.error("Error fetching shortlist:", err);
             }
         };
-
-        fetchShortlist();
-    }, []);
+        if(isLoggedIn) {
+            fetchShortlist();
+        }
+    }, [isLoggedIn]);
 
     const checkIfShortlisted = (jobId) => shortlistedJobIds.has(jobId);
 
@@ -151,10 +151,14 @@ const SearchResults = () => {
                         <p className="text-ltext text-center">Loading search results...</p>
                     ) : currentResults.length > 0 ? (
                         currentResults.map((job) => (
-                            <div key={job._id} className="bg-white rounded-lg shadow-md p-4 w-full relative cursor-pointer" onClick={() => handleJobClick(job._id)}>
+                            <div
+                                key={job._id}
+                                className={`bg-white rounded-lg shadow-md p-4 w-full relative ${isLoggedIn ? 'cursor-pointer' : ''}`}
+                                {...(isLoggedIn ? { onClick: () => handleJobClick(job._id) } : {})}
+                            >
                                 {/* Add to shortlist */}
                                 {isLoggedIn && (
-                                    checkIfShortlisted(job._id) ? (
+                                    !checkIfShortlisted(job._id) ? (
                                         <button 
                                             className="absolute top-2 right-2 bg-primary text-secondary rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-secondary hover:text-ltext transition"
                                             onClick={(e) => {
