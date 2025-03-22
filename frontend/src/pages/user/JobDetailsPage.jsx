@@ -29,30 +29,40 @@ const JobDetailsPage = () => {
   const [userId, setUserId] = useState(null);
   const [applicationStatus, setApplicationStatus] = useState(null);
 
+    // Fetch job details
+  const fetchJobDetails = async (jobId) => {
+    const jobData = await getJobById(jobId);
+    setJob(jobData);
+  };
+
+  // Fetch user applications and check if the user has applied for the job
+  const fetchUserApplications = async (jobId) => {
+    const userApps = await getAllUserApplications();
+    const application = userApps.find((app) => app.job?._id === jobId);
+    if (application) {
+      setApplied(true);
+      setApplicationStatus(application.status);
+    } else {
+      setApplied(false);
+      setApplicationStatus(null);
+    }
+  };
+
+  // Fetch shortlist and check if the job is shortlisted
+  const fetchShortlist = async (jobId) => {
+    const shortlist = await getShortlist();
+    const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
+    setShortlisted(shortlistedJobIds.includes(jobId));
+  };
+
   // Fetch all necessary data
   const fetchData = async () => {
     try {
-      const [jobData, userApps, userId] = await Promise.all([
-        getJobById(jobId),
-        getAllUserApplications(),
-        userService.getUserId(),
+      await Promise.all([
+        fetchJobDetails(jobId),
+        fetchUserApplications(jobId),
+        fetchShortlist(jobId),
       ]);
-
-      setJob(jobData);
-      setUserId(userId);
-
-      const application = userApps.find((app) => app.job?._id === jobId);
-      if (application) {
-        setApplied(true);
-        setApplicationStatus(application.status);
-      } else {
-        setApplied(false);
-        setApplicationStatus(null);
-      }
-
-      const shortlist = await getShortlist(userId);
-      const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
-      setShortlisted(shortlistedJobIds.includes(jobId));
     } catch (err) {
       console.error("Error fetching data:", err);
     }
