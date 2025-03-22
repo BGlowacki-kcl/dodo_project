@@ -54,10 +54,10 @@ export async function createJob(jobData) {
     });
     checkTokenExpiration(response);
     if (!response.ok) {
-      throw new Error("Failed to create job");
+      const errorData = await response.json(); // Parse error response
+      throw new Error(errorData.message || "Failed to create job");
     }
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error("Error creating job:", error);
     throw error;
@@ -257,5 +257,33 @@ export async function getApplicantsByJobId(jobId) {
   } catch (error) {
     console.error("Error fetching applicants:", error);
     throw error;
+  }
+}
+
+export async function getJobQuestionsById(jobId) {
+  try {
+      const response = await fetch(`/api/job/questions?jobId=${jobId}`, {
+          method: 'GET',
+          headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+          },
+      });
+
+      checkTokenExpiration(response);
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to fetch job questions:", errorData);
+          throw new Error(errorData.message || "Failed to fetch job questions");
+      }
+
+      // Since the controller returns an array, return it directly
+      const result = await response.json();
+      console.log(result);
+      return result;
+  } catch (error) {
+      console.error("Error fetching job questions:", error);
+      throw error;
   }
 }

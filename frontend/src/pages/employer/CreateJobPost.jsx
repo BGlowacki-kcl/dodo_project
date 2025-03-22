@@ -21,7 +21,8 @@ function CreateJobPost() {
     requirements: [],
     experienceLevel: '',
     assessments: [],
-    deadline:''
+    deadline:'',
+    questions: [], 
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -88,6 +89,29 @@ function CreateJobPost() {
     }));
   };
 
+  const handleQuestionChange = (index, value) => {
+    setJobData((prevData) => {
+      const updatedQuestions = [...prevData.questions];
+      updatedQuestions[index] = { questionText: value };
+      return { ...prevData, questions: updatedQuestions };
+    });
+  };
+
+  const handleAddQuestion = () => {
+    setJobData((prevData) => ({
+      ...prevData,
+      questions: [...prevData.questions, { questionText: "" }],
+    }));
+  };
+
+  const handleRemoveQuestion = (index) => {
+    setJobData((prevData) => {
+      const updatedQuestions = [...prevData.questions];
+      updatedQuestions.splice(index, 1);
+      return { ...prevData, questions: updatedQuestions };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -105,6 +129,8 @@ function CreateJobPost() {
       if (missingFields.length > 0) {
         throw new Error(`Please fill in: ${missingFields.join(', ')}`);
       }
+
+      console.log(jobData);
 
       await createJob(jobData);
       navigate('/employer/posts');
@@ -247,8 +273,8 @@ function CreateJobPost() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Assessments (check no for no assessment)</label>
                   <div className="mt-2 space-y-2">
-                    {tasks.map(task => (
-                      <label key={task.id} className="flex items-center space-x-2">
+                    {tasks.map((task, index) => (
+                      <label key={task.id || index} className="flex items-center space-x-2">
                         <input
                           type="checkbox"
                           value={task.id}
@@ -260,16 +286,34 @@ function CreateJobPost() {
                     ))}
                   </div>
                 </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700">Location</label>
-                <input
-                  type="text"
-                  name="location"
-                  value={jobData.location}
-                  onChange={handleChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                  required
-                />
+                <label className="block text-sm font-medium text-gray-700">Questions</label>
+                {jobData.questions.map((question, index) => (
+                  <div key={index} className="mb-4">
+                    <input
+                      type="text"
+                      value={question.questionText}
+                      onChange={(e) => handleQuestionChange(index, e.target.value)}
+                      placeholder="Enter question text"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveQuestion(index)}
+                      className="mt-2 text-red-600 hover:underline"
+                    >
+                      Remove Question
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddQuestion}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Add Question
+                </button>
               </div>
 
               <div className="flex justify-end space-x-4">

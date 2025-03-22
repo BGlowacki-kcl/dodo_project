@@ -18,27 +18,24 @@ export async function getAllUserApplications() {
 }
 
 export async function getApplicationById(appId) {
-  try{
-    const response = await fetch(`/api/application/byId?id=${appId}`, {
-      method: 'GET',
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-      }
-    });   
-    checkTokenExpiration(response);
-    const responseJson = await response.json();    
-    if (!responseJson.success) {
-      throw new Error(response.data.message || "Failed to fetch application");
-    }   
-    return responseJson.data;
-  } catch (error) {
-    console.error("Error fetching application:", error);
-    if (error.response && error.response.status === 403) {
-      return {status: 403, message: "You are not authorized to view this application"};
+    try {
+        const response = await fetch(`/api/application/byId?id=${appId}`, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            }
+        });
+        checkTokenExpiration(response);
+        const responseJson = await response.json();
+        if (!responseJson.success) {
+            throw new Error(responseJson.message || "Failed to fetch application");
+        }
+        return responseJson.data;
+    } catch (error) {
+        console.error("Error fetching application:", error);
+        throw error;
     }
-    return {status: 500, message: "Failed to fetch application"};
-  }
 }
 
 export async function getJobApplicants(jobId) {
@@ -65,7 +62,7 @@ export async function getJobApplicants(jobId) {
   }
 }
 
-export async function applyToJob({ jobId, coverLetter }) {
+export async function applyToJob({ jobId, coverLetter, answers }) {
   const response = await fetch('/api/application/apply', {
     method: 'POST',
     headers: {
@@ -74,30 +71,33 @@ export async function applyToJob({ jobId, coverLetter }) {
     },
     body: JSON.stringify({
       jobId,
-      coverLetter
+      coverLetter,
+      answers,
     })
-  })
+  });
   checkTokenExpiration(response);
   const responseJson = await response.json();
   if (!responseJson.success) {
-    throw new Error(response.data.message || "Failed to apply");
+    throw new Error(responseJson.message || "Failed to apply");
   }
   return responseJson.data; 
 }
 
 export async function withdrawApplication(appId) {
-  const response = await fetch(`/api/application/withdraw?id=${appId}`, {
-    method: 'DELETE',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    const response = await fetch(`/api/application/withdraw?id=${appId}`, {
+        method: 'DELETE',
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        }
+    });
+    checkTokenExpiration(response);
+
+    const responseJson = await response.json(); // Parse the response JSON
+    if (!responseJson.success) {
+        throw new Error(responseJson.message || "Failed to withdraw application");
     }
-  });
-  checkTokenExpiration(response);
-  if (!response.data.success) {
-    throw new Error(response.data.message || "Failed to withdraw");
-  }
-  return response.data.message;
+    return responseJson.message; // Return the success message
 }
 
 export async function getDashboardData() {
@@ -170,5 +170,44 @@ export async function updateStatus(appId, reject) {
     throw new Error(response.data.message || "Failed to progress with the application");
   }
   return responseJson.data;
+}
+
+export async function saveApplication({ applicationId, jobId, coverLetter, answers }) {
+  const response = await fetch('/api/application/save', {
+    method: 'PUT',
+    headers: {
+      "Content-Type": "application/json",
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+    },
+    body: JSON.stringify({
+      applicationId, // Include applicationId in the request body
+      jobId,
+      coverLetter,
+      answers,
+    }),
+  });
+  checkTokenExpiration(response);
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+    throw new Error(responseJson.message || "Failed to save application");
+  }
+  return responseJson.data;
+}
+
+export async function submitApplication(applicationId) {
+    const response = await fetch('/api/application/submit', {
+        method: 'PUT',
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ applicationId }), // Send only the applicationId
+    });
+    checkTokenExpiration(response);
+    const responseJson = await response.json();
+    if (!responseJson.success) {
+        throw new Error(responseJson.message || "Failed to submit application");
+    }
+    return responseJson.data;
 }
 

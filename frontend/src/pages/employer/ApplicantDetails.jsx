@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
 import { getApplicationById, updateStatus } from "../../services/applicationService";
-//
-// 
 import { userService } from "../../services/user.service";
 
 const ApplicantDetails = () => {
@@ -17,25 +15,16 @@ const ApplicantDetails = () => {
     useEffect(() => {
         const fetchApplicantDetails = async () => {
             try {
-                
                 const response = await getApplicationById(applicationId);
-                
-                console.log('Raw API response:', response);
                 const applicantId = response.applicantid;
-                console.log('Applicant ID:', applicantId);
                 const userResponse = await userService.getUserById(applicantId);
-                console.log('User response:', userResponse)
 
                 setCodeChallenge(response.assessments);
-                
-                
-                
-                
+
                 if (!response && !userResponse) {
                     throw new Error('No application data returned');
                 }
-                
-                // The response is already the data object, not wrapped in {success, data}
+
                 setApplicant({
                     id: response._id,
                     applicationId: response._id,
@@ -45,8 +34,12 @@ const ApplicantDetails = () => {
                     coverLetter: response.coverLetter || 'No cover letter provided',
                     submittedAt: response.submittedAt || new Date().toISOString(),
                     skills: userResponse.skills || [],
-                    resume: userResponse.resume || 'No resume available'
+                    resume: userResponse.resume || 'No resume available',
+                    answers: response.answers || [], // Include answers
+                    questions: response.job.questions || [], // Include job questions
                 });
+
+                console.log('Applicant details:', response.answers);
             } catch (error) {
                 console.error('Error fetching application details:', error);
                 setError(`Failed to load application: ${error.message || 'Unknown error'}`);
@@ -54,7 +47,7 @@ const ApplicantDetails = () => {
                 setLoading(false);
             }
         };
-    
+
         if (applicationId) {
             fetchApplicantDetails();
         } else {
@@ -129,23 +122,6 @@ const ApplicantDetails = () => {
     const { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled } = getButtonState(applicant?.status);
     
 
-    // const handleStatusUpdate = async (newStatus) => {
-    //     console.log('Applicant: ', applicationId);
-    //     try {
-    //         if (!applicationId) {
-    //             throw new Error('Application ID not available');
-    //         }
-    //         if(newStatus === 'rejected'){
-    //             updateStatus(applicationId, true);
-    //         } else {
-    //             updateStatus(applicationId, false);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error updating status:', error);
-    //         setError(`Failed to update status: ${error.message}`);
-    //     }
-    // };
-
     if(loading){
         return (
             <div className="flex justify-center items-center">
@@ -154,7 +130,6 @@ const ApplicantDetails = () => {
         );
     }
 
-    // Rest of your component remains the same
     return (
         <div className="flex min-h-screen bg-gray-100">
             <EmployerSideBar />
@@ -212,7 +187,33 @@ const ApplicantDetails = () => {
                                     <p className="text-gray-700 whitespace-pre-line">{applicant.coverLetter}</p>
                                 </div>
                             </div>
-                            
+
+                            {/* Questions and Answers */}
+                            <div className="mb-8">
+                                <h2 className="text-xl font-semibold mb-4">Questions and Answers</h2>
+                                {applicant.questions.length > 0 ? (
+                                    <ul className="list-disc pl-6">
+                                        {applicant.questions.map((question, index) => {
+                                            const answer = applicant.answers.find(
+                                                (ans) => ans.questionId === question._id
+                                            );
+                                            return (
+                                                <li key={question._id} className="mb-4">
+                                                    <p className="font-medium text-gray-800">
+                                                        <strong>Question:</strong> {question.questionText}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <strong>Answer:</strong> {answer?.answerText || "No answer provided"}
+                                                    </p>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                ) : (
+                                    <p className="text-gray-500 italic">No questions available for this job.</p>
+                                )}
+                            </div>
+
                             {/* Skills */}
                             <div className="mb-8">
                                 <h2 className="text-xl font-semibold mb-4">Skills</h2>

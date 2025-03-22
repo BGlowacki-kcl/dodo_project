@@ -69,14 +69,14 @@ export const applicationController = {
     async getApplicants(req, res) {
         try {
             const { jobId } = req.query;
-            
 
             const job = await Job.findById(jobId);
-            if (!job  ) {
+            if (!job) {
                 return res.status(403).json(createResponse(false, "Unauthorized to view applicants for this job"));
             }
 
-            const applications = await Application.find({ job: jobId }).populate("applicant", "name email");
+            // Exclude applications in the "applying" stage
+            const applications = await Application.find({ job: jobId, status: { $ne: "applying" } }).populate("applicant", "name email");
 
             const applicants = applications.map(app => ({
                 id: app.applicant._id,
@@ -140,7 +140,11 @@ export const applicationController = {
                 skills: app.applicant.skills,
                 resume: app.applicant.resume,
                 job: app.job,
-                assessments: null
+                assessments: null,
+                answers: app.answers.map((answer) => ({
+                    questionId: answer.questionId.toString(),
+                    answerText: answer.answerText,
+                })),
             };
 
             const job = await Job.findById(app.job);
@@ -193,22 +197,38 @@ export const applicationController = {
     
     async createApplication(req, res) {
         try {
-            const { jobId, coverLetter } = req.body;
+            const { jobId, coverLetter, answers } = req.body;
             const { uid } = req;
+    
             if (!jobId) {
                 return res.status(400).json(createResponse(false, "Missing jobId in body"));
             }
-            const user = await User.findOne({uid});
+    
+            if (!answers || !Array.isArray(answers) || answers.some(answer => !answer.questionId || !answer.answerText)) {
+                return res.status(400).json(createResponse(false, "Invalid answers format"));
+            }
+    
+            const user = await User.findOne({ uid });
+            if (!user) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
+    
+            // Convert questionId to ObjectId
+            const formattedAnswers = answers.map((answer) => ({
+                questionId: new mongoose.Types.ObjectId(answer.questionId),
+                answerText: answer.answerText,
+            }));
     
             const newApp = await Application.create({
                 job: jobId,
                 applicant: user._id,
                 coverLetter,
-                status: "applied",
+                answers: formattedAnswers,
+                status: "applying",
             });
-
+    
             await Job.findByIdAndUpdate(jobId, { $addToSet: { applicants: user._id } });
-
+    
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
         } catch (err) {
@@ -329,6 +349,65 @@ export const applicationController = {
             return handleError(res, error, "Error fetching dashboard data");
         }
     },
+
+    async saveApplication(req, res) {
+        try {
+            const { applicationId, coverLetter, answers } = req.body;
+            const { uid } = req;
+
+            const user = await User.findOne({ uid });
+            const application = await Application.findOne({ _id: applicationId, applicant: user._id });
+
+            if (!application || application.status !== "applying") {
+                return res.status(400).json(createResponse(false, "Cannot save application"));
+            }
+
+            application.coverLetter = coverLetter;
+            application.answers = answers.map((answer) => ({
+                questionId: new mongoose.Types.ObjectId(answer.questionId),
+                answerText: answer.answerText,
+            }));
+            await application.save();
+
+            return res.status(200).json(createResponse(true, "Application saved successfully", application));
+        } catch (err) {
+            return handleError(res, err, "Error saving application");
+        }
+    },
+
+    
+
+    async submitApplication(req, res) {
+        try {
+            const { applicationId } = req.body;
+            const { uid } = req;
+
+            if (!applicationId) {
+                return res.status(400).json(createResponse(false, "Application ID is required"));
+            }
+
+            const user = await User.findOne({ uid });
+            if (!user) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
+
+            const application = await Application.findOne({ _id: applicationId, applicant: user._id });
+            if (!application) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+
+            if (application.status !== "applying") {
+                return res.status(400).json(createResponse(false, "Application cannot be submitted in its current state"));
+            }
+
+            application.status = "applied";
+            await application.save();
+
+            return res.status(200).json(createResponse(true, "Application submitted successfully", application));
+        } catch (error) {
+            return handleError(res, error, "Error submitting application");
+        }
+    }
 };
     
     
