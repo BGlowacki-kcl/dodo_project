@@ -237,30 +237,32 @@ const generateCodeSubmissions = async (jobs, applications) => {
     const codeSubmissions = [];
 
     for (const application of applications) {
-        const job = jobMap.get(application.job.toString());
-        if (job && job.assessments && job.assessments.length > 0) {
-            // For each assessment linked to this job, create a code submission.
-            for (const assessmentId of job.assessments) {
-                const assessment = assessmentMap.get(assessmentId.toString());
-                if (!assessment) continue;
+        if (application.status === "in review" || application.status === "accepted" || application.status === "rejected") {
+            const job = jobMap.get(application.job.toString());
+            if (job && job.assessments && job.assessments.length > 0) {
+                // For each assessment linked to this job, create a code submission.
+                for (const assessmentId of job.assessments) {
+                    const assessment = assessmentMap.get(assessmentId.toString());
+                    if (!assessment) continue;
 
-                const lang = faker.helpers.arrayElement(languages);
+                    const lang = faker.helpers.arrayElement(languages);
 
-                const answerObj = codeAnswers[assessment.title];
-                if (!answerObj || !answerObj[lang]) continue;
+                    const answerObj = codeAnswers[assessment.title];
+                    if (!answerObj || !answerObj[lang]) continue;
 
-                const solutionCode = answerObj[lang];
+                    const solutionCode = answerObj[lang];
 
-                const score = 10;
+                    const score = 10;
 
-                codeSubmissions.push({
-                    assessment: assessment._id,
-                    application: application._id,
-                    solutionCode,
-                    score,
-                    language: lang,
-                    submittedAt: new Date(),
-                });
+                    codeSubmissions.push({
+                        assessment: assessment._id,
+                        application: application._id,
+                        solutionCode,
+                        score,
+                        language: lang,
+                        submittedAt: faker.date.past()
+                    });
+                }
             }
         }
     }
@@ -299,12 +301,6 @@ const seedDatabase = async () => {
         const createdApplications = await Application.insertMany(applications);
         console.log("Applications added...");
 
-        // Update the applicants field in the Job documents
-        for (const job of createdJobs) {
-            await Job.findByIdAndUpdate(job._id, { applicants: job.applicants });
-        }
-        console.log("Applicants added to jobs...");
-
         const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
         await Shortlist.insertMany(shortlistsData);
         console.log("Shortlists added...");
@@ -325,8 +321,3 @@ const seedDatabase = async () => {
 
 //  Run Seeder
 seedDatabase();
-
-
-
-
-
