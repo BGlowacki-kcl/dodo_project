@@ -18,6 +18,7 @@ import { getJobById } from "../../services/jobService";
 import { getAllUserApplications, applyToJob } from "../../services/applicationService";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
 import WhiteBox from "../../components/WhiteBox";
+import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaBriefcase, FaUserTie, FaFileAlt, FaListAlt, FaQuestionCircle, FaCode, FaClipboardList } from "react-icons/fa";
 
 const JobDetailsPage = () => {
   const { jobId } = useParams(); 
@@ -193,40 +194,56 @@ const JobDetailsPage = () => {
         </div>
         <div className="grid grid-cols-6 gap-4 mb-6">
           <WhiteBox className="text-center">
-            <h3 className="text-base font-bold">Job Title</h3>
+            <h3 className="text-base font-bold flex items-center justify-center">
+              <FaFileAlt className="mr-2" /> Job Title
+            </h3>
             <p>{job.title}</p>
           </WhiteBox>
           <WhiteBox className="text-center">
-            <h3 className="text-base font-bold">Company</h3>
+            <h3 className="text-base font-bold flex items-center justify-center">
+              <FaBuilding className="mr-2" /> Company
+            </h3>
             <p>{job.company}</p>
           </WhiteBox>
           <WhiteBox className="text-center">
-            <h3 className="text-base font-bold">Location</h3>
+            <h3 className="text-base font-bold flex items-center justify-center">
+              <FaMapMarkerAlt className="mr-2" /> Location
+            </h3>
             <p>{job.location}</p>
           </WhiteBox>
           <WhiteBox className="text-center">
-            <h3 className="text-base font-bold">Salary</h3>
+            <h3 className="text-base font-bold flex items-center justify-center">
+              <FaMoneyBillWave className="mr-2" /> Salary
+            </h3>
             <p>
               {job.salaryRange ? `£${job.salaryRange.min} - £${job.salaryRange.max}` : "Not specified"}
             </p>
           </WhiteBox>
           <WhiteBox className="text-center">
-            <h3 className="text-base font-bold">Employment Type</h3>
+            <h3 className="text-base font-bold flex items-center justify-center">
+              <FaBriefcase className="mr-2" /> Employment Type
+            </h3>
             <p>{job.employmentType}</p>
           </WhiteBox>
           <WhiteBox className="text-center">
-            <h3 className="text-base font-bold">Experience Level</h3>
+            <h3 className="text-base font-bold flex items-center justify-center">
+              <FaUserTie className="mr-2" /> Experience Level
+            </h3>
             <p>{job.experienceLevel || "Not specified"}</p>
           </WhiteBox>
         </div>
 
         <WhiteBox className="mt-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">Job Description</h2>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+            <FaListAlt className="mr-2" /> Job Description
+          </h2>
           <p>{job.description}</p>
         </WhiteBox>
 
         <WhiteBox className="mt-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">Requirements</h2>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+            <FaClipboardList className="mr-2" /> Requirements
+          </h2>
           {job.requirements && job.requirements.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {job.requirements.map((req, index) => (
@@ -244,11 +261,15 @@ const JobDetailsPage = () => {
         </WhiteBox>
         <div className="grid grid-cols-2 gap-4 mt-6">
           <WhiteBox>
-            <h2 className="text-xl font-semibold mb-2">Questions?</h2>
+            <h2 className="text-xl font-semibold mb-2 flex items-center">
+              <FaQuestionCircle className="mr-2" /> Questions?
+            </h2>
             <p className="text-gray-700">{job.questions && job.questions.length > 0 ? "Yes, this job requires answering questions during the application process." : "No, this job does not require answering questions during the application process."}</p>
           </WhiteBox>
           <WhiteBox>
-            <h2 className="text-xl font-semibold mb-2">Code Assessment?</h2>
+            <h2 className="text-xl font-semibold mb-2 flex items-center">
+              <FaCode className="mr-2" /> Code Assessment?
+            </h2>
             <p className="text-gray-700">{job.assessments && job.assessments.length > 0 ? "Yes, this job requires taking an assessment during the application process." : "No, this job does not require taking an assessment during the application process."}</p>
           </WhiteBox>
         </div>
