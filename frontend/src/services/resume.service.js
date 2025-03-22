@@ -42,9 +42,7 @@ async function extractTextFromPDF(file) {
  * @returns {Promise<Object|null>} - Parsed JSON or null on error
  */
 async function prepareAnswer(response) {
-    console.log("response: ",response);
   let answer = response.choices[0].message.content.trim();
-  console.log("answer: ",answer);
   
   if (answer.startsWith(`"data":`)) {
     answer = `{ ${answer} }`;
