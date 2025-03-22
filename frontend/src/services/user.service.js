@@ -1,152 +1,128 @@
-import { checkTokenExpiration } from "./auth.service.js";
+/**
+ * User Service
+ * Handles all API interactions related to user management
+ */
+import { makeApiRequest } from "./helper.js";
+
 const API_BASE_URL = "/api/user";
 
+/**
+ * User service with public methods for user-related operations
+ */
 export const userService = {
-    async updateUser(userData) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${sessionStorage.getItem("token")}`,
-                },
-                body: JSON.stringify(userData),
-            });
 
-            if (!response.ok) {
-                throw new Error("Failed to update user profile");
-            }
-            const responseJSON = await response.json();
-            checkTokenExpiration(responseJSON);
-            return responseJSON;
-        } catch (error) {
-            console.error("Error updating user:", error);
-            throw error;
-        }
-    },
-
-    async getUserProfile() {
-        try {
-            console.log(sessionStorage.getItem("token"));
-            const response = await fetch(`${API_BASE_URL}/`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-                },
-            });
-
-            console.log(response);
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch user profile");
-            }
-            const responseJSON = await response.json();
-            checkTokenExpiration(responseJSON);
-            return responseJSON;
-        } catch (error) {
-            console.error("Error fetching user profile:", error);
-            throw error;
-        }
-    },
-
-    async getUserRole() {
-        try {
-            if(!sessionStorage.getItem("token")){
-                return "unLogged";
-            }
-            const response = await fetch(`${API_BASE_URL}/role`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch user profile");
-            }
-
-            const responseJson =  await response.json();
-            checkTokenExpiration(responseJson);
-            const role = responseJson.data;
-            return role;
-        } catch (error) {
-            console.error("Error fetching user profile:", error);
-            throw error;
-        }
-    },
-
-    async getUserId() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch user profile");
-            }
-
-            const responseJson = await response.json();
-            checkTokenExpiration(responseJson);
-            return responseJson.data._id;
-        } catch (error) {
-            console.error("Error fetching user ID:", error);
-            throw error;
-        }
-    },
-
-    async getUserById(userId) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/ById?userId=${userId}`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-                },
-            });
-    
-            if (!response.ok) {
-                throw new Error("Failed to fetch user profile");
-            }
-            
-            const responseJson = await response.json();
-            return responseJson.data;
-        } catch (error) {
-            console.error("Error fetching user profile:", error);
-            throw error;
-        }
+  /**
+   * Updates the current user's profile information
+   * @param {Object} userData - User data to update
+   * @returns {Promise<Object>} - Updated user data
+   */
+  async updateUser(userData) {
+    try {
+      return await makeApiRequest(`${API_BASE_URL}/`, 'PUT', userData);
+    } catch (error) {
+      throw error;
     }
+  },
+
+  /**
+   * Retrieves the current user's profile
+   * @returns {Promise<Object>} - User profile data
+   */
+  async getUserProfile() {
+    try {
+      return await makeApiRequest(`${API_BASE_URL}/`, 'GET');
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieves the current user's role
+   * @returns {Promise<string>} - User role
+   */
+  async getUserRole() {
+    try {
+      if (!sessionStorage.getItem("token")) {
+        return "unLogged";
+      }
+      return await makeApiRequest(`${API_BASE_URL}/role`, 'GET');
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieves the current user's ID
+   * @returns {Promise<string>} - User ID
+   */
+  async getUserId() {
+    try {
+      const userData = await makeApiRequest(`${API_BASE_URL}/`, 'GET');
+      return userData._id;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Retrieves a user by their ID
+   * @param {string} userId - User ID to fetch
+   * @returns {Promise<Object>} - User data
+   */
+  async getUserById(userId) {
+    try {
+      return await makeApiRequest(`${API_BASE_URL}/ById?userId=${userId}`, 'GET');
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Creates a basic user with minimal information
+   * @param {Object} userData - Basic user data
+   * @returns {Promise<Object>} - Created user data
+   */
+  async createBasicUser(userData) {
+    try {
+      return await makeApiRequest(`${API_BASE_URL}/basic`, 'POST', userData);
+    } catch (error) {
+      throw error;
+    }
+  }
 };
 
-export const verifyUserRole = async (email, expectedRole) => {
-    try {
-        const response = await fetch(`/api/user/role?email=${email}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-            }
-        });
+/**
+ * Verifies a user has the expected role
+ * @param {string} email - User email
+ * @param {string} expectedRole - Role to verify
+ * @returns {Promise<boolean>} - True if role matches, false otherwise
+ */
+export async function verifyUserRole(email, expectedRole) {
+  try {
+    const role = await makeApiRequest(`/api/user/role?email=${email}`, 'GET');
+    return role === expectedRole;
+  } catch (error) {
+    throw error;
+  }
+};
 
+/**
+ * Checks if user profile is completed and handles navigation
+ * @param {Function} navigate - Navigation function
+ * @returns {Promise<void>}
+ */
+export async function checkProfileCompletion(navigate) {
+  try {
+    const data = await makeApiRequest('/api/user/completed', 'GET');
+    const userRole = sessionStorage.getItem('role');
 
-        if (!response.ok) {
-            throw new Error(response.message);
-        }
-
-        const data = await response.json();
-        console.log(data.data," = ", expectedRole);
-        if (data.data !== expectedRole) {
-            return false;
-        }
-        console.log("RETURNING TURE: ");
-        return true;
-    } catch (error) {
-        console.error('Role verification error:', error);
-        throw error;
+    if (data.redirect && userRole === 'jobSeeker') {
+      navigate(data.redirect);
+      return;
     }
-}
+
+    navigate('/');
+  } catch (error) {
+    navigate('/addDetails');
+  }
+};

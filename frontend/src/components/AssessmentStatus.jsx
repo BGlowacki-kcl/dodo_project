@@ -1,12 +1,16 @@
 import React from "react";
 
-const AssessmentStatus = ({ status, onClick, title }) => {
+const AssessmentStatus = ({ status, onClick, chosen, title }) => {
     const containerStyle = {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        cursor: "pointer",
+        cursor: chosen ? "default" : "pointer",
         color: "white",
+        backgroundColor: chosen ? "grey" : "transparent",
+        border: chosen ? "1px solid white" : "none",
+        padding: "10px",
+        borderRadius: "8px",
     };
     
     const iconStyle = {
@@ -23,21 +27,21 @@ const AssessmentStatus = ({ status, onClick, title }) => {
         switch (status) {
             case "completed-full":
                 return (
-                    <div style={containerStyle} onClick={onClick} title="Completed (Full Marks)">
+                    <div style={containerStyle} onClick={chosen ? undefined : onClick} title="Completed (Full Marks)">
                         <span style={iconStyle}>✅</span>
                         <span style={titleStyle}>{title}</span>
                     </div>
                 );
             case "completed-partial":
                 return (
-                    <div style={containerStyle} onClick={onClick} title="Completed (Not Full Marks)">
+                    <div style={containerStyle} onClick={chosen ? undefined : onClick} title="Completed (Not Full Marks)">
                         <span style={iconStyle}>🟡</span>
                         <span style={titleStyle}>{title}</span>
                     </div>
                 );
             case "attempted":
                 return (
-                    <div style={containerStyle} onClick={onClick} title="Attempted (Not Submitted)">
+                    <div style={containerStyle} onClick={chosen ? undefined : onClick} title="Attempted (Not Submitted)">
                         <span style={iconStyle}>📝</span>
                         <span style={titleStyle}>{title}</span>
                     </div>
@@ -45,7 +49,7 @@ const AssessmentStatus = ({ status, onClick, title }) => {
             case "not-submitted":
             default:
                 return (
-                    <div style={containerStyle} onClick={onClick} title="Not Submitted">
+                    <div style={containerStyle} onClick={chosen ? undefined : onClick} title="Not Submitted">
                         <span style={iconStyle}>🔍</span>
                         <span style={titleStyle}>{title}</span>
                     </div>
