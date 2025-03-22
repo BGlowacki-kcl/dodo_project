@@ -158,6 +158,7 @@ const generateJobs = async (num, employers) => {
                 availableAssessments,
                 faker.number.int({ min: 0, max: 4 })
             ).map(a => a._id),
+            deadline: faker.date.between({ from: Date.now(), to: '2025-12-30' })
         };
 
         if (faker.datatype.boolean()) {
