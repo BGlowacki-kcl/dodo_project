@@ -2,45 +2,7 @@
  * Assessment Service
  * Handles code execution, testing, and assessment-related API interactions
  */
-import { checkTokenExpiration } from "./auth.service";
-
-/**
- * Common request headers with authorization
- * @returns {Object} - Headers object with Content-Type and Authorization
- */
-function getRequestHeaders() {
-  return {
-    "Content-Type": "application/json",
-    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-  };
-}
-
-/**
- * Makes an API request to the assessment endpoints
- * @param {string} endpoint - API endpoint
- * @param {string} method - HTTP method
- * @param {Object} [body] - Request body (optional)
- * @returns {Promise<Object>} - API response data
- */
-async function makeApiRequest(endpoint, method, body = null) {
-  const requestOptions = {
-    method,
-    headers: getRequestHeaders(),
-  };
-
-  if (body) {
-    requestOptions.body = JSON.stringify(body);
-  }
-
-  const response = await fetch(endpoint, requestOptions);
-  checkTokenExpiration(response);
-
-  if (!response.ok) {
-    return response;
-  }
-
-  return await response.json();
-}
+import { makeApiRequest } from './helper';
 
 /**
  * Sends code to the execution API
