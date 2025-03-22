@@ -168,7 +168,7 @@ const AddDetails = () => {
   const handleDoThisLater = () => {
     setShowModal(true);
   };
-  
+
   return (
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
@@ -475,7 +475,7 @@ const AddDetails = () => {
             <div className="mt-6">
               <button
                 onClick={handleSubmit}
-                className={`w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors ${
+                className={`w-full items-center justify-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={loading}

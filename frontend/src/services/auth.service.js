@@ -9,8 +9,9 @@ import {
     getAuth 
   } from "firebase/auth";
   import { auth } from "../firebase.js";
-  import { verifyUserRole, checkProfileCompletion } from "./user.service.js";
+  import { verifyUserRole, checkProfileCompletion, createBasicUser } from "./user.service.js";
   import { makeApiRequest } from "./helper.js";
+import { createShortlist } from "./shortlist.service.js";
   
   /**
    * Checks if a response indicates expired authentication and handles logout
@@ -71,10 +72,8 @@ import {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await createUserSession(userCredential, role);
         
-        await makeApiRequest('/api/user/basic', 'POST', {
-          email: email,
-          role: role,
-        });
+        await createBasicUser({ email, role });
+        await createShortlist();
         
         await checkProfileCompletion(navigate);
       } catch (error) {

@@ -157,7 +157,7 @@ const SearchResults = () => {
                             >
                                 {/* Add to shortlist */}
                                 {isLoggedIn && (
-                                    checkIfShortlisted(job._id) ? (
+                                    !checkIfShortlisted(job._id) ? (
                                         <button 
                                             className="absolute top-2 right-2 bg-primary text-secondary rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-secondary hover:text-ltext transition"
                                             onClick={(e) => {
