@@ -150,7 +150,7 @@ const generateJobs = async (num, employers) => {
                 "Placement",
             ]),
             requirements: faker.helpers.arrayElements(techSkills, 3),
-            experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
+            experienceLevel: faker.helpers.arrayElement(["Entry", "Mid", "Senior"]),
             postedBy: employer._id,
             questions: [],
             // Randomly select up to 4 assessments from the available list
@@ -187,7 +187,7 @@ const generateApplications = (num, jobSeekers, jobs) => {
         const application = {
             job: job._id,
             applicant: jobSeeker._id,
-            status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted']),
+            status: faker.helpers.arrayElement(['Applying', 'Applied', 'In Review', 'Shortlisted', 'Code Challenge', 'Rejected', 'Accepted']),
             coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email),
             answers: []
         };
@@ -233,11 +233,11 @@ const generateCodeSubmissions = async (jobs, applications) => {
     const jobMap = new Map();
     jobs.forEach(job => jobMap.set(job._id.toString(), job));
 
-    const languages = ["python", "cpp", "javascript"];
+    const languages = ["Python", "Cpp", "Javascript"];
     const codeSubmissions = [];
 
     for (const application of applications) {
-        if (application.status === "in review" || application.status === "accepted" || application.status === "rejected") {
+        if (application.status === 'In review' || application.status === 'Accepted' || application.status === 'Rejected') {
             const job = jobMap.get(application.job.toString());
             if (job && job.assessments && job.assessments.length > 0) {
                 // For each assessment linked to this job, create a code submission.
