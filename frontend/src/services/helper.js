@@ -1,4 +1,4 @@
-const { checkTokenExpiration } = require("./auth.service");
+import { checkTokenExpiration } from "./auth.service";
 
 
 /**

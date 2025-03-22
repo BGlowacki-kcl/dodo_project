@@ -41,34 +41,32 @@ const AuthForm = () => {
     setLoading(true);
 
     try {
-      // Client-side validation for sign-up
-      if (!isLogin) {
-        if (password !== confirmPassword) {
-          throw new Error("Passwords do not match.");
+        if (!isLogin) {
+            if (password !== confirmPassword) {
+                throw new Error("Passwords do not match.");
+            }
+            if (!isPasswordStrong(password)) {
+                throw new Error("Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.");
+            }
         }
-        if (!isPasswordStrong(password)) {
-          throw new Error("Password must be at least 8 characters long and contain an uppercase letter, a lowercase letter, and a number.");
-        }
-      }    
 
-      // Call auth service and get response
-      const response = await (isLogin 
-        ? authService.signIn(email, password, navigate, "jobSeeker") 
-        : authService.signUp(email, password, false, navigate));
+        const response = await (isLogin
+            ? authService.signIn(email, password, navigate, "jobSeeker")
+            : authService.signUp(email, password, false, navigate));
 
-      // Use server-provided message if available, otherwise fallback
-      const successMessage = response?.message || (isLogin ? 'Logged in successfully!' : 'Signed up successfully! Please complete your profile.');
-      showNotification(successMessage, 'success');
+        const successMessage = response?.message || (isLogin
+            ? 'Logged in successfully!'
+            : 'Signed up successfully! Please complete your profile.');
 
+        showNotification(successMessage, 'success');
     } catch (error) {
-      // Use server-provided error message
-      showNotification(error.message, 'error');
-      console.error('Authentication error:', error.message);
-      setError(error.message);
+        showNotification(error.message || 'An error occurred during authentication', 'error');
+        console.error('Authentication error:', error.message);
+        setError(error.message);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">

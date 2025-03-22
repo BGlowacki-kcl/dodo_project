@@ -133,20 +133,20 @@ export const verifyUserRole = async (email, expectedRole) => {
             }
         });
 
-
         if (!response.ok) {
-            throw new Error(response.message);
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to verify user role');
         }
 
         const data = await response.json();
-        console.log(data.data," = ", expectedRole);
+        
         if (data.data !== expectedRole) {
-            return false;
+            return false; // Incorrect role
         }
-        console.log("RETURNING TURE: ");
-        return true;
+        return true; // Role is valid
     } catch (error) {
         console.error('Role verification error:', error);
-        throw error;
+        throw error; // Ensure the original error is passed up
     }
-}
+};
+
