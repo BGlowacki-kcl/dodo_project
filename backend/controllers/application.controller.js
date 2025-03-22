@@ -449,14 +449,14 @@ export const applicationController = {
             { 
                 $match: { 
                     job: { $in: jobIds }, 
-                    status: { $ne: "applying" } // Exclude applications in the "applying" state
+                    status: { $ne: "Applying" } // Exclude applications in the "applying" state
                 } 
             },
             { 
                 $group: { 
                     _id: { 
                         jobId: "$job", // Include jobId in the grouping
-                        date: { $dateToString: { format: "%Y-%m-%d", date: "$submittedAt" } } // Group by date
+                        date: { $dateToString: { format: "%d-%m-%Y", date: "$submittedAt" } } // Group by date
                     }, 
                     count: { $sum: 1 } // Count applications for each date
                 } 

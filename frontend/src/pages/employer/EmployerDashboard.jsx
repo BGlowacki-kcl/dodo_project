@@ -33,34 +33,10 @@ const EmployerDashboard = () => {
                 const response = await getDashboardData();
                 setTotalPosts(response.totalJobs || 0);
                 setStatus(response.totalStatus || []);
+                console.log(response.totalStatus);
                 setCompanyName(response.companyName || "");
                 setJobs(response.jobs || []);
                 setLineGraphData(response.lineGraphData || []);
-
-                // Add dummy data for testing
-                setLineGraphData((prevData) => [
-                    ...prevData,
-                    { date: "2025-03-01", count: 5 },
-                    { date: "2025-03-02", count: 10 },
-                    { date: "2025-03-03", count: 15 },
-                    { date: "2025-03-04", count: 20 },
-                    { date: "2025-03-05", count: 25 },
-                    { date: "2025-03-06", count: 30 },
-                    { date: "2025-03-07", count: 35 },
-                    { date: "2025-03-08", count: 40 },
-                    { date: "2025-03-09", count: 45 },
-                    { date: "2025-03-10", count: 50 },
-                    { date: "2025-03-11", count: 55 },
-                    { date: "2025-03-12", count: 60 },
-                    { date: "2025-03-13", count: 65 },
-                    { date: "2025-03-14", count: 70 },
-                    { date: "2025-03-15", count: 75 },
-                    { date: "2025-03-16", count: 80 },
-                    { date: "2025-03-17", count: 85 },
-                    { date: "2025-03-18", count: 90 },
-                    { date: "2025-03-19", count: 95 },
-                    { date: "2025-03-20", count: 100 },
-                ]);
 
                 if (response.jobs && response.jobs.length > 0) {
                     setSelectedJob(response.jobs[0]._id);
@@ -109,12 +85,12 @@ const EmployerDashboard = () => {
     // Prepare data for the pie chart
     const pieData = {
         labels: status
-            .filter((status) => status._id !== "applying")
+            .filter((status) => status._id !== "Applying")
             .map((status) => status._id),
         datasets: [
             {
                 data: status
-                    .filter((status) => status._id !== "applying")
+                    .filter((status) => status._id !== "Applying")
                     .map((status) => status.count),
                 backgroundColor: [
                     "#8B0000",
@@ -164,11 +140,6 @@ const EmployerDashboard = () => {
                 },
                 ticks: {
                     color: "#000000",
-                    callback: function (value, index, values) {
-                        const date = this.getLabelForValue(value);
-                        const [year, month, day] = date.split("-");
-                        return `${day}-${month}-${year}`;
-                    },
                 },
                 grid: {
                     display: true,
@@ -195,17 +166,17 @@ const EmployerDashboard = () => {
 
     // Calculate statistics
     const totalEngagedApplicants = status
-        .filter((status) => status._id !== "applying")
+        .filter((status) => status._id !== "Applying")
         .reduce((sum, status) => sum + status.count, 0);
     const acceptancePercentage = status
-        .filter((status) => status._id === "accepted" && status._id !== "applying")
+        .filter((status) => status._id === "Accepted" && status._id !== "Applying")
         .reduce((sum, status) => sum + status.count, 0) / totalEngagedApplicants * 100 || 0;
     const pendingApplicants = status
         .filter(
             (status) =>
-                status._id !== "accepted" &&
-                status._id !== "rejected" &&
-                status._id !== "applying"
+                status._id !== "Accepted" &&
+                status._id !== "Rejected" &&
+                status._id !== "Applying"
         )
         .reduce((sum, status) => sum + status.count, 0);
     const engagementPercentage = totalEngagedApplicants / totalPosts || 0;
@@ -251,7 +222,7 @@ const EmployerDashboard = () => {
                         <div className="mt-4">
                             <div className="flex flex-wrap justify-center">
                                 {status
-                                    .filter((status) => status._id !== "applying")
+                                    .filter((status) => status._id !== "Applying")
                                     .map((status, index) => (
                                         <div key={status._id} className="flex items-center mx-4 my-2">
                                             <span
