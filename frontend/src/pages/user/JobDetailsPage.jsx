@@ -10,8 +10,8 @@
  * - Apply for the job.
  * - Add or remove the job from their shortlist.
  * - Continue an ongoing application if already started.
- * 
  */
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../../services/jobService";
@@ -20,40 +20,66 @@ import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../s
 import WhiteBox from "../../components/WhiteBox";
 
 const JobDetailsPage = () => {
-  const { jobId } = useParams();
-  const navigate = useNavigate();
-  const [job, setJob] = useState(null);
-  const [applied, setApplied] = useState(false);
-  const [shortlisted, setShortlisted] = useState(false);
-  const [applicationStatus, setApplicationStatus] = useState(null);
-
-    // Fetch job details
+  const { jobId } = useParams(); 
+  const navigate = useNavigate(); 
+  const [job, setJob] = useState(null); 
+  const [applied, setApplied] = useState(false); 
+  const [shortlisted, setShortlisted] = useState(false); 
+  const [applicationStatus, setApplicationStatus] = useState(null); 
+  
+  /**
+   * Fetches job details by job ID and updates the state.
+   * @param {String} jobId - The ID of the job to fetch.
+   */
   const fetchJobDetails = async (jobId) => {
-    const jobData = await getJobById(jobId);
-    setJob(jobData);
-  };
-
-  // Fetch user applications and check if the user has applied for the job
-  const fetchUserApplications = async (jobId) => {
-    const userApps = await getAllUserApplications();
-    const application = userApps.find((app) => app.job?._id === jobId);
-    if (application) {
-      setApplied(true);
-      setApplicationStatus(application.status);
-    } else {
-      setApplied(false);
-      setApplicationStatus(null);
+    try {
+      const jobData = await getJobById(jobId);
+      setJob(jobData);
+    } catch (error) {
+      console.error("Error fetching job details:", error);
     }
   };
 
-  // Fetch shortlist and check if the job is shortlisted
-  const fetchShortlist = async (jobId) => {
-    const shortlist = await getShortlist();
-    const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
-    setShortlisted(shortlistedJobIds.includes(jobId));
+  /**
+   * Fetches all user applications and checks if the user has applied for the job.
+   * Updates the application status if an application exists.
+   * @param {String} jobId - The ID of the job to check applications for.
+   */
+  const fetchUserApplications = async (jobId) => {
+    try {
+      const userApps = await getAllUserApplications();
+      const application = userApps.find((app) => app.job?._id === jobId);
+      if (application) {
+        setApplied(true);
+        setApplicationStatus(application.status);
+      } else {
+        setApplied(false);
+        setApplicationStatus(null);
+      }
+    } catch (error) {
+      console.error("Error fetching user applications:", error);
+    }
   };
 
-  // Fetch all necessary data
+  /**
+   * Fetches the user's shortlist and checks if the job is shortlisted.
+   * Updates the state accordingly.
+   * @param {String} jobId - The ID of the job to check in the shortlist.
+   */
+  const fetchShortlist = async (jobId) => {
+    try {
+      const shortlist = await getShortlist();
+      const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
+      setShortlisted(shortlistedJobIds.includes(jobId));
+    } catch (error) {
+      console.error("Error fetching shortlist:", error);
+    }
+  };
+
+  /**
+   * Fetches all necessary data for the Job Details Page.
+   * This includes job details, user applications, and the shortlist.
+   */
   const fetchData = async () => {
     try {
       await Promise.all([
@@ -66,7 +92,10 @@ const JobDetailsPage = () => {
     }
   };
 
-  // Handle toggling shortlist status
+  /**
+   * Toggles the shortlist status of the job.
+   * Adds the job to the shortlist if not already shortlisted, otherwise removes it.
+   */
   const handleShortlistToggle = async () => {
     try {
       if (shortlisted) {
@@ -80,7 +109,10 @@ const JobDetailsPage = () => {
     }
   };
 
-  // Handle applying for the job
+  /**
+   * Handles the application process for the job.
+   * If the user has not applied, it creates a new application and navigates to the Apply page.
+   */
   const handleApply = async () => {
     try {
       if (!applied) {
@@ -92,11 +124,12 @@ const JobDetailsPage = () => {
     }
   };
 
-  // Fetch data on component mount
+  // Fetch data when the component mounts or when the jobId changes
   useEffect(() => {
     fetchData();
   }, [jobId]);
 
+  // Display a loading message if the job details are not yet loaded
   if (!job) {
     return (
       <div className="bg-slate-900 min-h-screen flex items-center justify-center">
