@@ -16,6 +16,7 @@ export async function checkTokenExpiration(response) {
         }
     }
 }
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const authService = {
     
@@ -30,7 +31,7 @@ export const authService = {
         sessionStorage.setItem('token', idToken);
         window.dispatchEvent(new Event('authChange'));
         try {
-            const response = await fetch('${BASE_URL}/user/basic', {
+            const response = await fetch(`${BASE_URL}/user/basic`, {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
@@ -110,7 +111,7 @@ export const authService = {
 
     async checkIfProfileCompleted(navigate){
         try {
-            const response = await fetch('${BASE_URL}/user/completed', {
+            const response = await fetch(`${BASE_URL}/user/completed`, {
                 method: 'GET',
                 headers: {
                     "Content-Type": "application/json",

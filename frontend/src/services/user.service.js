@@ -1,5 +1,5 @@
 import { checkTokenExpiration } from "./auth.service.js";
-const API_BASE_URL = "/api/user";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const userService = {
     async updateUser(userData) {

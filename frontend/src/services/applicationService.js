@@ -1,7 +1,8 @@
 import { checkTokenExpiration } from "./auth.service.js";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function getAllUserApplications() {
-  const response = await fetch('${BASE_URL}/application/all', {
+  const response = await fetch(`${BASE_URL}/application/all`, {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",
@@ -19,7 +20,7 @@ export async function getAllUserApplications() {
 
 export async function getApplicationById(appId) {
     try {
-        const response = await fetch(`/api/application/byId?id=${appId}`, {
+        const response = await fetch(`${BASE_URL}/application/byId?id=${appId}`, {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -40,7 +41,7 @@ export async function getApplicationById(appId) {
 
 export async function getJobApplicants(jobId) {
   try {
-    const response = await fetch(`/api/application/byJobId?jobId=${jobId}`, {
+    const response = await fetch(`${BASE_URL}/application/byJobId?jobId=${jobId}`, {
       method: 'GET',
       headers: {
         "Content-Type": "application/json",
@@ -63,7 +64,7 @@ export async function getJobApplicants(jobId) {
 }
 
 export async function applyToJob({ jobId, coverLetter, answers }) {
-  const response = await fetch('/api/application/apply', {
+  const response = await fetch(`${BASE_URL}/application/apply`, {
     method: 'POST',
     headers: {
       "Content-Type": "application/json",
@@ -84,7 +85,7 @@ export async function applyToJob({ jobId, coverLetter, answers }) {
 }
 
 export async function withdrawApplication(appId) {
-    const response = await fetch(`/api/application/withdraw?id=${appId}`, {
+    const response = await fetch(`${BASE_URL}/application/withdraw?id=${appId}`, {
         method: 'DELETE',
         headers: {
             "Content-Type": "application/json",
@@ -101,7 +102,7 @@ export async function withdrawApplication(appId) {
 }
 
 export async function getDashboardData() {
-  const response = await fetch('/api/application/dashboard', {
+  const response = await fetch(`${BASE_URL}/application/dashboard`, {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",
@@ -121,7 +122,7 @@ export async function getDashboardData() {
 }
 
 export async function getAssessmentDeadline(appId){
-  const response = await fetch(`/api/application/deadline?id=${appId}`, {
+  const response = await fetch(`${BASE_URL}/application/deadline?id=${appId}`, {
     method: 'GET',
     headers: {
       "Content-Type": "application/json",
@@ -138,7 +139,7 @@ export async function getAssessmentDeadline(appId){
 }
 
 export async function setAssessmentDeadline(appId, deadline){
-  const response = await fetch(`/api/application/deadline?id=${appId}`, {
+  const response = await fetch(`${BASE_URL}/application/deadline?id=${appId}`, {
     method: 'PUT',
     headers: {
       "Content-Type": "application/json",
@@ -156,7 +157,7 @@ export async function setAssessmentDeadline(appId, deadline){
 
 export async function updateStatus(appId, reject) {
   const sentToReject = reject ? `&reject=true` : '';
-  const response = await fetch(`/api/application/status?id=${appId}${sentToReject}`, {
+  const response = await fetch(`${BASE_URL}/application/status?id=${appId}${sentToReject}`, {
     method: 'PUT',
     headers: {
       "Content-Type": "application/json",
@@ -173,7 +174,7 @@ export async function updateStatus(appId, reject) {
 }
 
 export async function saveApplication({ applicationId, jobId, coverLetter, answers }) {
-  const response = await fetch('/api/application/save', {
+  const response = await fetch(`${BASE_URL}/application/save`, {
     method: 'PUT',
     headers: {
       "Content-Type": "application/json",
@@ -195,7 +196,7 @@ export async function saveApplication({ applicationId, jobId, coverLetter, answe
 }
 
 export async function submitApplication(applicationId) {
-    const response = await fetch('/api/application/submit', {
+    const response = await fetch(`${BASE_URL}/application/submit`, {
         method: 'PUT',
         headers: {
             "Content-Type": "application/json",

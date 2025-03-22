@@ -1,6 +1,7 @@
 import { checkTokenExpiration } from "./auth.service.js";
 
-const API_BASE_URL = "/api/job";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const JOB_API_URL = `${BASE_URL}/job`;
 
 function getAuthHeaders() {
   return {
@@ -11,7 +12,7 @@ function getAuthHeaders() {
 
 export async function getAllJobs() {
   try {
-    const response = await fetch(`${API_BASE_URL}`, {
+    const response = await fetch(`${JOB_API_URL}`, {
       method: "GET",
       headers: getAuthHeaders(),
     });
@@ -29,7 +30,7 @@ export async function getAllJobs() {
 
 export async function getJobById(id) {
   try {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${JOB_API_URL}/${id}`, {
       method: "GET",
       headers: getAuthHeaders(),
     });
@@ -47,7 +48,7 @@ export async function getJobById(id) {
 
 export async function createJob(jobData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/create`, {
+    const response = await fetch(`${JOB_API_URL}/create`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(jobData),
@@ -66,7 +67,7 @@ export async function createJob(jobData) {
 
 export async function updateJob(id, jobData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${JOB_API_URL}/${id}`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify(jobData),
@@ -85,7 +86,7 @@ export async function updateJob(id, jobData) {
 
 export async function deleteJob(id) {
   try {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${JOB_API_URL}/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -103,7 +104,7 @@ export async function deleteJob(id) {
 
 export async function getJobCountByType(jobType) {
   try {
-    const response = await fetch(`${API_BASE_URL}/count/type?type=${jobType}`, {
+    const response = await fetch(`${JOB_API_URL}/count/type?type=${jobType}`, {
       method: "GET",
       headers: getAuthHeaders(),
     });
@@ -121,7 +122,7 @@ export async function getJobCountByType(jobType) {
 
 export async function getAllJobRoles() {
   try {
-    const response = await fetch(`${API_BASE_URL}/roles`, {
+    const response = await fetch(`${JOB_API_URL}/roles`, {
       method: "GET",
       headers: getAuthHeaders(),
     });
@@ -139,7 +140,7 @@ export async function getAllJobRoles() {
 
 export async function getAllJobLocations() {
   try {
-    const response = await fetch(`${API_BASE_URL}/locations`, {
+    const response = await fetch(`${JOB_API_URL}/locations`, {
       method: "GET",
       headers: getAuthHeaders(),
     });
@@ -157,7 +158,7 @@ export async function getAllJobLocations() {
 
 export async function getAllJobTypes() {
   try {
-    const response = await fetch(`${API_BASE_URL}/employmentType`, {
+    const response = await fetch(`${JOB_API_URL}/employmentType`, {
       method: "GET",
       headers: getAuthHeaders(),
     });
@@ -179,7 +180,7 @@ export async function getFilteredJobs(filters) {
     filters.jobType?.forEach((type) => queryParams.append("jobType", type));
     filters.location?.forEach((loc) => queryParams.append("location", loc));
     filters.role?.forEach((role) => queryParams.append("role", role));
-    const url = `${API_BASE_URL}/search?${queryParams.toString()}`;
+    const url = `${JOB_API_URL}/search?${queryParams.toString()}`;
 
     const response = await fetch(url, {
       method: "GET",

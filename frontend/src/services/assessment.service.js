@@ -1,4 +1,5 @@
 import { checkTokenExpiration } from "./auth.service";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const assessmentService = {
     async runCode(code, language, tests, funcForCppTest){
@@ -65,7 +66,7 @@ export const assessmentService = {
     },
 
     async getAllTasks() {
-        const response = await fetch('${BASE_URL}/assessment/alltasks', {
+        const response = await fetch(`${BASE_URL}/assessment/alltasks`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -109,7 +110,7 @@ export const assessmentService = {
 }  
 
 async function sendCode(code, language){
-    const response = await fetch('${BASE_URL}/assessment/send', {
+    const response = await fetch(`${BASE_URL}/assessment/send`, {
         method: 'POST',
         headers: {
             "Content-Type": "application/json",
