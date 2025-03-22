@@ -27,11 +27,6 @@ const jobApplicationSchema = new Schema({
     default: Date.now
   },
 
-  assessments: [{
-    type: Schema.Types.ObjectId,
-    ref: 'Assessment'
-  }],
-
   answers: [
     {
       questionId: {
@@ -44,7 +39,12 @@ const jobApplicationSchema = new Schema({
         required: true
       }
     }
-  ]
+  ],
+
+  finishAssessmentDate: {
+    type: Date,
+    required: false
+  }
 });
 
 export default mongoose.model('Application', jobApplicationSchema);

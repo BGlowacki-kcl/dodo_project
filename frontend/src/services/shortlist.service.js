@@ -21,7 +21,6 @@ export async function getShortlist() {
     const response = await fetch(`${BASE_URL}/shortlist`, {
         headers: getHeaders(),
     });
-    // Optionally, call checkTokenExpiration if needed:
     checkTokenExpiration(response);
     if (!response.ok) {
         throw new Error("Failed to fetch shortlist");

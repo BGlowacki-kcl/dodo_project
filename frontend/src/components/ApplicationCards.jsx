@@ -4,8 +4,12 @@ import { useNavigate } from 'react-router-dom';
 const ApplicationCards = ({ applications }) => {
   const navigate = useNavigate();
 
-  const handleCardClick = (appId) => {
-    navigate(`/user/applications/${appId}`);
+  const handleCardClick = (app) => {
+    if (app.status === "applying") {
+      navigate(`/apply/${app.job._id}`);
+    } else {
+      navigate(`/user/applications/${app._id}`);
+    }
   };
 
   return (
@@ -14,7 +18,7 @@ const ApplicationCards = ({ applications }) => {
         <div 
           key={app._id} 
           className="flex justify-between items-center border p-4 rounded cursor-pointer hover:bg-gray-50"
-          onClick={() => handleCardClick(app._id)}
+          onClick={() => handleCardClick(app)}
         >
           <div>
             <div className="font-bold">

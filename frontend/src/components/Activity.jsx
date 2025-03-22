@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { getAllUserApplications } from '../services/applicationService';
 import ApplicationCards from './ApplicationCards';
 import { FaFolderOpen } from 'react-icons/fa'; 
+import { useNavigate } from 'react-router-dom';
 
 const ApplicantActivity = ({ userId }) => {
     const [applications, setApplications] = useState([]);
     const [applicationsSent, setApplicationsSent] = useState(0);
     const [rejections, setRejections] = useState(0);
     const [acceptances, setAcceptances] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchApplications() {
@@ -51,7 +53,12 @@ const ApplicantActivity = ({ userId }) => {
                 <h2 className="text-2xl font-semibold mb-4 flex items-center">
                     <FaFolderOpen className="mr-2" /> My Applications
                 </h2>
-                <ApplicationCards applications={applications} />
+                <ApplicationCards
+                    applications={applications.map((app) => ({
+                        ...app,
+                        onClick: app.status === "applying" ? () => navigate(`/apply/${app.job._id}`) : null,
+                    }))}
+                />
             </div>
         </div>
     );

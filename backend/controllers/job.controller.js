@@ -12,14 +12,17 @@ export const createJob = async (req, res) => {
             employmentType,
             requirements,
             experienceLevel,
+            postedBy,
+            deadline,
+            questions,
         } = req.body;
-        const { uid } = req;
 
-        if (!title || !company || !location || !description || !uid) {
+        console.log("Received payload:", req.body); // Add this for debugging
+
+        if (!title || !company || !location || !description || !postedBy) {
             return res.status(400).json({ message: 'All required fields must be filled.' });
         }
 
-        // Create the job post
         const job = new Job({
             title,
             company,
@@ -29,12 +32,15 @@ export const createJob = async (req, res) => {
             employmentType,
             requirements,
             experienceLevel,
-            postedBy: uid,
+            postedBy,
+            deadline,
+            questions,
         });
 
         const createdJob = await job.save();
         res.status(201).json(createdJob);
     } catch (error) {
+        console.error("Error in createJob:", error); // Add this for debugging
         res.status(500).json({ message: error.message });
     }
 };
@@ -185,3 +191,17 @@ export const getFilteredJobs = async (req, res) => {
         res.status(500).json({ message: "Failed to fetch jobs", error: error.message });
     }
 };
+
+export const getJobQuestionsById = async (req, res) => {
+    try {
+        const { jobId } = req.query;
+        const job = await Job.findById(jobId);
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found' });
+        }
+        res.status(200).json(job.questions);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
