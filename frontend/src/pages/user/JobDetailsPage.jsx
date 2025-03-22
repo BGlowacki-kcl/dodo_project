@@ -17,7 +17,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../../services/jobService";
 import { getAllUserApplications, applyToJob } from "../../services/applicationService";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
-import { userService } from "../../services/user.service";
 import WhiteBox from "../../components/WhiteBox";
 
 const JobDetailsPage = () => {
@@ -26,7 +25,6 @@ const JobDetailsPage = () => {
   const [job, setJob] = useState(null);
   const [applied, setApplied] = useState(false);
   const [shortlisted, setShortlisted] = useState(false);
-  const [userId, setUserId] = useState(null);
   const [applicationStatus, setApplicationStatus] = useState(null);
 
     // Fetch job details
