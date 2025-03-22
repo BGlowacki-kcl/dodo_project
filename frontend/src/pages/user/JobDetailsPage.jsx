@@ -1,76 +1,70 @@
+/**
+ * JobDetailsPage.jsx
+ * 
+ * This component represents the Job Details Page in the application. It displays detailed information
+ * about a specific job, including its title, company, location, salary range, employment type, experience level,
+ * description, requirements, and additional details like questions or assessments required for the application.
+ * 
+ * Users can interact with the page to:
+ * - View job details.
+ * - Apply for the job.
+ * - Add or remove the job from their shortlist.
+ * - Continue an ongoing application if already started.
+ * 
+ */
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../../services/jobService";
 import { getAllUserApplications, applyToJob } from "../../services/applicationService";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
-import { userService } from "../../services/user.service"; // Import a method to get the user ID
+import { userService } from "../../services/user.service";
+import WhiteBox from "../../components/WhiteBox";
 
-/* 
-JobDetailsPage is used to display the details of a single job using a component called job card
-*/
-function JobDetailsPage() {
-  const { jobId } = useParams();  // Get job ID from URL parameters
-  const navigate = useNavigate();  // Hook to navigate back to the previous page
-  const [job, setJob] = useState(null);  // State to store the job details
-  const [applied, setApplied] = useState(false);  // State to check if the user has applied
-  const [shortlisted, setShortlisted] = useState(false); // State to check if the job is in the shortlist
-  const [userId, setUserId] = useState(null); // State to store the user ID
+const JobDetailsPage = () => {
+  const { jobId } = useParams();
+  const navigate = useNavigate();
+  const [job, setJob] = useState(null);
+  const [applied, setApplied] = useState(false);
+  const [shortlisted, setShortlisted] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [applicationStatus, setApplicationStatus] = useState(null);
 
-  useEffect(() => {
-    async function fetchJob() {
-      try {
-        const jobData = await getJobById(jobId);
-        setJob(jobData);
-      } catch (err) {
-        console.error("Error fetching job details:", err);
+  // Fetch all necessary data
+  const fetchData = async () => {
+    try {
+      const [jobData, userApps, userId] = await Promise.all([
+        getJobById(jobId),
+        getAllUserApplications(),
+        userService.getUserId(),
+      ]);
+
+      setJob(jobData);
+      setUserId(userId);
+
+      const application = userApps.find((app) => app.job?._id === jobId);
+      if (application) {
+        setApplied(true);
+        setApplicationStatus(application.status);
+      } else {
+        setApplied(false);
+        setApplicationStatus(null);
       }
+
+      const shortlist = await getShortlist(userId);
+      const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
+      setShortlisted(shortlistedJobIds.includes(jobId));
+    } catch (err) {
+      console.error("Error fetching data:", err);
     }
+  };
 
-    async function checkIfApplied() {
-      try {
-        const userApps = await getAllUserApplications();
-        const alreadyAppliedJobIds = userApps.map((app) => app.job?._id);
-        setApplied(alreadyAppliedJobIds.includes(jobId));
-      } catch (err) {
-        console.error("Error checking applications:", err);
-      }
-    }
-
-    async function fetchUserId() {
-      try {
-          const userId = await userService.getUserId();
-          console.log("User ID:", userId);
-          setUserId(userId);
-      } catch (err) {
-          console.error("Error fetching user ID:", err);
-      }
-  }
-
-    async function checkIfShortlisted() {
-      try {
-        const shortlist = await getShortlist(userId); // Replace userId with the actual user ID
-        const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
-        setShortlisted(shortlistedJobIds.includes(jobId));
-      } catch (err) {
-        console.error("Error checking shortlist:", err);
-      }
-    }
-
-    fetchJob();
-    fetchUserId();
-    checkIfApplied();
-    if (userId) {
-      checkIfApplied();
-      checkIfShortlisted();
-    }
-  }, [jobId, userId]);
-
+  // Handle toggling shortlist status
   const handleShortlistToggle = async () => {
     try {
       if (shortlisted) {
-        await removeJobFromShortlist(jobId); // Replace userId with the actual user ID
+        await removeJobFromShortlist(jobId);
       } else {
-        await addJobToShortlist(jobId); // Replace userId with the actual user ID
+        await addJobToShortlist(jobId);
       }
       setShortlisted(!shortlisted);
     } catch (err) {
@@ -78,16 +72,22 @@ function JobDetailsPage() {
     }
   };
 
-  async function handleApply() {
+  // Handle applying for the job
+  const handleApply = async () => {
     try {
       if (!applied) {
-        await applyToJob({ jobId, coverLetter: "", answers: [] }); // Create application in "applying" status
+        await applyToJob({ jobId, coverLetter: "", answers: [] });
       }
-      navigate(`/apply/${jobId}`); // Navigate to Apply page
+      navigate(`/apply/${jobId}`);
     } catch (err) {
       console.error("Error applying to job:", err);
     }
-  }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchData();
+  }, [jobId]);
 
   if (!job) {
     return (
@@ -97,92 +97,123 @@ function JobDetailsPage() {
     );
   }
 
-  // JobCard component
-  function JobCard({ job }) {
-    return (
-      <div className="max-w-2xl w-full bg-white p-6 rounded-md shadow-md">
-        <h1 className="text-3xl font-bold mb-4">{job.title}</h1>
-
-        {job.company && (
-          <p className="text-gray-700 mb-2">
-            <strong>Company:</strong> {job.company}
-          </p>
-        )}
-
-        <p className="text-gray-700 mb-2">
-          <strong>Location:</strong> {job.location}
-        </p>
-
-        {job.salaryRange && (
-          <p className="text-gray-700 mb-2">
-            <strong>Salary Range:</strong> {job.salaryRange.min && job.salaryRange.max ? 
-              `$${job.salaryRange.min.toLocaleString()} - $${job.salaryRange.max.toLocaleString()}` : 
-              "Not specified"}
-          </p>
-        )}
-
-        {job.experienceLevel && (
-          <p className="text-gray-700 mb-2">
-            <strong>Experience Level:</strong> {job.experienceLevel}
-          </p>
-        )}
-
-        {job.jobType && (
-          <p className="text-gray-700 mb-2">
-            <strong>Job Type:</strong> {job.jobType}
-          </p>
-        )}
-
-        {job.requirements && job.requirements.length > 0 && (
-          <div className="mb-3">
-            <strong className="text-gray-700">Requirements:</strong>
-            <ul className="list-disc ml-6 text-gray-700 mt-1">
-              {job.requirements.map((req) => (
-                <li key={req}>{req}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {job.description && (
-          <div className="mb-4">
-            <strong className="text-gray-700">Description:</strong>
-            <p className="text-gray-700 mt-1">{job.description}</p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-slate-900 min-h-screen w-full flex flex-col items-center px-4 py-8">
-      <JobCard job={job} />
+    <div className="container mx-auto p-4">
+      <div className="flex-1 p-10">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-left text-black">Job Details</h1>
+          </div>
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+              <span className="font-semibold text-gray-700 mr-2">Deadline:</span>
+              <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                job.deadline ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
+              }`}>
+                {job.deadline
+                  ? new Date(job.deadline).toLocaleDateString("en-GB")
+                  : "No deadline"}
+              </span>
+            </div>
+            <div className="flex space-x-4">
+              {applied ? (
+                applicationStatus === "applying" ? (
+                  <button
+                    onClick={() => navigate(`/apply/${jobId}`)}
+                    className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition duration-200 shadow-md"
+                  >
+                    Continue Application
+                  </button>
+                ) : (
+                  <div className="px-6 py-2 bg-green-100 text-green-700 rounded-lg shadow-md font-semibold">
+                    Application Submitted
+                  </div>
+                )
+              ) : (
+                <button
+                  onClick={handleApply}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow-md"
+                >
+                  Apply Now
+                </button>
+              )}
+              <button
+                onClick={handleShortlistToggle}
+                className={`px-6 py-2 rounded-lg shadow-md ${
+                  shortlisted
+                    ? "bg-green-500 text-white hover:bg-green-600"
+                    : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                } transition duration-200`}
+              >
+                {shortlisted ? "Remove from Shortlist" : "Add to Shortlist"}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-6 gap-4 mb-6">
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Job Title</h3>
+            <p>{job.title}</p>
+          </WhiteBox>
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Company</h3>
+            <p>{job.company}</p>
+          </WhiteBox>
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Location</h3>
+            <p>{job.location}</p>
+          </WhiteBox>
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Salary</h3>
+            <p>
+              {job.salaryRange ? `£${job.salaryRange.min} - £${job.salaryRange.max}` : "Not specified"}
+            </p>
+          </WhiteBox>
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Employment Type</h3>
+            <p>{job.employmentType}</p>
+          </WhiteBox>
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Experience Level</h3>
+            <p>{job.experienceLevel || "Not specified"}</p>
+          </WhiteBox>
+        </div>
 
-      {/* Back Button */}
-      <button
-        onClick={() => navigate("/search-results")}
-        className="mt-6 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200"
-      >
-        &larr; Back
-      </button>
-      {applied ? (
-        <p className="mt-4 text-green-500 font-bold">You have already applied for this job.</p>
-      ) : (
-        <button
-          onClick={handleApply}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
-        >
-          Apply
-        </button>
-      )}
-      <button
-        onClick={handleShortlistToggle}
-        className={`mt-4 px-4 py-2 ${shortlisted ? "bg-red-600" : "bg-green-600"} text-white rounded hover:${shortlisted ? "bg-red-700" : "bg-green-700"} transition duration-200`}
-      >
-        {shortlisted ? "Remove from Shortlist" : "Add to Shortlist"}
-      </button>
+        <WhiteBox className="mt-6">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">Job Description</h2>
+          <p>{job.description}</p>
+        </WhiteBox>
+
+        <WhiteBox className="mt-6">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">Requirements</h2>
+          {job.requirements && job.requirements.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {job.requirements.map((req, index) => (
+                <span 
+                  key={index} 
+                  className="bg-gray-200 px-4 py-2 rounded-lg text-sm text-gray-800 font-medium"
+                >
+                  {req}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 italic">No requirements needed</p>
+          )}
+        </WhiteBox>
+        <div className="grid grid-cols-2 gap-4 mt-6">
+          <WhiteBox>
+            <h2 className="text-xl font-semibold mb-2">Questions?</h2>
+            <p className="text-gray-700">{job.questions && job.questions.length > 0 ? "Yes, this job requires answering questions during the application process." : "No, this job does not require answering questions during the application process."}</p>
+          </WhiteBox>
+          <WhiteBox>
+            <h2 className="text-xl font-semibold mb-2">Code Assessment?</h2>
+            <p className="text-gray-700">{job.assessments && job.assessments.length > 0 ? "Yes, this job requires taking an assessment during the application process." : "No, this job does not require taking an assessment during the application process."}</p>
+          </WhiteBox>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default JobDetailsPage;
