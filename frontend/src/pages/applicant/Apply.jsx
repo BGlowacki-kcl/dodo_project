@@ -1,3 +1,15 @@
+/**
+ * Apply.jsx
+ * 
+ * This component represents the Apply Page in the application. It allows users to:
+ * - View and answer job-specific questions.
+ * - Write a cover letter.
+ * - Save their application progress.
+ * - Submit or withdraw their application.
+ * 
+ * The page fetches job questions and application details dynamically based on the job ID.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { saveApplication, getApplicationById, getAllUserApplications, submitApplication, withdrawApplication } from '../../services/applicationService';
@@ -17,10 +29,16 @@ const Apply = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [showModal, setShowModal] = useState(false);
 
+    // Fetch application data when the component mounts or jobId changes
     useEffect(() => {
         fetchApplicationData();
     }, [jobId]);
 
+    /**
+     * Fetches application data, including job questions and existing application details.
+     * It retrieves the questions for the job and checks if the user has an ongoing application.
+     * If an application exists, it pre-fills the form with the saved data.
+     */
     const fetchApplicationData = async () => {
         try {
             showNotification("Fetching application details...", "info");
@@ -42,18 +60,36 @@ const Apply = () => {
         }
     };
 
+    /**
+     * Fetches the list of questions associated with the current job.
+     * Returns an array of question objects.
+     */
     const fetchJobQuestions = async () => {
         return await getJobQuestionsById(jobId);
     };
 
+    /**
+     * Fetches all applications submitted by the current user.
+     * Returns an array of application objects.
+     */
     const fetchAllApplications = async () => {
         return await getAllUserApplications();
     };
 
+    /**
+     * Finds the application for the current job from the list of all user applications.
+     * @param {Array} allApplications - List of all user applications.
+     * @returns {Object|null} - The application object if found, otherwise null.
+     */
     const findApplication = (allApplications) => {
         return allApplications.find(app => app.job._id === jobId);
     };
 
+    /**
+     * Fetches the details of an existing application and updates the state with its data.
+     * Pre-fills the cover letter and answers if the application is in the "applying" stage.
+     * @param {Object} application - The application object.
+     */
     const fetchApplicationDetails = async (application) => {
         setApplicationId(application._id);
         const applicationDetails = await getApplicationById(application._id);
@@ -68,10 +104,20 @@ const Apply = () => {
         }
     };
 
+    /**
+     * Handles changes to answers for job questions.
+     * Updates the state with the new answer for the specified question.
+     * @param {String} questionId - The ID of the question being answered.
+     * @param {String} value - The answer text.
+     */
     const handleAnswerChange = (questionId, value) => {
         setAnswers(prev => ({ ...prev, [questionId]: value }));
     };
 
+    /**
+     * Saves the current application progress to the server.
+     * Ensures that the application ID exists and sends the cover letter and answers.
+     */
     const handleSaveApplication = async () => {
         try {
             if (!applicationId) {
@@ -96,6 +142,10 @@ const Apply = () => {
         }
     };
 
+    /**
+     * Submits the application after validating all required fields.
+     * Ensures that all questions are answered before submission.
+     */
     const handleSubmitApplication = async () => {
         try {
             const unansweredQuestions = questions.filter(
@@ -120,6 +170,10 @@ const Apply = () => {
         }
     };
 
+    /**
+     * Withdraws the application by deleting it from the server.
+     * Navigates the user back to the job details page after successful withdrawal.
+     */
     const handleWithdrawApplication = async () => {
         try {
             if (!applicationId) {
