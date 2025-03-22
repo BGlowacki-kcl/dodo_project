@@ -9,7 +9,7 @@ import {
     getAuth 
   } from "firebase/auth";
   import { auth } from "../firebase.js";
-  import { verifyUserRole } from "./user.service.js";
+  import { verifyUserRole, checkProfileCompletion } from "./user.service.js";
   import { makeApiRequest } from "./helper.js";
   
   /**
@@ -44,26 +44,6 @@ import {
     window.dispatchEvent(new Event('authChange'));
     
     return idToken;
-  }
-  
-  /**
-   * Checks if user profile is completed and handles navigation
-   * @param {Function} navigate - Navigation function
-   * @returns {Promise<void>}
-   */
-  async function checkProfileCompletion(navigate) {
-    try {
-      const data = await makeApiRequest('/api/user/completed', 'GET');
-      
-      const userRole = sessionStorage.getItem('role');
-      if (data.redirect && userRole === 'jobSeeker') {
-        navigate(data.redirect);
-      } else {
-        navigate('/');
-      }
-    } catch (error) {
-      navigate('/addDetails');
-    }
   }
   
   /**
@@ -136,7 +116,6 @@ import {
                 await checkProfileCompletion(navigate);
             }
         } catch (error) {
-            console.error('Sign-in error:', error);
             throw new Error(error.message || 'Invalid email or password');
         }
     },

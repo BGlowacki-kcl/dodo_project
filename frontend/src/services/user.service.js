@@ -123,6 +123,25 @@ export const userService = {
     }
 };
 
+  /**
+   * Checks if user profile is completed and handles navigation
+   * @param {Function} navigate - Navigation function
+   * @returns {Promise<void>}
+   */
+  export async function checkProfileCompletion(navigate) {
+    try {
+      const data = await makeApiRequest('/api/user/completed', 'GET');
+      const userRole = sessionStorage.getItem('role');
+      if (data.redirect && userRole === 'jobSeeker') {
+        navigate(data.redirect);
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      navigate('/addDetails');
+    }
+  }
+
 export const verifyUserRole = async (email, expectedRole) => {
     try {
         const response = await fetch(`/api/user/role?email=${email}`, {
