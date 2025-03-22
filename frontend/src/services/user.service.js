@@ -1,5 +1,6 @@
 import { checkTokenExpiration } from "./auth.service.js";
 const API_BASE_URL = "/api/user";
+import { makeApiRequest } from "./helper.js";
 
 export const userService = {
     async updateUser(userData) {
@@ -130,7 +131,9 @@ export const userService = {
    */
   export async function checkProfileCompletion(navigate) {
     try {
+        console.log("checkProfileCompletion");
       const data = await makeApiRequest('/api/user/completed', 'GET');
+      console.log(data);
       const userRole = sessionStorage.getItem('role');
       if (data.redirect && userRole === 'jobSeeker') {
         navigate(data.redirect);

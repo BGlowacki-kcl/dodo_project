@@ -55,7 +55,7 @@ const AddDetails = () => {
       const successMessage = data?.message || "Resume uploaded and parsed successfully!";
       showNotification(successMessage, "success");
     } catch (error) {
-      showNotification(error.message || "Failed to parse resume", "danger");
+      showNotification(error.message || "Failed to parse resume", "error");
     } finally {
       setLoading(false);
     }
@@ -148,7 +148,7 @@ const AddDetails = () => {
       showNotification(successMessage, "success");
       navigate("/");
     } catch (error) {
-      showNotification(error.message || "Failed to update profile", "danger");
+      showNotification(error.message || "Failed to update profile", "error");
     } finally {
       setLoading(false);
     }
@@ -161,20 +161,14 @@ const AddDetails = () => {
       showNotification(successMessage, "success");
       navigate('/');
     } catch (error) {
-      showNotification(error.message || "Failed to sign out", "danger");
+      showNotification(error.message || "Failed to sign out", "error");
     }
   };
 
   const handleDoThisLater = () => {
     setShowModal(true);
   };
-
-  const formatDateForInput = (dateValue) => {
-    if (!dateValue) return "";
-    if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return dateValue;
-    return new Date(dateValue).toISOString().split("T")[0];
-  };
-
+  
   return (
     <div className="min-h-screen flex bg-gray-100">
       {/* Sidebar */}
@@ -280,7 +274,6 @@ const AddDetails = () => {
                   <input
                     type="date"
                     name="dob"
-                    value={formatDateForInput(userData.dob)}
                     onChange={handleChange}
                     className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
                     disabled={loading}
@@ -335,7 +328,6 @@ const AddDetails = () => {
                   <input
                     type="date"
                     name={`education.${index}.startDate`}
-                    value={formatDateForInput(edu.startDate)}
                     onChange={(e) => updateNestedState("education", index, "startDate", e.target.value)}
                     className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
                     disabled={loading}
@@ -344,7 +336,6 @@ const AddDetails = () => {
                   <input
                     type="date"
                     name={`education.${index}.endDate`}
-                    value={formatDateForInput(edu.endDate)}
                     onChange={(e) => updateNestedState("education", index, "endDate", e.target.value)}
                     className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
                     disabled={loading}
@@ -411,7 +402,6 @@ const AddDetails = () => {
                   <input
                     type="date"
                     name={`experience.${index}.startDate`}
-                    value={formatDateForInput(exp.startDate)}
                     onChange={(e) => updateNestedState("experience", index, "startDate", e.target.value)}
                     className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
                     disabled={loading}
@@ -420,7 +410,6 @@ const AddDetails = () => {
                   <input
                     type="date"
                     name={`experience.${index}.endDate`}
-                    value={formatDateForInput(exp.endDate)}
                     onChange={(e) => updateNestedState("experience", index, "endDate", e.target.value)}
                     className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
                     disabled={loading}

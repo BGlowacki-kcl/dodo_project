@@ -34,7 +34,7 @@ function CreateJobPost() {
         try {
           const taskData = await assessmentService.getAllTasks();
           console.log(taskData);
-          setTasks(taskData.data);
+          setTasks(taskData);
         } catch (error) {
           console.error('Error fetching tasks:', error);
         }

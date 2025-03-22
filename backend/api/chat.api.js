@@ -8,7 +8,8 @@ Rules:
 1. Strict Formatting: Your output must strictly follow the format below without any additional text.
 2. No Invention: If a piece of information is missing from the resume, do not fabricate it. Only include details explicitly present in the resume.
 3. Correct Association: Ensure that all elements related to a single entity (e.g., a job position and its company) are correctly linked, even if they appear in different places in the text.
-4. Consistent Structure: Always structure the extracted data into the following JSON format:
+4. If date cannot be found, don't provide it, but still provide the rest of the information.
+5. Consistent Structure: Always structure the extracted data into the following JSON format:
 
 "data": {
   "personal": {
@@ -70,10 +71,10 @@ export default async function chat(req, res) {
                 { role: "user", content: query },
             ],
         })
-        return res.status(200).json({ data: completion });
+        return res.status(200).json({ success: true, data: completion });
     } catch (err) {
         console.log(err);
-        res.status(500).json({ message: "Internal server error "+err });
+        res.status(500).json({ success: false, message: "Internal server error "+err });
     }
     
 }
