@@ -1,4 +1,4 @@
-import { checkTokenExpiration } from "./auth.service";
+import { checkTokenExpiration } from "./auth.service.js";
 const API_BASE_URL = "/api/user";
 
 export const userService = {
@@ -98,5 +98,55 @@ export const userService = {
             console.error("Error fetching user ID:", error);
             throw error;
         }
+    },
+
+    async getUserById(userId) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/ById?userId=${userId}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+                },
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to fetch user profile");
+            }
+            
+            const responseJson = await response.json();
+            return responseJson.data;
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            throw error;
+        }
     }
 };
+
+export const verifyUserRole = async (email, expectedRole) => {
+    try {
+        const response = await fetch(`/api/user/role?email=${email}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+            }
+        });
+
+
+        if (!response.ok) {
+            throw new Error(response.message);
+        }
+
+        const data = await response.json();
+        console.log(data.data," = ", expectedRole);
+        if (data.data !== expectedRole) {
+            return false;
+        }
+        console.log("RETURNING TURE: ");
+        return true;
+    } catch (error) {
+        console.error('Role verification error:', error);
+        throw error;
+    }
+}

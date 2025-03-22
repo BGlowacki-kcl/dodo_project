@@ -25,6 +25,9 @@ const Landing = () => {
     const [placementCounter, setPlacementCount] = useState(0);
     const [graduateCounter, setGraduateCount] = useState(0);
 
+    // Loading state
+    const [isLoading, setIsLoading] = useState(true);
+
     const handleSearch = () => {
         const queryParams = new URLSearchParams();
         if (jobType) queryParams.append("jobType", jobType);
@@ -39,44 +42,35 @@ const Landing = () => {
     };
 
     useEffect(() => {
-        const fetchCount = async () => {
-          try {
-            setInternshipCount(await getJobCountByType("Internship"));
-            setPlacementCount(await getJobCountByType("Placement"));
-            setGraduateCount(await getJobCountByType("Graduate"));
-          } catch (error) {
-            console.error("Failed to fetch internship count", error);
-          }
-        };
-
-        const fetchRoles = async () => {
-          try {
-            setRoles(await getAllJobRoles());
-          } catch (error) {
-            console.error("Failed to fetch job titles", error);
-          }
-        };
-
-        const fetchLocations = async () => {
+        const fetchData = async () => {
             try {
-                setLocations(await getAllJobLocations());
+                setIsLoading(true); // Start loading
+
+                // Fetch all data concurrently
+                const [internCount, placeCount, gradCount, jobRoles, jobLocations, jobTypes] = await Promise.all([
+                    getJobCountByType("Internship"),
+                    getJobCountByType("Placement"),
+                    getJobCountByType("Graduate"),
+                    getAllJobRoles(),
+                    getAllJobLocations(),
+                    getAllJobTypes(),
+                ]);
+
+                // Set all states at once
+                setInternshipCount(internCount);
+                setPlacementCount(placeCount);
+                setGraduateCount(gradCount);
+                setRoles(jobRoles);
+                setLocations(jobLocations);
+                setTypes(jobTypes);
             } catch (error) {
-                console.error("Failed to fetch job locations", error);
+                console.error("Failed to fetch data", error);
+            } finally {
+                setIsLoading(false); // Stop loading
             }
         };
 
-        const fetchTypes = async () => {
-            try {
-                setTypes(await getAllJobTypes());
-            } catch (error) {
-                console.error("Failed to fetch job types", error);
-            }
-        };
-    
-        fetchCount();
-        fetchRoles();
-        fetchLocations();
-        fetchTypes();
+        fetchData();
     }, []);
 
     return (
@@ -114,9 +108,30 @@ const Landing = () => {
 
             {/* Job Type Boxes (Now Functional) */}
             <div className="p-10 flex flex-row gap-10">
-                <Box image={internship} text={"Internships"} counter={internshipCounter} onClick={() => boxSearch("Internship")} />
-                <Box image={placement} text={"Placements"} counter={placementCounter} onClick={() => boxSearch("Placement")} />
-                <Box image={job} text={"Graduate"} counter={graduateCounter} onClick={() => boxSearch("Graduate")} />
+                {isLoading ? (
+                    <p>Loading...</p>
+                ) : (
+                    <>
+                        <Box
+                            image={internship}
+                            text={"Internships"}
+                            counter={internshipCounter}
+                            onClick={() => boxSearch("Internship")}
+                        />
+                        <Box
+                            image={placement}
+                            text={"Placements"}
+                            counter={placementCounter}
+                            onClick={() => boxSearch("Placement")}
+                        />
+                        <Box
+                            image={job}
+                            text={"Graduate"}
+                            counter={graduateCounter}
+                            onClick={() => boxSearch("Graduate")}
+                        />
+                    </>
+                )}
             </div>
         </div>
     );

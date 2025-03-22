@@ -14,6 +14,7 @@ function SingleApplicationPage() {
   const [application, setApplication] = useState(null); // State to store application details
   const hasFetched = useRef(false); // Ref to prevent multiple fetches
   const [codeChallenge, setCodeChallenge] = useState(false); // State to track if the application requires a code challenge
+  const [showModal, setShowModal] = useState(false); // State to control modal visibility
   const showNotification = useNotification();
 
   // Fetches application details
@@ -57,16 +58,15 @@ function SingleApplicationPage() {
     
     // Handle withdrawal of application
     const handleWithdraw = async () => {
-      if (!window.confirm("Are you sure you want to withdraw this application?")) {
-        return;
-      }
       try {
-        await withdrawApplication(appId);
-        alert("Application withdrawn successfully!");
+        const message = await withdrawApplication(appId); // Use the updated service
+        showNotification(message, "success"); // Show success notification
         navigate("/applicant-dashboard");
       } catch (err) {
         console.error(err);
-        alert("Failed to withdraw application.");
+        showNotification(err.message || "Failed to withdraw application.", "error"); // Show error notification
+      } finally {
+        setShowModal(false); // Close the modal after the action
       }
     };
 
@@ -157,20 +157,12 @@ function SingleApplicationPage() {
 
             {codeChallenge && (
               <button
-                onClick={() => navigate(`/codeassessment/${appId}`)}
+                onClick={handleAssessment}
                 className="px-4 py-2 bg-green-300 text-gray-800 rounded hover:bg-green-500 transition duration-200"
               >
                 Proceed to assessment
               </button>
             )}
-
-            {/* WITHDRAW APPLICATION */}
-            <button
-              onClick={handleWithdraw}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition duration-200"
-            >
-              Withdraw
-            </button>
           </div>
 
           {/* BACK LINK */}

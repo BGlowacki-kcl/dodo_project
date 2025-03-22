@@ -47,6 +47,11 @@ const jobSchema = new Schema({
         default: Date.now
     },
 
+    deadline: {
+        type: Date,
+        default: null
+    },
+
     updatedAt: Date,
 
     assessments: [{
@@ -58,13 +63,8 @@ const jobSchema = new Schema({
         {
             questionText: {
                 type: String,
-                required: false
-            },
-            required: {
-                type: Boolean,
-                default: false
-            },
-
+                required: true
+            }
         }
     ]
 
