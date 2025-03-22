@@ -1,168 +1,204 @@
+/**
+ * Assessment Service
+ * Handles code execution, testing, and assessment-related API interactions
+ */
 import { checkTokenExpiration } from "./auth.service";
 
-export const assessmentService = {
-    async runCode(code, language, tests, funcForCppTest){
-        if(
-            (code.includes("print") && language === "python") || 
-            (code.includes("console.log") && language === "javascript") || 
-            (code.includes("cout") && language === "cpp")
-        ) {
-            return {data: {stderr: "You cannot use output statement in your code"}};
-        }
-        
-        code += constructCode(tests,  language, funcForCppTest);
-        console.log("Code: ", code, "...");
-
-        const codeSendResponse = await sendCode(code, language);
-        checkTokenExpiration(codeSendResponse);
-
-        const id = codeSendResponse.data.id;
-        let counter = 0;
-        let data;
-        do {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            data = await getExecutionDetails(id);
-            data = await data.json();
-            if (data.status !== "running") break;
-            counter++;
-        } while(counter < 7)
-
-        return data;
-    },
-
-    async getTask(appId, taskId) {
-        const response = await fetch(`/api/assessment/task?appId=${appId}&taskId=${taskId}`,{
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-            },
-        });
-        checkTokenExpiration(response);
-        if(!response.ok){
-            return response;
-        }
-        const data = await response.json();
-        console.log("MMMMM: ",data);
-        return data;
-    },
-
-    async getTasksId(appId){
-        const response = await fetch(`/api/assessment/tasksid?appId=${appId}`,{
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-            },
-        });
-        console.log("RES: ",response);
-        checkTokenExpiration(response);
-        if(!response.ok){
-            return response;
-        }
-        const data = await response.json();
-        return data;
-    },
-
-    async getAllTasks() {
-        const response = await fetch('/api/assessment/alltasks', {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-            },
-        });
-        checkTokenExpiration(response);
-        if(!response.ok){
-            return response;
-        }
-        const data = await response.json();
-        return data;
-    },
-
-    async submit(appId, testsPassed, code, language, taskId){
-        try {
-            const response = await fetch('/api/assessment/submit', {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({ 
-                    appId,
-                    testsPassed,
-                    code,
-                    language,
-                    taskId
-                })
-            })
-            const data = await response.json();
-            if(!response.ok){
-                return { success: false, message: data.message };
-            }
-            return { success: true, message: data.message };
-        } catch (err) {
-            return { success: false, message: "Server error" };
-        }
-
-    }
-}  
-
-async function sendCode(code, language){
-    const response = await fetch('/api/assessment/send', {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json",
-            'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-            source_code: code,
-            language: language,
-        })
-    });
-    checkTokenExpiration(response);
-    if (!response.ok) {
-        return response;
-    }
-    const data = await response.json();
-    
-    return data;
+/**
+ * Common request headers with authorization
+ * @returns {Object} - Headers object with Content-Type and Authorization
+ */
+function getRequestHeaders() {
+  return {
+    "Content-Type": "application/json",
+    'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
+  };
 }
 
-function constructCode(tests, language, funcForCppTest) {
-    const testCases = generateTestCode(tests, language)
-    if(testCases === "") {
-        return {data: {stderr: "Failed to generate test cases"}};
-    }
-    const executeTestsCode = generateExecuteTestsCode(language, funcForCppTest);
-    return testCases + executeTestsCode;
+/**
+ * Makes an API request to the assessment endpoints
+ * @param {string} endpoint - API endpoint
+ * @param {string} method - HTTP method
+ * @param {Object} [body] - Request body (optional)
+ * @returns {Promise<Object>} - API response data
+ */
+async function makeApiRequest(endpoint, method, body = null) {
+  const requestOptions = {
+    method,
+    headers: getRequestHeaders(),
+  };
+
+  if (body) {
+    requestOptions.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(endpoint, requestOptions);
+  checkTokenExpiration(response);
+
+  if (!response.ok) {
+    return response;
+  }
+
+  return await response.json();
 }
 
+/**
+ * Sends code to the execution API
+ * @param {string} code - Source code to execute
+ * @param {string} language - Programming language
+ * @returns {Promise<Object>} - Response with execution ID
+ */
+async function sendCode(code, language) {
+  return await makeApiRequest('/api/assessment/send', 'POST', {
+    source_code: code,
+    language: language,
+  });
+}
+
+/**
+ * Gets execution details by ID
+ * @param {string} id - Execution ID
+ * @returns {Promise<Object>} - Execution details
+ */
 async function getExecutionDetails(id) {
-
-    try {
-        const response = await fetch(`/api/assessment/status?id=${id}`, {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-                'Authorization': `Bearer ${sessionStorage.getItem("token")}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch execution details");
-        }
-
-        return response;
-    } catch (error) {
-        console.error("Error:", error);
-        return { error: error.message };
-    }
+  try {
+    return await fetch(`/api/assessment/status?id=${id}`, {
+      method: 'GET',
+      headers: getRequestHeaders(),
+    });
+  } catch (error) {
+    return { error: error.message };
+  }
 }
 
-function generateExecuteTestsCode(language, funcForCpp) {
-    if(language === "python") {
-        return `
+/**
+ * Checks if code contains output statements (which are not allowed)
+ * @param {string} code - Source code to check
+ * @param {string} language - Programming language
+ * @returns {boolean} - True if code contains output statements
+ */
+function containsOutputStatements(code, language) {
+  const outputPatterns = {
+    'python': 'print',
+    'javascript': 'console.log',
+    'cpp': 'cout'
+  };
+  
+  return code.includes(outputPatterns[language]);
+}
+
+/**
+ * Polls for execution results until completion or timeout
+ * @param {string} id - Execution ID
+ * @param {number} maxAttempts - Maximum polling attempts
+ * @param {number} intervalMs - Polling interval in milliseconds
+ * @returns {Promise<Object>} - Execution results
+ */
+async function pollExecutionResults(id, maxAttempts = 7, intervalMs = 2000) {
+  let attempts = 0;
+  let data;
+  
+  do {
+    await new Promise(resolve => setTimeout(resolve, intervalMs));
+    const response = await getExecutionDetails(id);
+    data = await response.json();
+    
+    if (data.status !== "running") {
+      break;
+    }
+    
+    attempts++;
+  } while (attempts < maxAttempts);
+  
+  return data;
+}
+
+/**
+ * Generates test code for Python
+ * @param {Array} visibleTests - Visible test cases
+ * @param {Array} hiddenTests - Hidden test cases
+ * @returns {string} - Generated Python test code
+ */
+function generatePythonTestCode(visibleTests, hiddenTests) {
+  const formattedVisible = JSON.stringify(visibleTests, null, 4);
+  const formattedHidden = JSON.stringify(hiddenTests, null, 4);
+  
+  return `
+import json
+
+testCases = json.loads('''${formattedVisible}''')
+hidden_testCases = json.loads('''${formattedHidden}''')
+  `;
+}
+
+/**
+ * Generates test code for JavaScript
+ * @param {Array} visibleTests - Visible test cases
+ * @param {Array} hiddenTests - Hidden test cases
+ * @returns {string} - Generated JavaScript test code
+ */
+function generateJavaScriptTestCode(visibleTests, hiddenTests) {
+  const formattedVisible = JSON.stringify(visibleTests, null, 4);
+  const formattedHidden = JSON.stringify(hiddenTests, null, 4);
+  
+  return `
+const testCases = ${formattedVisible};
+  
+const hiddenTestCases = ${formattedHidden};
+  `;
+}
+
+/**
+ * Generates test code for C++
+ * @param {Array} visibleTests - Visible test cases
+ * @param {Array} hiddenTests - Hidden test cases
+ * @returns {string} - Generated C++ test code
+ */
+function generateCppTestCode(visibleTests, hiddenTests) {
+  const visibleTestsFormatted = visibleTests
+    .map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`)
+    .join(",\n    ");
+    
+  const hiddenTestsFormatted = hiddenTests
+    .map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`)
+    .join(",\n    ");
+  
+  return ` 
+vector<pair<vector<int>, int>> testCases = {
+    ${visibleTestsFormatted}
+};
+  
+vector<pair<vector<int>, int>> hiddenTestCases = {
+    ${hiddenTestsFormatted}
+};
+  `;
+}
+
+/**
+ * Generates test code based on language
+ * @param {Array} testCases - All test cases
+ * @param {string} language - Programming language
+ * @returns {string} - Generated test code
+ */
+function generateTestCode(testCases, language) {
+  const visibleTestCases = testCases.slice(0, 5);
+  const hiddenTestCases = testCases.slice(5, 10);
+
+  const generators = {
+    'python': () => generatePythonTestCode(visibleTestCases, hiddenTestCases),
+    'javascript': () => generateJavaScriptTestCode(visibleTestCases, hiddenTestCases),
+    'cpp': () => generateCppTestCode(visibleTestCases, hiddenTestCases)
+  };
+  
+  return generators[language] ? generators[language]() : "";
+}
+
+/**
+ * Generates Python code to execute tests
+ * @returns {string} - Python code for test execution
+ */
+function generatePythonExecuteCode() {
+  return `
 for index, testCase in enumerate(testCases):
     args = testCase["input"]
     expected_output = testCase["output"][0]
@@ -182,11 +218,15 @@ for index, testCase in enumerate(hidden_testCases):
         print("Test " + str(index + 1) + ": Test PASSED HIDDEN")
     else:
         print("Test {}: Test FAILED - input: {}, expected output: {}, output received: {} HIDDEN".format(index + 1, testCase['input'], expected_output, actual_output))
-        `;
-    }
+  `;
+}
 
-    if (language === "javascript") {
-        return `
+/**
+ * Generates JavaScript code to execute tests
+ * @returns {string} - JavaScript code for test execution
+ */
+function generateJavaScriptExecuteCode() {
+  return `
 testCases.forEach((testCase, index) => {
     const args = testCase.input;
     const expected_output = testCase.output;
@@ -210,12 +250,16 @@ hiddenTestCases.forEach((testCase, index) => {
         console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output} HIDDEN\`);
     }
 });
-        `;
-    }
+  `;
+}
 
-    if (language === "cpp") {
-        return `
-
+/**
+ * Generates C++ code to execute tests
+ * @param {string} funcForCpp - Function arguments for C++ tests
+ * @returns {string} - C++ code for test execution
+ */
+function generateCppExecuteCode(funcForCpp) {
+  return `
 void runTests(vector<pair<vector<int>, int>> testCases, string testType) {
     for (size_t i = 0; i < testCases.size(); i++) {
         vector<int> args = testCases[i].first;
@@ -235,53 +279,120 @@ int main() {
     runTests(hiddenTestCases, "HIDDEN");
     return 0;
 }
-        `;
-    }
-
-    return "";
+  `;
 }
 
+/**
+ * Generates code to execute tests based on language
+ * @param {string} language - Programming language
+ * @param {string} funcForCpp - Function arguments for C++ tests
+ * @returns {string} - Code for test execution
+ */
+function generateExecuteTestsCode(language, funcForCpp) {
+  const generators = {
+    'python': generatePythonExecuteCode,
+    'javascript': generateJavaScriptExecuteCode,
+    'cpp': () => generateCppExecuteCode(funcForCpp)
+  };
+  
+  return generators[language] ? generators[language]() : "";
+}
 
-function generateTestCode(testCases, language) {
-    console.log("Tests: ",testCases);
-    const visibleTestCases = testCases.slice(0, 5);
-    const hiddenTestCases = testCases.slice(5, 10);
-
-    let formattedTestCases = JSON.stringify(visibleTestCases, null, 4);
-    let formattedHiddenTestCases = JSON.stringify(hiddenTestCases, null, 4);
+/**
+ * Constructs the complete test code
+ * @param {Array} tests - Test cases
+ * @param {string} language - Programming language
+ * @param {string} funcForCppTest - Function arguments for C++ tests
+ * @returns {string} - Complete test code
+ */
+function constructCode(tests, language, funcForCppTest) {
+  const testCases = generateTestCode(tests, language);
   
-    if (language === "python") {
-  
-      return `
-import json
-
-testCases = json.loads('''${formattedTestCases}''')
-hidden_testCases = json.loads('''${formattedHiddenTestCases}''')
-      `;
-    }
-  
-    if (language === "javascript") {
-      formattedTestCases = JSON.stringify(visibleTestCases, null, 4);
-      formattedHiddenTestCases = JSON.stringify(hiddenTestCases, null, 4);
-  
-      return `
-const testCases = ${formattedTestCases};
-  
-const hiddenTestCases = ${formattedHiddenTestCases};
-      `;
-    }
-  
-    if (language === "cpp") {
-      return ` 
-vector<pair<vector<int>, int>> testCases = {
-    ${visibleTestCases.map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`).join(",\n    ")}
-};
-  
-vector<pair<vector<int>, int>> hiddenTestCases = {
-    ${hiddenTestCases.map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`).join(",\n    ")}
-};
-      `;
-    }
-  
-    return "";
+  if (testCases === "") {
+    return { data: { stderr: "Failed to generate test cases" } };
   }
+  
+  const executeTestsCode = generateExecuteTestsCode(language, funcForCppTest);
+  return testCases + executeTestsCode;
+}
+
+/**
+ * Assessment Service object with public methods
+ */
+export const assessmentService = {
+  /**
+   * Runs code with tests
+   * @param {string} code - Source code to run
+   * @param {string} language - Programming language
+   * @param {Array} tests - Test cases
+   * @param {string} funcForCppTest - Function arguments for C++ tests
+   * @returns {Promise<Object>} - Execution results
+   */
+  async runCode(code, language, tests, funcForCppTest) {
+    if (containsOutputStatements(code, language)) {
+      return { data: { stderr: "You cannot use output statement in your code" } };
+    }
+    
+    const completeCode = code + constructCode(tests, language, funcForCppTest);
+    const codeSendResponse = await sendCode(completeCode, language);
+    
+    if (!codeSendResponse.data || !codeSendResponse.data.id) {
+      return { data: { stderr: "Failed to submit code for execution" } };
+    }
+    
+    const id = codeSendResponse.data.id;
+    return await pollExecutionResults(id);
+  },
+
+  /**
+   * Gets a specific task
+   * @param {string} appId - Application ID
+   * @param {string} taskId - Task ID
+   * @returns {Promise<Object>} - Task details
+   */
+  async getTask(appId, taskId) {
+    return await makeApiRequest(`/api/assessment/task?appId=${appId}&taskId=${taskId}`, "GET");
+  },
+
+  /**
+   * Gets task IDs for an application
+   * @param {string} appId - Application ID
+   * @returns {Promise<Object>} - Task IDs
+   */
+  async getTasksId(appId) {
+    return await makeApiRequest(`/api/assessment/tasksid?appId=${appId}`, "GET");
+  },
+
+  /**
+   * Gets all tasks
+   * @returns {Promise<Object>} - All tasks
+   */
+  async getAllTasks() {
+    return await makeApiRequest('/api/assessment/alltasks', "GET");
+  },
+
+  /**
+   * Submits assessment solution
+   * @param {string} appId - Application ID
+   * @param {boolean} testsPassed - Whether tests passed
+   * @param {string} code - Source code
+   * @param {string} language - Programming language
+   * @param {string} taskId - Task ID
+   * @returns {Promise<Object>} - Submission result
+   */
+  async submit(appId, testsPassed, code, language, taskId) {
+    try {
+      const data = await makeApiRequest('/api/assessment/submit', 'POST', {
+        appId,
+        testsPassed,
+        code,
+        language,
+        taskId
+      });
+      
+      return { success: true, message: data.message };
+    } catch (err) {
+      return { success: false, message: err.message || "Server error" };
+    }
+  }
+};
