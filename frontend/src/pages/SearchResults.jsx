@@ -2,24 +2,25 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAllJobs, getFilteredJobs } from "../services/jobService";
 import SearchFilters from "../components/SearchFilters";
-import { authService } from "../services/auth.service";
+import JobCard from "../components/JobCard";
+import ReactPaginate from "react-paginate";
 
 const SearchResults = () => {
     const url = useLocation();
     const searchParams = new URLSearchParams(url.search);
     const navigate = useNavigate();
     
-
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(0);
     const resultsPerPage = 10;
 
-    // Extract query parameters as arrays
+    // Extract query parameters
     const jobTypes = searchParams.getAll("jobType");
     const locations = searchParams.getAll("location");
     const roles = searchParams.getAll("role");
+    const companies = searchParams.getAll("company");
 
     const checkAuthStatus = () => {
         const token = sessionStorage.getItem("token");
@@ -38,12 +39,11 @@ const SearchResults = () => {
 
     const fetchSearchResults = async () => {
         try {
+            setLoading(true);
             let data;
-            const filters = {};
-            filters.jobType = jobTypes;
-            filters.location = locations;
-            filters.role = roles;
-            if (Object.keys(filters)) {
+            const filters = { jobType: jobTypes, location: locations, role: roles, company: companies };
+
+            if (Object.values(filters).some(value => value && value.length > 0)) {
                 console.log("Fetching filtered jobs with:", filters);
                 data = await getFilteredJobs(filters);
             } else {
@@ -59,27 +59,29 @@ const SearchResults = () => {
     };
 
     const handleJobClick = (jobId) => {
-        navigate(`/user/jobs/details/${jobId}`);
+        const url = `/user/jobs/details/${jobId}`;
+        window.open(url, "_blank");
     };
     
     useEffect(() => {
         fetchSearchResults();
     }, []);
 
-    const applyFilters = async (selectedJobTypes, selectedTitles, selectedLocations) => {
+    const applyFilters = async (selectedJobTypes, selectedTitles, selectedLocations, selectedCompanies) => {
         try {
-            setLoading(true);  // Start loading
-            setSearchResults([]); // Clear previous results before applying new filters
+            setLoading(true);
+            setSearchResults([]);
     
-            let data;
-            const filters = {};
-    
-            if (selectedJobTypes) filters.jobType = selectedJobTypes;
-            if (selectedTitles) filters.role = selectedTitles;
-            if (selectedLocations) filters.location = selectedLocations;
+            const filters = {
+                jobType: selectedJobTypes,
+                role: selectedTitles,
+                location: selectedLocations,
+                company: selectedCompanies, 
+            };
     
             console.log("Applying filters:", filters);
     
+            let data;
             if (Object.values(filters).some(value => value && value.length > 0)) {
                 data = await getFilteredJobs(filters);
             } else {
@@ -90,15 +92,17 @@ const SearchResults = () => {
         } catch (error) {
             console.error("Error applying filters:", error);
         } finally {
-            setLoading(false); // Stop loading after data is fetched
+            setLoading(false);
         }
     };
 
-    const indexOfLastResult = currentPage * resultsPerPage;
-    const indexOfFirstResult = indexOfLastResult - resultsPerPage;
-    const currentResults = searchResults.slice(indexOfFirstResult, indexOfLastResult);
+    // Pagination logic
+    const pageCount = Math.ceil(searchResults.length / resultsPerPage);
+    const displayedJobs = searchResults.slice(currentPage * resultsPerPage, (currentPage + 1) * resultsPerPage);
 
-    const totalPages = Math.ceil(searchResults.length / resultsPerPage);
+    const handlePageChange = ({ selected }) => {
+        setCurrentPage(selected);
+    };
 
     return (
         <div className="flex flex-row max-h-screen">
@@ -110,39 +114,25 @@ const SearchResults = () => {
                 <div className="text-center mt-2 mb-2">
                     <h1 className="text-heading font-heading font-bold">Search Results</h1>
                     <p className="text-medium mt-2">
-                        {jobTypes.length > 0 || locations.length > 0 || roles.length > 0
-                            ? `Showing results for ${[...jobTypes, ...locations, ...roles].join(", ")}`
+                        {jobTypes.length > 0 || locations.length > 0 || roles.length > 0 || companies.length > 0
+                            ? `Showing results for ${[...jobTypes, ...locations, ...roles, ...companies].join(", ")}`
                             : "Find the perfect opportunity for you"}
                     </p>
                 </div>
 
-                {/* JOB CONTAINER (Scrollable List Format) */}
+                {/* JOB LISTINGS */}
                 <div className="flex flex-col space-y-4 px-4 pb-3 items-center w-full max-w-3xl overflow-y-auto max-h-90">
                     {loading ? (
                         <p className="text-ltext text-center">Loading search results...</p>
-                    ) : currentResults.length > 0 ? (
-                        currentResults.map((job) => (
-                            <div key={job._id} className="bg-white rounded-lg shadow-md p-4 w-full relative cursor-pointer" onClick={() => handleJobClick(job._id)}>
-                                {/* Add to shortlist */}
-                                {isLoggedIn && (
-                                    <button 
-                                        className="absolute top-2 right-2 bg-primary text-secondary rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-secondary hover:text-ltext transition"
-                                        onClick={(e) =>{
-                                            e.stopPropagation();
-                                            handleAddToShortlist(job._id)}
-                                        }
-                                    >
-                                        +
-                                    </button>
-                                )}
-                                <div className="w-full">
-                                    <p className="text-medium font-bold">{job.title}</p>
-                                    <p className="text-medium font-semibold">Type: {job.employmentType}</p>
-                                    <p className="text-medium font-semibold">Location: <span className="font-medium">{job.location}</span></p>
-                                    <p className="text-medium font-semibold">Requirements: <span className="font-medium">{job.requirements.join(", ")}</span></p>
-                                    <p className="text-small mb-1">{job.description}</p>
-                                </div>
-                            </div>
+                    ) : displayedJobs.length > 0 ? (
+                        displayedJobs.map((job) => (
+                            <JobCard 
+                                key={job._id}
+                                job={job}
+                                isLoggedIn={isLoggedIn}
+                                handleJobClick={handleJobClick}
+                                handleAddToShortlist={(jobId) => console.log(`Shortlisted: ${jobId}`)} // Placeholder function
+                            />
                         ))
                     ) : (
                         <p className="text-white text-center">No job results found.</p>
@@ -150,21 +140,23 @@ const SearchResults = () => {
                 </div>
 
                 {/* PAGINATION CONTROLS */}
-                <div className="">
-                    <button
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="button h-2"
-                    >
-                    </button>
-                    <span className="">Page {currentPage} of {totalPages}</span>
-                    <button
-                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="button h-2"
-                    >
-                    </button>
-                </div>
+                {pageCount > 1 && (
+                    <ReactPaginate
+                        previousLabel={"Prev"}
+                        nextLabel={"Next"}
+                        breakLabel={"..."}
+                        pageCount={pageCount}
+                        marginPagesDisplayed={2}
+                        pageRangeDisplayed={3}
+                        onPageChange={handlePageChange}
+                        containerClassName={"pagination flex justify-center space-x-2"}
+                        pageClassName={"border px-3 py-1 rounded-md hover:bg-gray-200"}
+                        activeClassName={"bg-primary"}
+                        previousClassName={"border px-3 py-1 rounded-md hover:bg-gray-200"}
+                        nextClassName={"border px-3 py-1 rounded-md hover:bg-gray-200"}
+                        disabledClassName={"opacity-50 cursor-not-allowed"}
+                    />
+                )}
             </div>
         </div>
     );

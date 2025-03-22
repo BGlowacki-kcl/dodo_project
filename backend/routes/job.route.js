@@ -11,7 +11,8 @@ import {
     getAllJobLocations,
     getAllJobTypes,
     getFilteredJobs,
-    getJobsByEmployer
+    getJobsByEmployer,
+    getAllCompanies
 } from '../controllers/job.controller.js';
 import { checkRole } from '../middlewares/auth.middleware.js';
 
@@ -24,6 +25,8 @@ router.get('/roles', getAllJobRoles);
 router.get('/locations', getAllJobLocations);
 
 router.get('/employmentType', getAllJobTypes);
+
+router.get('/company', getAllCompanies);
 
 router.get('/search', getFilteredJobs);
 
