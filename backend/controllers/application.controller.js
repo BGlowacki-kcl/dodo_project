@@ -69,14 +69,14 @@ export const applicationController = {
     async getApplicants(req, res) {
         try {
             const { jobId } = req.query;
-            
 
             const job = await Job.findById(jobId);
-            if (!job  ) {
+            if (!job) {
                 return res.status(403).json(createResponse(false, "Unauthorized to view applicants for this job"));
             }
 
-            const applications = await Application.find({ job: jobId }).populate("applicant", "name email");
+            // Exclude applications in the "applying" stage
+            const applications = await Application.find({ job: jobId, status: { $ne: "applying" } }).populate("applicant", "name email");
 
             const applicants = applications.map(app => ({
                 id: app.applicant._id,
