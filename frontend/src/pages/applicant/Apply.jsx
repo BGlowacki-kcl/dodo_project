@@ -83,7 +83,6 @@ const Apply = () => {
 
     const handleSubmitApplication = async () => {
         try {
-
             // Ensure all questions are answered
             const unansweredQuestions = questions.filter(
                 (question) => !answers[question._id] || answers[question._id].trim() === ""
@@ -93,15 +92,18 @@ const Apply = () => {
                 showNotification("Please answer all the questions before submitting.", "error");
                 return;
             }
+
             if (!applicationId) {
                 showNotification("Application ID is missing. Please try again.", "error");
                 return;
             }
 
-            await submitApplication(applicationId); // Use the new service to submit the application
+
+            await submitApplication(applicationId); 
             navigate(`/user/jobs/details/${jobId}`);
             showNotification("Application submitted successfully!", "success");
         } catch (error) {
+            console.error("Error submitting application:", error);
             showNotification(error.message || "Failed to submit application. Please try again.", "error");
         }
     };

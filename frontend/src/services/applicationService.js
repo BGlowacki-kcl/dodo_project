@@ -195,19 +195,19 @@ export async function saveApplication({ applicationId, jobId, coverLetter, answe
 }
 
 export async function submitApplication(applicationId) {
-  const response = await fetch('/api/application/submit', {
-    method: 'PUT',
-    headers: {
-      "Content-Type": "application/json",
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-    },
-    body: JSON.stringify({ applicationId }),
-  });
-  checkTokenExpiration(response);
-  const responseJson = await response.json();
-  if (!responseJson.success) {
-    throw new Error(responseJson.message || "Failed to submit application");
-  }
-  return responseJson.data;
+    const response = await fetch('/api/application/submit', {
+        method: 'PUT',
+        headers: {
+            "Content-Type": "application/json",
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ applicationId }), // Send only the applicationId
+    });
+    checkTokenExpiration(response);
+    const responseJson = await response.json();
+    if (!responseJson.success) {
+        throw new Error(responseJson.message || "Failed to submit application");
+    }
+    return responseJson.data;
 }
 
