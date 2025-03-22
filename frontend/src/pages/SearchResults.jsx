@@ -37,9 +37,10 @@ const SearchResults = () => {
                 console.error("Error fetching shortlist:", err);
             }
         };
-
-        fetchShortlist();
-    }, []);
+        if(isLoggedIn) {
+            fetchShortlist();
+        }
+    }, [isLoggedIn]);
 
     const checkIfShortlisted = (jobId) => shortlistedJobIds.has(jobId);
 
