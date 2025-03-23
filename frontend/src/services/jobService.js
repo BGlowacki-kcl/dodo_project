@@ -179,47 +179,17 @@ export async function getAllJobTypes() {
   );
 }
 
+/**
+ * Gets all companies
+ * @returns {Promise<Array>} - List of companies
+ */
 export async function getAllCompanies() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/company`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
-    checkTokenExpiration(response);
-    if (!response.ok) {
-      throw new Error("Failed to get all companies");
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching companies:", error);
-    throw error;
-  }
-}
-
-export async function getFilteredJobs(filters) {
-  try {
-    const queryParams = new URLSearchParams();
-    filters.jobType?.forEach((type) => queryParams.append("jobType", type));
-    filters.location?.forEach((loc) => queryParams.append("location", loc));
-    filters.role?.forEach((role) => queryParams.append("role", role));
-    filters.company?.forEach((company) => queryParams.append("company", company));
-    const url = `${API_BASE_URL}/search?${queryParams.toString()}`;
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
-    checkTokenExpiration(response);
-    if (!response.ok) {
-      throw new Error("Failed to get filtered jobs");
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching filtered jobs:", error);
-    throw error;
-  }
+  return await makeApiRequest(
+    `${API_BASE_URL}/company`,
+    "GET",
+    null,
+    "Failed to get all companies"
+  );
 }
 
 /**
@@ -240,6 +210,10 @@ function buildFilterQueryParams(filters) {
   
   if (filters.role) {
     filters.role.forEach((role) => queryParams.append("role", role));
+  }
+
+  if (filters.company) {
+    filters.company.forEach((company) => queryParams.append("company", company));
   }
   
   return queryParams.toString();

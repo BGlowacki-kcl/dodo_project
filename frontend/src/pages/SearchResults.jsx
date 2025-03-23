@@ -162,7 +162,8 @@ const SearchResults = () => {
                                 job={job}
                                 isLoggedIn={isLoggedIn}
                                 handleJobClick={handleJobClick}
-                                handleAddToShortlist={(jobId) => console.log(`Shortlisted: ${jobId}`)} // Placeholder function
+                                handleAddToShortlist={handleAddToShortlist}
+                                isShortlisted={checkIfShortlisted(job._id)}
                             />
 
                         ))
