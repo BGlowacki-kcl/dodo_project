@@ -6,7 +6,7 @@ import { auth } from '../../firebase.js';
 import { assessmentService } from '../../services/assessment.service';
 import { useNotification } from '../../context/notification.context';
 import AssessmentStatus from '../../components/AssessmentStatus';
-import { getAssessmentDeadline, setAssessmentDeadline, updateStatus } from '../../services/applicationService.js';
+import { getApplicationById, getAssessmentDeadline, setAssessmentDeadline, updateStatus } from '../../services/applicationService.js';
 
 const CodeAss = () => {
   const [code, setCode] = useState(``);
@@ -42,35 +42,36 @@ const CodeAss = () => {
   const [timeLeft, setTimeLeft] = useState(3600);
 
   useEffect(() => {
-
+    
     const fetchTimer = async () => {
-    const deadlineFetched = await getAssessmentDeadline(appId); // await might be needed here
-    console.log("Deadline fetched: ", deadlineFetched);
-    if(deadlineFetched && deadlineFetched !== -1) {
-      const deadlineInMs = isNaN(deadlineFetched) 
-            ? new Date(deadlineFetched).getTime() 
-            : Number(deadlineFetched);
-      const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
-      console.log("Remaining time: ", remainingTime);
-      if(remainingTime < 0) {
-        showNotification("Assessment time has expired", "error");
-        navigate("/");
+      const application = await getApplicationById(appId);
+      if(application.status !== "code challenge"){
+        navigate("/applicant-dashboard");
+        showMessage("Application cannot be accessed", "info");
         return;
       }
-      setTimeLeft(remainingTime);
-      localStorage.setItem('assessmentDeadline', deadlineFetched);
-    } else {
-      const newDeadline = Date.now() + 3600 * 1000;
-      localStorage.setItem('assessmentDeadline', newDeadline);
-      await setAssessmentDeadline(appId, newDeadline); // await might be needed here
+      const deadlineFetched = await getAssessmentDeadline(appId);
+      console.log("Deadline fetched: ", deadlineFetched);
+      if(deadlineFetched && deadlineFetched !== -1) {
+        const deadlineInMs = isNaN(deadlineFetched) 
+              ? new Date(deadlineFetched).getTime() 
+              : Number(deadlineFetched);
+        const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
+        console.log("Remaining time: ", remainingTime);
+        setTimeLeft(remainingTime);
+        localStorage.setItem('assessmentDeadline', deadlineFetched);
+      } else {
+        const newDeadline = Date.now() + 3600 * 1000;
+        localStorage.setItem('assessmentDeadline', newDeadline);
+        await setAssessmentDeadline(appId, newDeadline); 
+      }
     }
-  }
 
   const timerInterval = setInterval(() => {
     setTimeLeft((prev) => {
       if (prev <= 1) {
         clearInterval(timerInterval);
-        handleSubmit(); 
+        submitAll();
         return 0;
       }
       return prev - 1;
@@ -227,6 +228,7 @@ int func(${task.funcForCpp}) {
   const submitAll = async () => {
     showNotification("Tank you for taking the assessment", "success");
     navigate("/applicant-dashboard");
+    setAssessmentDeadline(appId, -1);
     // Change status of application
     updateStatus(appId, false);
 
@@ -369,8 +371,8 @@ int func(${task.funcForCpp}) {
       <div className='w-full flex flex-col items-center'>
         <p className='text-white text-2xl'>Tasks:</p>
         <div className="w-full h-40 pb-10 flex flex-row items-center justify-center space-x-16">
-          {tasksId.map(task => (
-            <AssessmentStatus disabled={task.id === task._id} key={task.id} status={task.status} onClick={() => handleTaskChange(task.id)} title={task.title} />
+          {tasksId.map(taskOne => (
+            <AssessmentStatus chosen={taskOne.id === task._id} key={taskOne.id} status={taskOne.status} onClick={() => handleTaskChange(taskOne.id)} title={taskOne.title} />
           ))}
         </div>
         <button className="h-16 w-32 border-white bg-green-600 text-black border-2 rounded-xl mb-10" onClick={submitAll} >Finish assessment!</button>

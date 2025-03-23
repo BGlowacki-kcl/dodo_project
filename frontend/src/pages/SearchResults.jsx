@@ -40,9 +40,10 @@ const SearchResults = () => {
                 console.error("Error fetching shortlist:", err);
             }
         };
-
-        fetchShortlist();
-    }, []);
+        if(isLoggedIn) {
+            fetchShortlist();
+        }
+    }, [isLoggedIn]);
 
     const checkIfShortlisted = (jobId) => shortlistedJobIds.has(jobId);
 
@@ -163,6 +164,7 @@ const SearchResults = () => {
                                 handleJobClick={handleJobClick}
                                 handleAddToShortlist={(jobId) => console.log(`Shortlisted: ${jobId}`)} // Placeholder function
                             />
+
                         ))
                     ) : (
                         <p className="text-white text-center">No job results found.</p>

@@ -1,56 +1,57 @@
-import { checkTokenExpiration } from "./auth.service.js";
+/**
+ * Shortlist Service
+ * Handles all API interactions related to job shortlisting functionality
+ */
+import { makeApiRequest } from "./helper.js";
 
-const BASE_URL = "http://localhost:5000/api";
+const SHORTLIST_ENDPOINT = '/api/shortlist';
 
-// Helper to get the auth token from sessionStorage
-function getAuthToken() {
-    return sessionStorage.getItem("token");
-}
-
-// Helper to build headers including the Authorization token
-function getHeaders() {
-    const token = getAuthToken();
-    return {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-    };
-}
-
-// Retrieve a user's shortlist
+/**
+ * Retrieves a user's job shortlist
+ * @returns {Promise<Object>} - User's shortlisted jobs
+ */
 export async function getShortlist() {
-    const response = await fetch(`${BASE_URL}/shortlist`, {
-        headers: getHeaders(),
-    });
-    checkTokenExpiration(response);
-    if (!response.ok) {
-        throw new Error("Failed to fetch shortlist");
-    }
-    return await response.json();
+  try {
+    return await makeApiRequest(`${SHORTLIST_ENDPOINT}/jobs`, 'GET');
+  } catch (error) {
+    throw error;
+  }
 }
 
-// Add a job to a user's shortlist
+/**
+ * Retrieves a user's job shortlist
+ * @returns {Promise<Object>} - User's shortlisted jobs
+ */
+export async function createShortlist() {
+    try {
+      return await makeApiRequest(`${SHORTLIST_ENDPOINT}/create`, 'POST');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+/**
+ * Adds a job to a user's shortlist
+ * @param {string} jobId - Job ID to add to shortlist
+ * @returns {Promise<Object>} - Updated shortlist data
+ */
 export async function addJobToShortlist(jobId) {
-    const response = await fetch(`${BASE_URL}/shortlist/${jobId}`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify({ jobId }),
-    });
-    checkTokenExpiration(response);
-    if (!response.ok) {
-        throw new Error("Failed to add job to shortlist");
-    }
-    return await response.json();
+  try {
+    return await makeApiRequest(`${SHORTLIST_ENDPOINT}/addjob?jobid=${jobId}`, 'PUT', { jobId });
+  } catch (error) {
+    throw error;
+  }
 }
 
-// Remove a job from a user's shortlist
+/**
+ * Removes a job from a user's shortlist
+ * @param {string} jobId - Job ID to remove from shortlist
+ * @returns {Promise<Object>} - Updated shortlist data
+ */
 export async function removeJobFromShortlist(jobId) {
-    const response = await fetch(`${BASE_URL}/shortlist/${jobId}`, {
-        method: "DELETE",
-        headers: getHeaders(),
-    });
-    checkTokenExpiration(response);
-    if (!response.ok) {
-        throw new Error("Failed to remove job from shortlist");
-    }
-    return await response.json();
+  try {
+    return await makeApiRequest(`${SHORTLIST_ENDPOINT}/removejob?jobid=${jobId}`, 'DELETE');
+  } catch (error) {
+    throw error;
+  }
 }
