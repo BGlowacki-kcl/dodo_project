@@ -12,6 +12,18 @@ const ApplicationCards = ({ applications }) => {
     }
   };
 
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }) + " " + new Date(date).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+
   return (
     <div className="space-y-4">
       {applications.map((app) => (
@@ -25,7 +37,7 @@ const ApplicationCards = ({ applications }) => {
               {app.job?.company || app.job?.title}
             </div>
             <div className="text-sm">
-              {new Date(app.submittedAt).toLocaleString("en-GB")}
+              {formatDate(app.submittedAt)}
             </div>
           </div>
           <div className="flex items-center">
