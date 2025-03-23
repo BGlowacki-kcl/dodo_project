@@ -4,11 +4,15 @@ import { getApplicationById } from "../../services/applicationService";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
 import ExtractApplication from "../../components/ExtractApplication";
+import ModalMessages from "../../components/ModalMessages";
 
 const SingleApplicationPage = () => {
   const { appId } = useParams();
   const navigate = useNavigate();
   const [application, setApplication] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const hasFetched = useRef(false);
   const [codeChallenge, setCodeChallenge] = useState(false);
   const showNotification = useNotification();
@@ -31,6 +35,15 @@ const SingleApplicationPage = () => {
 
       setApplication(response);
       setCodeChallenge(response.status === "Code Challenge");
+
+      // Show modal only once per status
+      const viewedStatuses = JSON.parse(localStorage.getItem("viewedStatuses")) || {};
+      if (!viewedStatuses[response._id] || viewedStatuses[response._id] !== response.status) {
+        setModalMessage(getModalMessage(response.status));
+        setShowModal(true);
+        viewedStatuses[response._id] = response.status;
+        localStorage.setItem("viewedStatuses", JSON.stringify(viewedStatuses));
+      }
     } catch (error) {
       console.error("Error fetching application:", error);
       showNotification("Failed to fetch application");
@@ -38,9 +51,31 @@ const SingleApplicationPage = () => {
     }
   };
 
+  const getModalMessage = (status) => {
+    switch (status) {
+      case "Applied":
+        return "Congratulations! Your application has been submitted successfully.";
+      case "In Review":
+        return "Your application is currently under review. Good luck!";
+      case "Shortlisted":
+        return "Great news! You have been shortlisted for the next stage.";
+      case "Rejected":
+        return "Unfortunately, your application was not successful this time. Keep trying!";
+      case "Code Challenge":
+        return "You have been invited to complete a code challenge. Click the orange button to proceed.";
+      case "Accepted":
+        return "Congratulations! Your application has been accepted.";
+      default:
+        return "Your application status has been updated.";
+    }
+  };
+
   const handleAssessment = () => {
-    const userConfirmed = window.confirm("Are you sure you want to proceed to the code assessment?");
-    if (!userConfirmed) return;
+    setShowAssessmentModal(true);
+  };
+
+  const confirmAssessmentNavigation = () => {
+    setShowAssessmentModal(false);
     navigate(`/codeassessment/${appId}`);
   };
 
@@ -76,11 +111,31 @@ const SingleApplicationPage = () => {
 
   return (
     <div className="container mx-auto p-4 font-sans">
+      {/* Modal for status message */}
+      <ModalMessages
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        message={modalMessage}
+      />
+
+      {/* Modal for assessment confirmation */}
+      <ModalMessages
+        show={showAssessmentModal}
+        onClose={() => setShowAssessmentModal(false)}
+        message="Are you sure you want to proceed to the code assessment?"
+        onConfirm={confirmAssessmentNavigation}
+        confirmText="Yes"
+        cancelText="No"
+      />
+
       <div className="flex-1 p-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-left">Application Details</h1>
           <span
-            className={`px-6 py-3 text-lg font-semibold rounded-lg ${getStatusBadgeClass(status)}`}
+            className={`px-6 py-3 text-lg font-semibold rounded-lg ${getStatusBadgeClass(status)} ${
+              status === "Code Challenge" ? "cursor-pointer hover:opacity-80" : ""
+            }`}
+            onClick={status === "Code Challenge" ? handleAssessment : undefined}
           >
             {status}
           </span>

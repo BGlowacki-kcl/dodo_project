@@ -5,7 +5,7 @@ const ApplicationCards = ({ applications }) => {
   const navigate = useNavigate();
 
   const handleCardClick = (app) => {
-    if (app.status === "applying") {
+    if (app.status === "Applying") {
       navigate(`/apply/${app.job._id}`);
     } else {
       navigate(`/user/applications/${app._id}`);

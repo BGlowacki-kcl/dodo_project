@@ -4,6 +4,7 @@ import ApplicantActivity from "../../components/Activity";
 import ApplicantProfile from "../../components/Profile";
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/auth.service';
+import ModalMessages from "../../components/ModalMessages";
 
 const ApplicantDashboard = () => {
     const [activeView, setActiveView] = useState("activity");
@@ -71,22 +72,14 @@ const ApplicantDashboard = () => {
             </div>
 
             {/* Logout Modal */}
-            {showModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-xl shadow-sm">
-                        <h3 className="text-xl font-semibold mb-4">Confirm Logout</h3>
-                        <p>Are you sure you want to log out?</p>
-                        <div className="mt-4 flex space-x-4">
-                            <button onClick={handleSignOut} className="bg-red-500 text-white px-4 py-2 rounded-md">
-                                Yes
-                            </button>
-                            <button onClick={() => setShowModal(false)} className="bg-gray-300 px-4 py-2 rounded-md">
-                                No
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ModalMessages
+                show={showModal}
+                onClose={() => setShowModal(false)}
+                message="Are you sure you want to log out?"
+                onConfirm={handleSignOut}
+                confirmText="Yes"
+                cancelText="No"
+            />
         </div>
     );
 };
