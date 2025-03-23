@@ -302,11 +302,12 @@ const Profile = ({ editable }) => {
             {/* UserDetails Component */}
             <UserDetails
                 user={editableUser}
-                editable={true}
+                isEditing={isEditing} // Pass isEditing state
                 onEdit={handleSaveClick}
                 onChange={handleInputChange}
                 onAdd={handleAddItem}
                 onRemove={handleRemoveItem}
+                isProfilePage={true}
             />
         </div>
     );
