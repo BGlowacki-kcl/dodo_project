@@ -125,7 +125,7 @@ export const userService = {
 
 export const verifyUserRole = async (email, expectedRole) => {
     try {
-        const response = await fetch(`/api/user/role?email=${email}`, {
+        const response = await fetch(`${API_BASE_URL}/user/role?email=${email}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
