@@ -1,249 +1,112 @@
+import { JobSeeker } from '../models/user/jobSeeker.model.js';
 import Job from '../models/job.model.js';
-import { Employer } from '../models/user/Employer.model.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const API_KEY = process.env.HUGGING_FACE_API_KEY;
+const MODEL_ID = "TechWolf/JobBERT-v2";
+const API_URL = `https://api-inference.huggingface.co/models/${MODEL_ID}`;
 
 /**
- * Validates required job fields
- * @param {Object} data - Job data object
- * @returns {boolean} Whether all required fields are present
+ * Queries the Hugging Face API for similarity between CV and job description
+ * @param {string} cvText - User's CV text
+ * @param {string} jobDescription - Job description text
+ * @returns {Promise<Object>} Object containing job description and similarity score
+ * @throws {Error} If API request fails or response is invalid
  */
-const areRequiredFieldsPresent = ({ title, company, location, description, postedBy }) =>
-    title && company && location && description && postedBy;
+export async function query(cvText, jobDescription) {
+    const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            inputs: {
+                source_sentence: jobDescription,
+                sentences: [cvText],
+            }
+        }),
+    });
 
-/**
- * Creates a new job posting
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const createJob = async (req, res) => {
-    try {
-        const jobData = req.body;
-
-        if (!areRequiredFieldsPresent(jobData)) {
-            return res.status(400).json({ message: 'All required fields must be filled.' });
-        }
-
-        const job = new Job(jobData);
-        const createdJob = await job.save();
-        return res.status(201).json(createdJob);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
+    if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
     }
+
+    const result = await response.json();
+    if (!Array.isArray(result) || result.length === 0) {
+        throw new Error("Invalid API response");
+    }
+
+    return {
+        jobDescription,
+        similarityScore: result[0]
+    };
+}
+
+/**
+ * Validates user data for job recommendations
+ * @param {string} uid - User ID
+ * @param {Object} user - JobSeeker document
+ * @returns {void}
+ * @throws {Error} If validation fails
+ */
+const validateUser = (uid, user) => {
+    if (!uid) throw new Error("User ID is required");
+    if (!user) throw new Error("User not found");
+    if (!user.resume) throw new Error("User CV is missing");
 };
 
 /**
- * Retrieves all job postings
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
+ * Fetches jobs excluding specified IDs
+ * @param {Array<string>} excludeJobIds - Array of job IDs to exclude
+ * @returns {Promise<Array>} Array of job documents
  */
-export const getJobs = async (req, res) => {
-    try {
-        const jobs = await Job.find();
-        return res.status(200).json(jobs);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
+const fetchJobs = async (excludeJobIds) => 
+    Job.find({ _id: { $nin: excludeJobIds } }).limit(30);
 
 /**
- * Retrieves jobs posted by a specific employer
+ * Computes job matches with similarity scores
+ * @param {Array} jobs - Array of job documents
+ * @param {string} resume - User's resume text
+ * @returns {Promise<Array>} Array of jobs with similarity scores
+ */
+const computeJobMatches = async (jobs, resume) => 
+    Promise.all(jobs.map(async (job) => {
+        const { similarityScore } = await query(resume, job.description);
+        return { ...job.toObject(), similarityScore };
+    }));
+
+/**
+ * Sorts jobs by similarity score in descending order
+ * @param {Array} jobMatches - Array of jobs with similarity scores
+ * @returns {Array} Sorted array of job matches
+ */
+const sortJobMatches = (jobMatches) => 
+    jobMatches.sort((a, b) => b.similarityScore - a.similarityScore);
+
+/**
+ * Retrieves job recommendations for a user
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  * @returns {Promise<void>}
  */
-export const getJobsByEmployer = async (req, res) => {
+export const getUserJobRecommendations = async (req, res) => {
     try {
         const { uid } = req;
-        const employer = await Employer.findOne({ uid });
+        const { excludeJobIds = [] } = req.query;
 
-        if (!employer) {
-            return res.status(404).json({ message: 'Employer not found' });
-        }
+        const user = await JobSeeker.findOne({ uid });
+        validateUser(uid, user);
 
-        const jobs = await Job.find({ postedBy: employer._id });
-        return res.status(200).json(jobs);
+        const jobs = await fetchJobs(excludeJobIds);
+        const jobMatches = await computeJobMatches(jobs, user.resume);
+        const sortedMatches = sortJobMatches(jobMatches);
+
+        return res.status(200).json({ recommendedJobs: sortedMatches.slice(0, 5) });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * Retrieves a job by its ID
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const getJobById = async (req, res) => {
-    try {
-        const job = await Job.findById(req.params.id);
-        if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
-        }
-        return res.status(200).json(job);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * Updates an existing job posting
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const updateJob = async (req, res) => {
-    try {
-        const updatedData = { ...req.body, updatedAt: Date.now() };
-        const updatedJob = await Job.findByIdAndUpdate(req.params.id, updatedData, { new: true });
-
-        if (!updatedJob) {
-            return res.status(404).json({ message: 'Job not found' });
-        }
-        return res.status(200).json(updatedJob);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * Deletes a job posting
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const deleteJob = async (req, res) => {
-    try {
-        const job = await Job.findById(req.params.id);
-        if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
-        }
-
-        await job.deleteOne();
-        return res.status(200).json({ message: 'Job deleted successfully' });
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * Gets the count of jobs by employment type
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const getJobCountByType = async (req, res) => {
-    try {
-        const { type } = req.query;
-        const count = await Job.countDocuments({ employmentType: type });
-        return res.status(200).json({ count });
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
-    }
-};
-
-/**
- * Retrieves all unique job roles
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const getAllJobRoles = async (req, res) => {
-    try {
-        const titles = await Job.distinct('title');
-        return res.status(200).json(titles);
-    } catch (error) {
-        return res.status(500).json({ 
-            message: "Failed to fetch job roles",
-            error: error.message 
-        });
-    }
-};
-
-/**
- * Retrieves all unique job locations
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const getAllJobLocations = async (req, res) => {
-    try {
-        const locations = await Job.distinct('location');
-        return res.status(200).json(locations);
-    } catch (error) {
-        return res.status(500).json({ 
-            message: "Failed to fetch job locations",
-            error: error.message 
-        });
-    }
-};
-
-/**
- * Retrieves all unique job employment types
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const getAllJobTypes = async (req, res) => {
-    try {
-        const employmentTypes = await Job.distinct('employmentType');
-        return res.status(200).json(employmentTypes);
-    } catch (error) {
-        return res.status(500).json({ 
-            message: "Failed to fetch job types",
-            error: error.message 
-        });
-    }
-};
-
-/**
- * Builds a filter object for job queries
- * @param {Object} query - Query parameters
- * @returns {Object} MongoDB filter object
- */
-const buildJobFilter = ({ jobType, location, role }) => {
-    const filter = {};
-    if (jobType) filter.employmentType = Array.isArray(jobType) ? { $in: jobType } : jobType;
-    if (location) filter.location = Array.isArray(location) ? { $in: location } : location;
-    if (role) filter.title = Array.isArray(role) ? { $in: role } : role;
-    return filter;
-};
-
-/**
- * Retrieves filtered job postings
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const getFilteredJobs = async (req, res) => {
-    try {
-        const filter = buildJobFilter(req.query);
-        const jobs = await Job.find(filter);
-        return res.status(200).json(jobs);
-    } catch (error) {
-        return res.status(500).json({ 
-            message: "Failed to fetch jobs",
-            error: error.message 
-        });
-    }
-};
-
-/**
- * Retrieves questions for a specific job
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @returns {Promise<void>}
- */
-export const getJobQuestionsById = async (req, res) => {
-    try {
-        const { jobId } = req.query;
-        const job = await Job.findById(jobId);
-
-        if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
-        }
-        return res.status(200).json(job.questions);
-    } catch (error) {
-        return res.status(500).json({ message: error.message });
+        const status = error.message === "User not found" ? 404 : 400;
+        return res.status(status).json({ message: error.message });
     }
 };
