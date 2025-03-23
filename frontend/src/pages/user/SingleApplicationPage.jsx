@@ -5,6 +5,7 @@ import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
 import ApplicationDetails from "../../components/ApplicationDetails"; // Updated import
 import ModalMessages from "../../components/ModalMessages";
+import StatusBadge from "../../components/StatusBadge";
 import useLocalStorage from "../../hooks/useLocalStorage";
 
 const SingleApplicationPage = () => {
@@ -82,25 +83,6 @@ const SingleApplicationPage = () => {
     navigate(`/codeassessment/${appId}`);
   };
 
-  const getStatusBadgeClass = (status) => {
-    switch (status) {
-      case "Applied":
-        return "bg-yellow-500";
-      case "In Review":
-        return "bg-blue-500";
-      case "Shortlisted":
-        return "bg-purple-500";
-      case "Rejected":
-        return "bg-red-500";
-      case "Code Challenge":
-        return "bg-orange-500";
-      case "Accepted":
-        return "bg-green-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
   if (!application) {
     return (
       <div className="bg-slate-900 min-h-screen flex items-center justify-center">
@@ -141,14 +123,13 @@ const SingleApplicationPage = () => {
       <div className="flex-1 p-10">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-left">Application Details</h1>
-          <span
-            className={`px-6 py-3 text-lg font-semibold rounded-lg ${getStatusBadgeClass(status)} ${
-              status === "Code Challenge" ? "cursor-pointer hover:opacity-80" : ""
-            }`}
+          <StatusBadge
+            status={status}
             onClick={status === "Code Challenge" ? handleAssessment : undefined}
-          >
-            {status}
-          </span>
+            size="w-70 h-10"
+            fontSize="text-xl"
+            padding="px-20 py-5"
+          />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Job Title */}

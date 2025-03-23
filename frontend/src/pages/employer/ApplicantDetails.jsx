@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getApplicationById, updateStatus } from "../../services/applicationService";
-import { userService } from "../../services/user.service";
-import ApplicationDetails from "../../components/ApplicationDetails"; // Updated import
-import WhiteBox from "../../components/WhiteBox";
+import ApplicationDetails from "../../components/ApplicationDetails";
 import UserDetails from "../../components/UserDetails";
+import StatusBadge from "../../components/StatusBadge";
 
 const ApplicantDetails = () => {
     const { applicationId } = useParams();
@@ -133,34 +132,24 @@ const ApplicantDetails = () => {
             <div className="flex-1 p-10">
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-4xl font-bold text-left text-black">Applicant Details</h1>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={() => handleStatusUpdate('shortlisted')}
-                            disabled={isShortlistDisabled}
-                            className={`px-4 py-2 ${isShortlistDisabled ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg`}
-                        >
-                            {shortlistCaption}
-                        </button>
-                        <button
-                            onClick={() => handleStatusUpdate('rejected')}
-                            disabled={isRejectDisabled}
-                            className={`px-4 py-2 ${isRejectDisabled ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'} text-white rounded-lg`}
-                        >
-                            {rejectCaption}
-                        </button>
-                    </div>
+                    <StatusBadge
+                        status={applicant?.status}
+                        size="w-70 h-10"
+                        fontSize="text-xl"
+                        padding="px-20 py-5"
+                    />
                 </div>
 
                 {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-8">
                         {error}
                     </div>
                 )}
 
                 {applicant ? (
-                    <div className="mt-8">
+                    <div className="space-y-8">
                         <UserDetails
-                            user={applicant} // Ensure this is passed correctly
+                            user={applicant}
                             editable={false}
                         />
                         <ApplicationDetails
@@ -169,6 +158,22 @@ const ApplicantDetails = () => {
                             answers={applicant.answers || []}
                             codeChallenge={codeChallenge}
                         />
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                onClick={() => handleStatusUpdate('shortlisted')}
+                                disabled={isShortlistDisabled}
+                                className={`px-4 py-2 ${isShortlistDisabled ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-lg`}
+                            >
+                                {shortlistCaption}
+                            </button>
+                            <button
+                                onClick={() => handleStatusUpdate('rejected')}
+                                disabled={isRejectDisabled}
+                                className={`px-4 py-2 ${isRejectDisabled ? 'bg-gray-400' : 'bg-red-600 hover:bg-red-700'} text-white rounded-lg`}
+                            >
+                                {rejectCaption}
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <div className="text-center text-gray-600">
