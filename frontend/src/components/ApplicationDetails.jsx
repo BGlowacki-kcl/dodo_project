@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import WhiteBox from "./WhiteBox";
+import { FaFileAlt, FaQuestionCircle, FaCode } from "react-icons/fa";
 
 const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, showCodeAssessment = true }) => {
   const [expandedQuestion, setExpandedQuestion] = useState(null);
@@ -12,7 +13,9 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
     <div>
       {/* Cover Letter */}
       <WhiteBox className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Cover Letter</h2>
+        <h2 className="text-xl font-semibold mb-4 flex items-center">
+          <FaFileAlt className="mr-2" /> Cover Letter
+        </h2>
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-dtext text-base leading-relaxed whitespace-pre-line m-0 font-serif">
             {coverLetter?.trim() || "No cover letter provided"}
@@ -22,7 +25,9 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
 
       {/* Questions and Answers */}
       <WhiteBox className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Questions and Answers</h2>
+        <h2 className="text-xl font-semibold mb-4 flex items-center">
+          <FaQuestionCircle className="mr-2" /> Questions and Answers
+        </h2>
         {questions?.length > 0 ? (
           <div className="space-y-4">
             {questions.map((question) => {
@@ -61,7 +66,9 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
       {/* Code Challenges */}
       {showCodeAssessment && (
         <WhiteBox className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Code Challenges</h2>
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <FaCode className="mr-2" /> Code Assessment
+          </h2>
           {codeAssessment?.assessments?.length > 0 ? (
             <div className="space-y-6">
               {codeAssessment.assessments.map((assessment) => {

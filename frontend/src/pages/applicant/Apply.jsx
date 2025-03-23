@@ -23,6 +23,7 @@ import { getJobQuestionsById } from "../../services/jobService";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
 import ModalMessages from "../../components/ModalMessages";
+import { FaFileAlt, FaQuestionCircle } from "react-icons/fa";
 
 const Apply = () => {
   // ----------------------------- State Variables -----------------------------
@@ -224,7 +225,7 @@ const Apply = () => {
       <div className="flex-1 p-10">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-left text-black">Apply for Job</h1>
+          <h1 className="text-4xl font-bold text-left text-black">Apply for the Job</h1>
           <button
             onClick={() => setShowModal(true)}
             className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-200"
@@ -236,8 +237,8 @@ const Apply = () => {
         {/* Cover Letter and Questions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <WhiteBox className="h-[30rem] flex flex-col justify-between">
-            <h2 className="text-2xl font-semibold mb-4">
-              Cover Letter <span className="text-sm text-gray-500 italic">- Optional</span>
+            <h2 className="text-2xl font-semibold mb-4 flex items-center">
+              <FaFileAlt className="mr-2" /> Cover Letter <span className="text-sm text-gray-500 italic">- Optional</span>
             </h2>
             <textarea
               rows={10}
@@ -248,7 +249,9 @@ const Apply = () => {
             />
           </WhiteBox>
           <WhiteBox className="h-[30rem] flex flex-col justify-between">
-            <h2 className="text-2xl font-semibold mb-4">Questions</h2>
+            <h2 className="text-2xl font-semibold mb-4 flex items-center">
+              <FaQuestionCircle className="mr-2" /> Questions
+            </h2>
             {questions.length > 0 ? (
               <div className="flex flex-col justify-between flex-grow">
                 <div>
