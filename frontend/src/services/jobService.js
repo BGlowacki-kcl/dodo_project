@@ -180,6 +180,19 @@ export async function getAllJobTypes() {
 }
 
 /**
+ * Gets all companies
+ * @returns {Promise<Array>} - List of companies
+ */
+export async function getAllCompanies() {
+  return await makeApiRequest(
+    `${API_BASE_URL}/company`,
+    "GET",
+    null,
+    "Failed to get all companies"
+  );
+}
+
+/**
  * Builds query parameters for job filtering
  * @param {Object} filters - Filter criteria
  * @returns {string} - URL query string
@@ -197,6 +210,10 @@ function buildFilterQueryParams(filters) {
   
   if (filters.role) {
     filters.role.forEach((role) => queryParams.append("role", role));
+  }
+
+  if (filters.company) {
+    filters.company.forEach((company) => queryParams.append("company", company));
   }
   
   return queryParams.toString();
