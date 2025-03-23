@@ -315,9 +315,6 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
               <FaPlus className="mr-2" /> Add Experience
             </button>
           )}
-          {(!user.experience || user.experience.length === 0) && (
-            <p className="text-black italic">No experience details available.</p>
-          )}
         </div>
       </WhiteBox>
 

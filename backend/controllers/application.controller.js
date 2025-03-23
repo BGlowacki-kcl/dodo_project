@@ -107,46 +107,34 @@ export const applicationController = {
     async getOneApplication(req, res) {
         try {
             const { id } = req.query; // Application ID
-            const { uid } = req;
-    
-            // Get the requesting user
-            const user = await User.findOne({ uid });
-            if (!user) {
-                return res.status(403).json(createResponse(false, "Unauthorized"));
-            }
-            
-            // Find application by applicant ID and populate necessary fields
+
+
+            // Fetch application and populate applicant details
             const app = await Application.findById(id)
-                .populate("applicant", "name email skills resume")
+                .populate("applicant", "name email skills resume education experience phoneNumber location")
                 .populate("job");
-            
+
             if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
-    
-            // Check if employer owns the job
-
 
             
-            
+
             const applicationData = {
                 id: app._id,
-                applicantid: app.applicant._id,
-                name: app.applicant.name,
-                email: app.applicant.email,
+                applicant: app.applicant,
                 status: app.status,
                 coverLetter: app.coverLetter,
                 submittedAt: app.submittedAt,
-                skills: app.applicant.skills,
-                resume: app.applicant.resume,
-                job: app.job,
-                assessments: null,
                 answers: app.answers.map((answer) => ({
                     questionId: answer.questionId.toString(),
                     answerText: answer.answerText,
                 })),
+                job: app.job,
+                assessments: null, 
             };
 
+            // Fetch assessments and submissions related to the application
             const job = await Job.findById(app.job);
             const assessmentIds = job.assessments;
             const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
@@ -155,8 +143,8 @@ export const applicationController = {
             console.log("assessmentSubmission: ", assessmentSubmission);
 
             applicationData.assessments = assessmentSubmission;
-            
-            res.json(createResponse(true, "Application found", applicationData));
+
+            return res.status(200).json(createResponse(true, "Application found", applicationData));
         } catch (err) {
             console.error("Error getting application:", err);
             res.status(500).json(createResponse(false, err.message));

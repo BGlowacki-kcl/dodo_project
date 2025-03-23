@@ -18,31 +18,31 @@ const ApplicantDetails = () => {
         const fetchApplicantDetails = async () => {
             try {
                 const response = await getApplicationById(applicationId);
-                const applicantId = response.applicantid;
-                const userResponse = await userService.getUserById(applicantId);
 
-                setCodeChallenge(response.assessments);
-
-                if (!response && !userResponse) {
-                    throw new Error('No application data returned');
+                if (!response) {
+                    throw new Error("No application data returned");
                 }
 
                 setApplicant({
-                    id: response._id,
-                    applicationId: response._id,
-                    name: response.name || 'No name provided',
-                    email: response.email || 'No email provided',
-                    status: response.status || 'Applied',
-                    coverLetter: response.coverLetter || 'No cover letter provided',
+                    id: response.id,
+                    name: response.applicant?.name || "No name provided",
+                    email: response.applicant?.email || "No email provided",
+                    phoneNumber: response.applicant?.phoneNumber || "No phone number provided",
+                    location: response.applicant?.location || "No location provided",
+                    skills: response.applicant?.skills || [],
+                    resume: response.applicant?.resume || "No resume available",
+                    education: response.applicant?.education || [],
+                    experience: response.applicant?.experience || [],
+                    status: response.status || "Applied",
+                    coverLetter: response.coverLetter || "No cover letter provided",
                     submittedAt: response.submittedAt || new Date().toISOString(),
-                    skills: userResponse.skills || [],
-                    resume: userResponse.resume || 'No resume available',
                     answers: response.answers || [],
-                    questions: response.job.questions || [],
+                    questions: response.job?.questions || [],
                 });
+                console.log("Applicant details:", response);
             } catch (error) {
-                console.error('Error fetching application details:', error);
-                setError(`Failed to load application: ${error.message || 'Unknown error'}`);
+                console.error("Error fetching application details:", error);
+                setError(`Failed to load application: ${error.message || "Unknown error"}`);
             } finally {
                 setLoading(false);
             }
@@ -51,7 +51,7 @@ const ApplicantDetails = () => {
         if (applicationId) {
             fetchApplicantDetails();
         } else {
-            setError('No application ID provided');
+            setError("No application ID provided");
             setLoading(false);
         }
     }, [applicationId]);
@@ -160,7 +160,7 @@ const ApplicantDetails = () => {
                 {applicant ? (
                     <div className="mt-8">
                         <UserDetails
-                            user={applicant}
+                            user={applicant} // Ensure this is passed correctly
                             editable={false}
                         />
                         <ApplicationDetails
