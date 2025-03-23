@@ -162,6 +162,16 @@ const Apply = () => {
                 return;
             }
 
+            await saveApplication({
+                applicationId,
+                jobId,
+                coverLetter,
+                answers: Object.entries(answers).map(([questionId, answerText]) => ({
+                    questionId,
+                    answerText,
+                })),
+            });
+            
             await submitApplication(applicationId);
             showNotification("Application submitted successfully!", "success");
             navigate(`/user/jobs/details/${jobId}`);
