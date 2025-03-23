@@ -1,6 +1,6 @@
 import React from "react";
 import WhiteBox from "./WhiteBox";
-import { FaEdit, FaSave, FaTrash, FaPlus, FaGraduationCap, FaBriefcase, FaTools, FaUser } from "react-icons/fa";
+import { FaEdit, FaSave, FaTrash, FaPlus, FaGraduationCap, FaBriefcase, FaTools, FaUser, FaLink } from "react-icons/fa";
 
 const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, isProfilePage }) => {
   const formatDate = (dateString) => {
@@ -16,83 +16,146 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
   };
 
   return (
-    <div>
-      {/* Personal Information Section */}
-      <WhiteBox className="mt-8">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold mb-4 text-black">
-            <FaUser className="inline-block mr-2" /> Personal Information
-          </h2>
-          {isProfilePage && (
-            isEditing.personal ? (
-              <FaSave className="cursor-pointer" onClick={() => onEdit("personal")} />
-            ) : (
-              <FaEdit className="cursor-pointer" onClick={() => onEdit("personal")} />
-            )
-          )}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <p className="text-black">
-            <strong>Name:</strong>{" "}
-            {isEditing.personal ? (
-              <input
-                type="text"
-                name="name"
-                value={user.name || ""}
-                onChange={onChange}
-                className="border p-1 w-full"
-              />
-            ) : (
-              user.name || "N/A"
+    <div className="space-y-8">
+      {/* First Row: Personal Information and Links */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Personal Information */}
+        <WhiteBox>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-black">
+              <FaUser className="inline-block mr-2" /> Personal Information
+            </h2>
+            {isProfilePage && (
+              isEditing.personal ? (
+                <FaSave className="cursor-pointer" onClick={() => onEdit("personal")} />
+              ) : (
+                <FaEdit className="cursor-pointer" onClick={() => onEdit("personal")} />
+              )
             )}
-          </p>
-          <p className="text-black">
-            <strong>Email:</strong>{" "}
-            {isEditing.personal ? (
-              <input
-                type="text"
-                name="email"
-                value={user.email || ""}
-                onChange={onChange}
-                className="border p-1 w-full"
-              />
-            ) : (
-              user.email || "N/A"
+          </div>
+          <div className="space-y-2">
+            <p className="text-black">
+              <strong>Name:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="name"
+                  value={user.name || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full"
+                />
+              ) : (
+                user.name || "N/A"
+              )}
+            </p>
+            <p className="text-black">
+              <strong>Email:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="email"
+                  value={user.email || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full"
+                />
+              ) : (
+                user.email || "N/A"
+              )}
+            </p>
+            <p className="text-black">
+              <strong>Phone Number:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={user.phoneNumber || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full"
+                />
+              ) : (
+                user.phoneNumber || "N/A"
+              )}
+            </p>
+            <p className="text-black">
+              <strong>Location:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="location"
+                  value={user.location || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full"
+                />
+              ) : (
+                user.location || "N/A"
+              )}
+            </p>
+          </div>
+        </WhiteBox>
+
+        {/* Links */}
+        <WhiteBox>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-black">
+              <FaLink className="inline-block mr-2" /> Links
+            </h2>
+            {isProfilePage && (
+              isEditing.links ? (
+                <FaSave className="cursor-pointer" onClick={() => onEdit("links")} />
+              ) : (
+                <FaEdit className="cursor-pointer" onClick={() => onEdit("links")} />
+              )
             )}
-          </p>
-          <p className="text-black">
-            <strong>Phone Number:</strong>{" "}
-            {isEditing.personal ? (
-              <input
-                type="text"
-                name="phoneNumber"
-                value={user.phoneNumber || ""}
-                onChange={onChange}
-                className="border p-1 w-full"
-              />
-            ) : (
-              user.phoneNumber || "N/A"
-            )}
-          </p>
-          <p className="text-black">
-            <strong>Location:</strong>{" "}
-            {isEditing.personal ? (
-              <input
-                type="text"
-                name="location"
-                value={user.location || ""}
-                onChange={onChange}
-                className="border p-1 w-full"
-              />
-            ) : (
-              user.location || "N/A"
-            )}
-          </p>
-        </div>
-      </WhiteBox>
+          </div>
+          <div className="space-y-2">
+            <p className="text-black">
+              <strong>GitHub:</strong>{" "}
+              {isEditing.links ? (
+                <input
+                  type="text"
+                  name="github"
+                  value={user.github || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full"
+                />
+              ) : (
+                <a
+                  href={user.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500"
+                >
+                  {user.github || "N/A"}
+                </a>
+              )}
+            </p>
+            <p className="text-black">
+              <strong>LinkedIn:</strong>{" "}
+              {isEditing.links ? (
+                <input
+                  type="text"
+                  name="linkedin"
+                  value={user.linkedin || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full"
+                />
+              ) : (
+                <a
+                  href={user.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500"
+                >
+                  {user.linkedin || "N/A"}
+                </a>
+              )}
+            </p>
+          </div>
+        </WhiteBox>
+      </div>
 
       {/* Education Section */}
-      <WhiteBox className="mt-8">
+      <WhiteBox>
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold mb-4 text-black">
             <FaGraduationCap className="inline-block mr-2" /> Education
@@ -105,10 +168,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             )
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
           {user.education?.length > 0 ? (
             user.education.map((edu, index) => (
-              <div key={index} className="p-4 border rounded-lg mb-4 relative">
+              <div key={index} className="p-4 border rounded-lg relative">
                 <p className="text-black">
                   <strong>Institution:</strong>{" "}
                   {isEditing.education ? (
@@ -202,7 +265,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
       </WhiteBox>
 
       {/* Experience Section */}
-      <WhiteBox className="mt-8">
+      <WhiteBox>
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold mb-4 text-black">
             <FaBriefcase className="inline-block mr-2" /> Experience
@@ -220,6 +283,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             user.experience.map((exp, index) => (
               <div key={index} className="mb-4 p-4 border rounded-lg relative">
                 <div className="flex flex-col md:flex-row justify-between">
+                  {/* Left Column: Company, Title, Start Date, End Date */}
                   <div className="flex-1">
                     <p className="text-black">
                       <strong>Company:</strong>{" "}
@@ -278,22 +342,22 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                       )}
                     </p>
                   </div>
+
+                  {/* Right Column: Description */}
                   <div className="flex-1 md:ml-4">
                     <p className="text-black">
                       <strong>Description:</strong>
                     </p>
-                    <p className="text-black">
-                      {isEditing.experience ? (
-                        <textarea
-                          name={`experience.${index}.description`}
-                          value={exp.description || ""}
-                          onChange={onChange}
-                          className="border p-1 w-full"
-                        />
-                      ) : (
-                        exp.description || "N/A"
-                      )}
-                    </p>
+                    {isEditing.experience ? (
+                      <textarea
+                        name={`experience.${index}.description`}
+                        value={exp.description || ""}
+                        onChange={onChange}
+                        className="border p-1 w-full"
+                      />
+                    ) : (
+                      <p className="text-black">{exp.description || "N/A"}</p>
+                    )}
                   </div>
                 </div>
                 {isEditing.experience && (
@@ -319,7 +383,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
       </WhiteBox>
 
       {/* Skills Section */}
-      <WhiteBox className="mt-8">
+      <WhiteBox>
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold mb-4 text-black">
             <FaTools className="inline-block mr-2" /> Skills
@@ -332,43 +396,45 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             )
           )}
         </div>
-        {isEditing.skills ? (
-          <div>
-            {user.skills?.map((skill, index) => (
-              <div key={index} className="flex items-center mb-2">
-                <input
-                  type="text"
-                  name={`skills.${index}`}
-                  value={skill || ""}
-                  onChange={onChange}
-                  className="border p-1 flex-1"
-                />
-                <FaTrash
-                  className="ml-2 cursor-pointer text-red-500"
-                  onClick={() => onRemove("skills", index)}
-                />
-              </div>
-            ))}
-            <button
-              className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
-              onClick={() => onAdd("skills")}
-            >
-              <FaPlus className="mr-2" /> Add Skill
-            </button>
-          </div>
-        ) : (
-          user.skills?.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {user.skills.map((skill, index) => (
-                <span key={index} className="bg-gray-200 px-2 py-1 rounded">
-                  {skill}
-                </span>
+        <div className="space-y-4">
+          {isEditing.skills ? (
+            <div>
+              {user.skills?.map((skill, index) => (
+                <div key={index} className="flex items-center">
+                  <input
+                    type="text"
+                    name={`skills.${index}`}
+                    value={skill || ""}
+                    onChange={onChange}
+                    className="border p-1 flex-1"
+                  />
+                  <FaTrash
+                    className="ml-2 cursor-pointer text-red-500"
+                    onClick={() => onRemove("skills", index)}
+                  />
+                </div>
               ))}
+              <button
+                className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
+                onClick={() => onAdd("skills")}
+              >
+                <FaPlus className="mr-2" /> Add Skill
+              </button>
             </div>
           ) : (
-            <p className="text-black italic">No skills available.</p>
-          )
-        )}
+            user.skills?.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {user.skills.map((skill, index) => (
+                  <span key={index} className="bg-gray-200 px-2 py-1 rounded">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-black italic">No skills available.</p>
+            )
+          )}
+        </div>
       </WhiteBox>
     </div>
   );
