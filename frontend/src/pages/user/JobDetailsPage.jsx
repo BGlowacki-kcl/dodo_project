@@ -55,11 +55,11 @@ function JobDetailsPage() {
         console.error("Error checking shortlist:", err);
       }
     }
-
-    fetchJob();
-    fetchUserId();
-    checkIfApplied();
-    if (userId) {
+    
+    if (sessionStorage.getItem("token")) {
+      fetchUserId();
+      fetchJob();
+      checkIfApplied();
       checkIfApplied();
       checkIfShortlisted();
     }

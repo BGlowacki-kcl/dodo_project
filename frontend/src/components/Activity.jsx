@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAllUserApplications } from '../services/applicationService';
+import { getAllUserApplications } from '../services/application.service';
 import ApplicationCards from './ApplicationCards';
 import { FaFolderOpen } from 'react-icons/fa'; 
 import { useNavigate } from 'react-router-dom';

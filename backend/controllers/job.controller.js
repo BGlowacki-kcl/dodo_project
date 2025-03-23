@@ -20,14 +20,14 @@ export const createJob = async (req, res) => {
         const jobData = req.body;
 
         if (!areRequiredFieldsPresent(jobData)) {
-            return res.status(400).json({ message: 'All required fields must be filled.' });
+            return res.status(400).json({ success: false, message: 'All required fields must be filled.' });
         }
 
         const job = new Job(jobData);
         const createdJob = await job.save();
-        return res.status(201).json(createdJob);
+        return res.status(201).json({ success: true, data: createdJob });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -40,9 +40,9 @@ export const createJob = async (req, res) => {
 export const getJobs = async (req, res) => {
     try {
         const jobs = await Job.find();
-        return res.status(200).json(jobs);
+        return res.status(200).json({ success: true, data: jobs });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -58,13 +58,13 @@ export const getJobsByEmployer = async (req, res) => {
         const employer = await Employer.findOne({ uid });
 
         if (!employer) {
-            return res.status(404).json({ message: 'Employer not found' });
+            return res.status(404).json({ success: false, message: 'Employer not found' });
         }
 
         const jobs = await Job.find({ postedBy: employer._id });
-        return res.status(200).json(jobs);
+        return res.status(200).json({ success: true, data: jobs });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -78,11 +78,11 @@ export const getJobById = async (req, res) => {
     try {
         const job = await Job.findById(req.params.id);
         if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
+            return res.status(404).json({ success: false, message: 'Job not found' });
         }
-        return res.status(200).json(job);
+        return res.status(200).json({ success: true, data: job });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -98,11 +98,11 @@ export const updateJob = async (req, res) => {
         const updatedJob = await Job.findByIdAndUpdate(req.params.id, updatedData, { new: true });
 
         if (!updatedJob) {
-            return res.status(404).json({ message: 'Job not found' });
+            return res.status(404).json({ success: false, message: 'Job not found' });
         }
-        return res.status(200).json(updatedJob);
+        return res.status(200).json({ success: true, data: updatedJob });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -116,13 +116,13 @@ export const deleteJob = async (req, res) => {
     try {
         const job = await Job.findById(req.params.id);
         if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
+            return res.status(404).json({ success: false, message: 'Job not found' });
         }
 
         await job.deleteOne();
-        return res.status(200).json({ message: 'Job deleted successfully' });
+        return res.status(200).json({ success: true, message: 'Job deleted successfully' });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -134,11 +134,32 @@ export const deleteJob = async (req, res) => {
  */
 export const getJobCountByType = async (req, res) => {
     try {
+        console.log("Fetching job count by type");
         const { type } = req.query;
         const count = await Job.countDocuments({ employmentType: type });
-        return res.status(200).json({ count });
+        console.log("Count:", count);
+        return res.status(200).json({ success: true, data: count });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/**
+ * Retrieves all unique companies
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Promise<void>}
+ */
+export const getAllCompanies = async (req, res) => {
+    try {
+        const companies = await Job.distinct('company');
+        return res.status(200).json({ success: true, data: companies });
+    } catch (error) {
+        return res.status(500).json({ 
+            success: false, 
+            message: "Failed to fetch companies", 
+            error: error.message 
+        });
     }
 };
 
@@ -151,9 +172,10 @@ export const getJobCountByType = async (req, res) => {
 export const getAllJobRoles = async (req, res) => {
     try {
         const titles = await Job.distinct('title');
-        return res.status(200).json(titles);
+        return res.status(200).json({ success: true, data: titles });
     } catch (error) {
         return res.status(500).json({ 
+            success: false,
             message: "Failed to fetch job roles",
             error: error.message 
         });
@@ -169,9 +191,10 @@ export const getAllJobRoles = async (req, res) => {
 export const getAllJobLocations = async (req, res) => {
     try {
         const locations = await Job.distinct('location');
-        return res.status(200).json(locations);
+        return res.status(200).json({ success: true, data: locations });
     } catch (error) {
         return res.status(500).json({ 
+            success: false,
             message: "Failed to fetch job locations",
             error: error.message 
         });
@@ -186,10 +209,13 @@ export const getAllJobLocations = async (req, res) => {
  */
 export const getAllJobTypes = async (req, res) => {
     try {
+        console.log("Fetching employment types");
         const employmentTypes = await Job.distinct('employmentType');
-        return res.status(200).json(employmentTypes);
+        console.log(employmentTypes);
+        return res.status(200).json({ success: true, data: employmentTypes });
     } catch (error) {
         return res.status(500).json({ 
+            success: false,
             message: "Failed to fetch job types",
             error: error.message 
         });
@@ -219,9 +245,10 @@ export const getFilteredJobs = async (req, res) => {
     try {
         const filter = buildJobFilter(req.query);
         const jobs = await Job.find(filter);
-        return res.status(200).json(jobs);
+        return res.status(200).json({ success: true, data: jobs });
     } catch (error) {
         return res.status(500).json({ 
+            success: false,
             message: "Failed to fetch jobs",
             error: error.message 
         });
@@ -240,10 +267,10 @@ export const getJobQuestionsById = async (req, res) => {
         const job = await Job.findById(jobId);
 
         if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
+            return res.status(404).json({ success: false, message: 'Job not found' });
         }
-        return res.status(200).json(job.questions);
+        return res.status(200).json({ success: true, data: job.questions });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ success: false, message: error.message });
     }
 };
