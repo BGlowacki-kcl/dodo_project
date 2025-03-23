@@ -113,11 +113,12 @@ export async function verifyUserRole(email, expectedRole) {
  */
 export async function checkProfileCompletion(navigate) {
   try {
+    console.log("Checking user")
     const data = await makeApiRequest('/api/user/completed', 'GET');
     const userRole = sessionStorage.getItem('role');
-
-    if (data.redirect && userRole === 'jobSeeker') {
-      navigate(data.redirect);
+    console.log("Profile coompletion: ",data);
+    if (!data && userRole === 'jobSeeker') {
+      navigate('/addDetails');
       return;
     }
 

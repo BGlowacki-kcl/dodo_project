@@ -55,10 +55,11 @@ function JobDetailsPage() {
         console.error("Error checking shortlist:", err);
       }
     }
+
+    fetchJob();
     
     if (sessionStorage.getItem("token")) {
       fetchUserId();
-      fetchJob();
       checkIfApplied();
       checkIfApplied();
       checkIfShortlisted();
@@ -165,22 +166,24 @@ function JobDetailsPage() {
       >
         &larr; Back
       </button>
-      {applied ? (
-        <p className="mt-4 text-green-500 font-bold">You have already applied for this job.</p>
-      ) : (
+      {userId && <>
+        {applied ? (
+          <p className="mt-4 text-green-500 font-bold">You have already applied for this job.</p>
+        ) : (
+          <button
+            onClick={handleApply}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
+          >
+            Apply
+          </button>
+        )}
         <button
-          onClick={handleApply}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200"
+          onClick={handleShortlistToggle}
+          className={`mt-4 px-4 py-2 ${shortlisted ? "bg-red-600" : "bg-green-600"} text-white rounded hover:${shortlisted ? "bg-red-700" : "bg-green-700"} transition duration-200`}
         >
-          Apply
+          {shortlisted ? "Remove from Shortlist" : "Add to Shortlist"}
         </button>
-      )}
-      <button
-        onClick={handleShortlistToggle}
-        className={`mt-4 px-4 py-2 ${shortlisted ? "bg-red-600" : "bg-green-600"} text-white rounded hover:${shortlisted ? "bg-red-700" : "bg-green-700"} transition duration-200`}
-      >
-        {shortlisted ? "Remove from Shortlist" : "Add to Shortlist"}
-      </button>
+      </>}
     </div>
   );
 }

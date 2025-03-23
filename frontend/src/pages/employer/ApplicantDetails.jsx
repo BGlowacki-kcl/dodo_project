@@ -16,7 +16,7 @@ const ApplicantDetails = () => {
         const fetchApplicantDetails = async () => {
             try {
                 const response = await getApplicationById(applicationId);
-                const applicantId = response.applicantid;
+                const applicantId = response.applicantId;
                 const userResponse = await userService.getUserById(applicantId);
 
                 setCodeChallenge(response.assessments);

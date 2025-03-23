@@ -157,14 +157,14 @@ export const userController = {
                     success: true,
                     message: "Profile incomplete, redirecting to addDetails",
                     redirect: "/addDetails",
-                    missingFields
+                    data: false
                 });
             }
 
-            return res.status(200).json(createResponse(true, "User's profile is completed!"));
+            return res.status(200).json(createResponse(true, "User's profile is completed!", true));
         } catch (error) {
             const status = error.message === "User not found" ? 404 : 401;
-            return res.status(status).json(createResponse(false, error.message));
+            return res.status(status).json(createResponse(false, error.message, false));
         }
     },
 

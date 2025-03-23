@@ -72,7 +72,7 @@ import { createShortlist } from "./shortlist.service.js";
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await createUserSession(userCredential, role);
         
-        await createBasicUser({ email, role });
+        await userService.createBasicUser({ email, role });
         await createShortlist();
         
         await checkProfileCompletion(navigate);
