@@ -1,19 +1,41 @@
+/**
+ * ApplicationDetails.jsx
+ *
+ * This component displays detailed information about an application, including:
+ * - Cover Letter
+ * - Questions and Answers
+ * - Code Assessment details
+ */
+
 import React, { useState } from "react";
 import WhiteBox from "./WhiteBox";
 import { FaFileAlt, FaQuestionCircle, FaCode } from "react-icons/fa";
 
-const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, showCodeAssessment = true }) => {
+const ApplicationDetails = ({
+  coverLetter,
+  questions,
+  answers,
+  codeAssessment,
+  showCodeAssessment = true,
+}) => {
+  // ----------------------------- State Variables -----------------------------
   const [expandedQuestion, setExpandedQuestion] = useState(null);
 
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Toggles the expanded state of a question.
+   * @param {String} questionId - The ID of the question to toggle.
+   */
   const toggleQuestion = (questionId) => {
     setExpandedQuestion((prev) => (prev === questionId ? null : questionId));
   };
 
+  // ----------------------------- Render -----------------------------
   return (
     <div>
       {/* Cover Letter */}
       <WhiteBox className="mb-8">
-        <h2 className="text-xl font-semibold mb-4 flex items-center">
+        <h2 className="text-2xl font-semibold mb-4 flex items-center">
           <FaFileAlt className="mr-2" /> Cover Letter
         </h2>
         <div className="bg-gray-50 p-4 rounded-lg">
@@ -25,13 +47,15 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
 
       {/* Questions and Answers */}
       <WhiteBox className="mb-8">
-        <h2 className="text-xl font-semibold mb-4 flex items-center">
+        <h2 className="text-2xl font-semibold mb-4 flex items-center">
           <FaQuestionCircle className="mr-2" /> Questions and Answers
         </h2>
         {questions?.length > 0 ? (
           <div className="space-y-4">
             {questions.map((question) => {
-              const answer = answers.find((ans) => ans.questionId === question._id);
+              const answer = answers.find(
+                (ans) => ans.questionId === question._id
+              );
               const isExpanded = expandedQuestion === question._id;
 
               return (
@@ -49,8 +73,8 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
                   </button>
                   {isExpanded && (
                     <div className="p-4 bg-white">
-                      <p className="text-gray-700">
-                        <strong>Answer:</strong> {answer?.answerText || "No answer provided"}
+                      <p className="text-base text-gray-700">
+                        {answer?.answerText || "No answer provided"}
                       </p>
                     </div>
                   )}
@@ -59,29 +83,41 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
             })}
           </div>
         ) : (
-          <p className="text-gray-500 italic">No questions available for this job.</p>
+          <p className="text-gray-500 italic">
+            No questions available for this job.
+          </p>
         )}
       </WhiteBox>
 
       {/* Code Challenges */}
       {showCodeAssessment && (
         <WhiteBox className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">
             <FaCode className="mr-2" /> Code Assessment
           </h2>
-          {codeAssessment?.assessments?.length > 0 ? (
+          {codeAssessment?.assessments &&
+          codeAssessment.assessments.length > 0 ? (
             <div className="space-y-6">
               {codeAssessment.assessments.map((assessment) => {
                 const submission = codeAssessment.submissions.find(
                   (sub) => sub.assessment === assessment._id
                 );
                 return (
-                  <div key={assessment._id} className="bg-gray-50 p-4 rounded-lg shadow">
-                    <h3 className="text-lg font-medium text-gray-800 mb-2">{assessment.title}</h3>
-                    <p className="text-gray-600 mb-4">{assessment.description}</p>
+                  <div
+                    key={assessment._id}
+                    className="bg-gray-50 p-4 rounded-lg shadow"
+                  >
+                    <h3 className="text-xl font-medium text-gray-800 mb-2">
+                      {assessment.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {assessment.description}
+                    </p>
                     {submission ? (
                       <div>
-                        <h4 className="text-md font-semibold mb-2">Submitted Code:</h4>
+                        <h4 className="text-md font-semibold mb-2">
+                          Submitted Code:
+                        </h4>
                         <pre className="bg-black text-white p-4 rounded-lg overflow-auto">
                           {submission.solutionCode}
                         </pre>
@@ -90,14 +126,18 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
                         </p>
                       </div>
                     ) : (
-                      <p className="text-gray-500 italic">No Submission Available</p>
+                      <p className="text-gray-500 italic">
+                        No Submission Available
+                      </p>
                     )}
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-gray-500 italic">No code challenges available.</p>
+            <p className="text-gray-500 italic">
+              No code challenges available.
+            </p>
           )}
         </WhiteBox>
       )}
@@ -105,4 +145,4 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeAssessment, s
   );
 };
 
-export default ExtractApplication;
+export default ApplicationDetails;
