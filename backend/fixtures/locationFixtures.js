@@ -4,7 +4,7 @@ export const locations = [
     'Belfast',
     'Paris',
     'Stockholm',
-    'Ney York',
+    'New York',
     'Shanghai',
     'Seoul'
 ]
