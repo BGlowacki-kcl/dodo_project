@@ -4,6 +4,7 @@ import { getApplicationById, updateStatus } from "../../services/applicationServ
 import { userService } from "../../services/user.service";
 import ApplicationDetails from "../../components/ApplicationDetails"; // Updated import
 import WhiteBox from "../../components/WhiteBox";
+import UserDetails from "../../components/UserDetails";
 
 const ApplicantDetails = () => {
     const { applicationId } = useParams();
@@ -158,6 +159,10 @@ const ApplicantDetails = () => {
 
                 {applicant ? (
                     <div className="mt-8">
+                        <UserDetails
+                            user={applicant}
+                            editable={false}
+                        />
                         <ApplicationDetails
                             coverLetter={applicant.coverLetter}
                             questions={applicant.questions || []}

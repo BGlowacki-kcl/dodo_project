@@ -3,6 +3,7 @@ import { userService } from '../services/user.service.js';
 import { FaUser, FaGraduationCap, FaBriefcase, FaTools, FaFileAlt, FaEdit, FaSave, FaPlus, FaTrash } from 'react-icons/fa'; 
 import WhiteBox from './WhiteBox';
 import { useNavigate } from 'react-router-dom';
+import UserDetails from "./UserDetails";
 
 const Profile = ({ editable }) => { 
     const [user, setUser] = useState({});
@@ -297,6 +298,16 @@ const Profile = ({ editable }) => {
                     )
                 )}
             </WhiteBox>
+
+            {/* UserDetails Component */}
+            <UserDetails
+                user={editableUser}
+                editable={true}
+                onEdit={handleSaveClick}
+                onChange={handleInputChange}
+                onAdd={handleAddItem}
+                onRemove={handleRemoveItem}
+            />
         </div>
     );
 };

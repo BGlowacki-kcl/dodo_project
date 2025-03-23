@@ -15,6 +15,7 @@ import {
   FaPlus, 
   FaTrash 
 } from "react-icons/fa";
+import UserDetails from "../components/UserDetails";
 
 const AddDetails = () => {
   const navigate = useNavigate();
@@ -230,246 +231,26 @@ const AddDetails = () => {
               {loading && <p className="text-green-500 mt-2">Loading...</p>}
             </div>
 
-            {/* Personal Information */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                <FaUser className="mr-2" /> Personal Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-700 font-medium">Name:</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={userData.name}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-medium">Location:</label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={userData.location}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-medium">Phone Number:</label>
-                  <input
-                    type="text"
-                    name="phoneNumber"
-                    value={userData.phoneNumber}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 font-medium">Date of Birth:</label>
-                  <input
-                    type="date"
-                    name="dob"
-                    onChange={handleChange}
-                    className="w-full border rounded-lg p-2 mt-1 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Education */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                <FaGraduationCap className="mr-2" /> Education
-              </h2>
-              {userData.education.map((edu, index) => (
-                <div key={index} className="p-4 border rounded-lg mb-4 relative bg-gray-50">
-                  <input
-                    type="text"
-                    placeholder="Institution"
-                    name={`education.${index}.institution`}
-                    value={edu.institution}
-                    onChange={(e) => updateNestedState("education", index, "institution", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Degree"
-                    name={`education.${index}.degree`}
-                    value={edu.degree}
-                    onChange={(e) => updateNestedState("education", index, "degree", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Field of Study"
-                    name={`education.${index}.fieldOfStudy`}
-                    value={edu.fieldOfStudy}
-                    onChange={(e) => updateNestedState("education", index, "fieldOfStudy", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <textarea
-                    placeholder="Description"
-                    name={`education.${index}.description`}
-                    value={edu.description}
-                    onChange={(e) => updateNestedState("education", index, "description", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <label className="block text-gray-700 font-medium">Start Date:</label>
-                  <input
-                    type="date"
-                    name={`education.${index}.startDate`}
-                    onChange={(e) => updateNestedState("education", index, "startDate", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <label className="block text-gray-700 font-medium">End Date:</label>
-                  <input
-                    type="date"
-                    name={`education.${index}.endDate`}
-                    onChange={(e) => updateNestedState("education", index, "endDate", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <FaTrash
-                    className="absolute top-2 right-2 cursor-pointer text-red-500"
-                    onClick={() => handleRemoveEducation(index)}
-                    disabled={loading}
-                  />
-                </div>
-              ))}
-              <button
-                className="flex items-center text-blue-500 hover:text-blue-700 mt-2"
-                onClick={handleAddEducation}
-                disabled={loading}
-              >
-                <FaPlus className="mr-2" /> Add Education
-              </button>
-            </div>
-
-            {/* Experience */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                <FaBriefcase className="mr-2" /> Experience
-              </h2>
-              {userData.experience.map((exp, index) => (
-                <div key={index} className="p-4 border rounded-lg mb-4 relative bg-gray-50">
-                  <input
-                    type="text"
-                    placeholder="Company"
-                    name={`experience.${index}.company`}
-                    value={exp.company}
-                    onChange={(e) => updateNestedState("experience", index, "company", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Title"
-                    name={`experience.${index}.title`}
-                    value={exp.title}
-                    onChange={(e) => updateNestedState("experience", index, "title", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Field of Work"
-                    name={`experience.${index}.fieldOfWork`}
-                    value={exp.fieldOfWork}
-                    onChange={(e) => updateNestedState("experience", index, "fieldOfWork", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <textarea
-                    placeholder="Description"
-                    name={`experience.${index}.description`}
-                    value={exp.description}
-                    onChange={(e) => updateNestedState("experience", index, "description", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <label className="block text-gray-700 font-medium">Start Date:</label>
-                  <input
-                    type="date"
-                    name={`experience.${index}.startDate`}
-                    onChange={(e) => updateNestedState("experience", index, "startDate", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <label className="block text-gray-700 font-medium">End Date:</label>
-                  <input
-                    type="date"
-                    name={`experience.${index}.endDate`}
-                    onChange={(e) => updateNestedState("experience", index, "endDate", e.target.value)}
-                    className="w-full border rounded-lg p-2 mb-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <FaTrash
-                    className="absolute top-2 right-2 cursor-pointer text-red-500"
-                    onClick={() => handleRemoveExperience(index)}
-                    disabled={loading}
-                  />
-                </div>
-              ))}
-              <button
-                className="flex items-center text-blue-500 hover:text-blue-700 mt-2"
-                onClick={handleAddExperience}
-                disabled={loading}
-              >
-                <FaPlus className="mr-2" /> Add Experience
-              </button>
-            </div>
-
-            {/* Skills */}
-            <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-semibold mb-4 flex items-center">
-                <FaTools className="mr-2" /> Skills
-              </h2>
-              {userData.skills.map((skill, index) => (
-                <div key={index} className="flex items-center mb-2">
-                  <input
-                    type="text"
-                    name={`skills.${index}`}
-                    value={skill}
-                    onChange={(e) => updateNestedState("skills", index, "", e.target.value)}
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                    disabled={loading}
-                  />
-                  <FaTrash
-                    className="ml-2 cursor-pointer text-red-500"
-                    onClick={() => handleRemoveSkill(index)}
-                    disabled={loading}
-                  />
-                </div>
-              ))}
-              <div className="flex items-center mt-2">
-                <input
-                  type="text"
-                  placeholder="Add a skill"
-                  value={skillInput}
-                  onChange={(e) => setSkillInput(e.target.value)}
-                  className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                  disabled={loading}
-                />
-                <button
-                  className="ml-2 bg-blue-500 text-white px-2 py-1 rounded-lg hover:bg-blue-600 transition-colors"
-                  onClick={handleAddSkill}
-                  disabled={loading}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
+            {/* UserDetails Component */}
+            <UserDetails
+              user={userData}
+              editable={true}
+              onEdit={handleSubmit}
+              onChange={(e) => {
+                const { name, value } = e.target;
+                setUserData((prev) => ({ ...prev, [name]: value }));
+              }}
+              onAdd={(section) => {
+                const newItem = section === "skills" ? "" : {};
+                setUserData((prev) => ({ ...prev, [section]: [...prev[section], newItem] }));
+              }}
+              onRemove={(section, index) => {
+                setUserData((prev) => ({
+                  ...prev,
+                  [section]: prev[section].filter((_, i) => i !== index),
+                }));
+              }}
+            />
 
             {/* Complete Profile Button at Bottom */}
             <div className="mt-6">
