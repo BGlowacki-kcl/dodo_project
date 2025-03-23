@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById } from "../../services/applicationService";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
-import ExtractApplication from "../../components/ExtractApplication";
+import ApplicationDetails from "../../components/ApplicationDetails"; // Updated import
 import ModalMessages from "../../components/ModalMessages";
 import useLocalStorage from "../../hooks/useLocalStorage";
 
@@ -163,15 +163,14 @@ const SingleApplicationPage = () => {
           </WhiteBox>
         </div>
 
-        {/* Main Info Card */}
-        <WhiteBox className="w-full mt-6">
-          <ExtractApplication
+        {/* Main Info Section */}
+        <div className="mt-8">
+          <ApplicationDetails
             coverLetter={coverLetter}
             questions={application.job?.questions || []}
             answers={application.answers || []}
-            codeChallenge={application.codeChallenge}
           />
-        </WhiteBox>
+        </div>
       </div>
     </div>
   );
