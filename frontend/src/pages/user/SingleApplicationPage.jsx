@@ -110,7 +110,14 @@ const SingleApplicationPage = () => {
   }
 
   const { job, status, coverLetter, submittedAt } = application;
-  const formattedDate = new Date(submittedAt).toLocaleString();
+  const formattedDate = new Date(submittedAt).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }) + " " + new Date(submittedAt).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
     <div className="container mx-auto p-4 font-sans">
@@ -152,7 +159,7 @@ const SingleApplicationPage = () => {
 
           {/* Job Company */}
           <WhiteBox className="text-center">
-            <h3 className="text-base font-bold">Job Company</h3>
+            <h3 className="text-base font-bold">Company</h3>
             <p>{job?.company || "Unknown Company"}</p>
           </WhiteBox>
 
@@ -169,6 +176,7 @@ const SingleApplicationPage = () => {
             coverLetter={coverLetter}
             questions={application.job?.questions || []}
             answers={application.answers || []}
+            showCodeAssessment={false}
           />
         </div>
       </div>
