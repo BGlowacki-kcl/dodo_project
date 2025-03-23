@@ -1,86 +1,128 @@
 import Shortlist from "../models/shortlist.model.js";
 import Job from "../models/job.model.js";
-import User from "../models/user/user.model.js";
 
-// Retrieve a user's shortlist
+/**
+ * Fetches a user's shortlist
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Shortlist document
+ */
+const fetchShortlist = async (userId) => {
+    const shortlist = await Shortlist.findOne({ user: userId }).populate("jobs");
+    if (!shortlist) {
+        throw new Error("Shortlist not found");
+    }
+    return shortlist;
+};
+
+/**
+ * Verifies if a job exists
+ * @param {string} jobId - Job ID
+ * @returns {Promise<Object>} Job document
+ */
+const verifyJobExists = async (jobId) => {
+    const job = await Job.findById(jobId);
+    if (!job) {
+        throw new Error("Job not found");
+    }
+    return job;
+};
+
+/**
+ * Gets or creates a user's shortlist
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Shortlist document
+ */
+const getOrCreateShortlist = async (userId) => {
+    let shortlist = await Shortlist.findOne({ user: userId });
+    if (!shortlist) {
+        shortlist = new Shortlist({ user: userId, jobs: [] });
+    }
+    return shortlist;
+};
+
+/**
+ * Checks if a job is already in the shortlist
+ * @param {Object} shortlist - Shortlist document
+ * @param {string} jobId - Job ID
+ * @returns {boolean} Whether job is in shortlist
+ */
+const isJobInShortlist = (shortlist, jobId) => shortlist.jobs.includes(jobId);
+
+/**
+ * Removes a job from the shortlist
+ * @param {Object} shortlist - Shortlist document
+ * @param {string} jobId - Job ID
+ * @returns {Promise<Object>} Updated shortlist
+ */
+const removeJob = async (shortlist, jobId) => {
+    const jobIndex = shortlist.jobs.indexOf(jobId);
+    if (jobIndex === -1) {
+        throw new Error("Job not in shortlist");
+    }
+    shortlist.jobs.splice(jobIndex, 1);
+    return shortlist.save();
+};
+
+/**
+ * Retrieves a user's shortlist
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Promise<void>}
+ */
 export const getShortlist = async (req, res) => {
     try {
         const userId = req.uid;
-        const shortlist = await Shortlist.findOne({ user: userId }).populate("jobs");
-        if (!shortlist) {
-            return res.status(404).json({ success: false, message: "Shortlist not found" });
-        }
-        res.status(200).json({ success: true, data: shortlist });
+        const shortlist = await fetchShortlist(userId);
+        return res.json(shortlist);
     } catch (error) {
-        console.error("Error in getShortlist controller:", error);
-        res.status(500).json({ success: false, message: error.message });
+        const status = error.message === "Shortlist not found" ? 404 : 500;
+        return res.status(status).json({ message: error.message });
     }
 };
 
-// Add a job to the user's shortlist
+/**
+ * Adds a job to the user's shortlist
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Promise<void>}
+ */
 export const addJobToShortlist = async (req, res) => {
     try {
         const userId = req.uid;
-        const { jobid } = req.query;
+        const { jobId } = req.params;
 
-        // Verify that the job exists
-        const job = await Job.findById(jobid);
-        if (!job) {
-            return res.status(404).json({ success: false, message: "Job not found" });
+        await verifyJobExists(jobId);
+        const shortlist = await getOrCreateShortlist(userId);
+
+        if (isJobInShortlist(shortlist, jobId)) {
+            return res.status(400).json({ message: "Job already in shortlist" });
         }
 
-        // Find the user's shortlist; if it doesn't exist, create one.
-        let shortlist = await Shortlist.findOne({ user: userId });
-        if (!shortlist) {
-            shortlist = new Shortlist({ user: userId, jobs: [] });
-        }
-
-        // Check if the job is already in the shortlist.
-        if (shortlist.jobs.includes(jobid)) {
-            return res.status(400).json({ success: false, message: "Job already in shortlist" });
-        }
-
-        shortlist.jobs.push(jobid);
-        await shortlist.save();
-        res.status(201).json({ success: true, data: shortlist });
+        shortlist.jobs.push(jobId);
+        const updatedShortlist = await shortlist.save();
+        return res.status(201).json(updatedShortlist);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        const status = error.message === "Job not found" ? 404 : 500;
+        return res.status(status).json({ message: error.message });
     }
 };
 
-export const createShortlist = async (req, res) => {
-    try {
-        const { uid } = req;
-        const user = await User.findOne({ uid });
-        if (!user) {
-            return res.status(404).json({ success: false, message: "User not found" });
-        }
-        const shortlist = await Shortlist.create({ user: user._id, jobs: [] });
-        res.status(201).json({ success: true, data: shortlist });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// Remove a job from the user's shortlist
+/**
+ * Removes a job from the user's shortlist
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Promise<void>}
+ */
 export const removeJobFromShortlist = async (req, res) => {
     try {
         const userId = req.uid;
-        const { jobid } = req.query;
-        const shortlist = await Shortlist.findOne({ user: userId });
-        if (!shortlist) {
-            return res.status(404).json({ success: false, message: "Shortlist not found" });
-        }
+        const { jobId } = req.params;
 
-        const jobIndex = shortlist.jobs.indexOf(jobid);
-        if (jobIndex === -1) {
-            return res.status(404).json({ success: false, message: "Job not in shortlist" });
-        }
-
-        shortlist.jobs.splice(jobIndex, 1);
-        await shortlist.save();
-        res.status(200).json({ success: true, data: shortlist });
+        const shortlist = await fetchShortlist(userId);
+        const updatedShortlist = await removeJob(shortlist, jobId);
+        return res.json(updatedShortlist);
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        const status = error.message === "Shortlist not found" || error.message === "Job not in shortlist" ? 404 : 500;
+        return res.status(status).json({ message: error.message });
     }
 };
