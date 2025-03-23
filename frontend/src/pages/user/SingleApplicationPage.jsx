@@ -1,182 +1,145 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getApplicationById, withdrawApplication } from "../../services/applicationService";
+import { getApplicationById } from "../../services/applicationService";
 import { useNotification } from "../../context/notification.context";
+import WhiteBox from "../../components/WhiteBox";
 
-/* 
-  SingleApplicationPage:
-  This page displays details of a specific job application.
-  It fetches application data based on the application ID retrieved from the URL.
-*/
-function SingleApplicationPage() {
-  const { appId } = useParams(); // Get application ID from URL parameters
-  const navigate = useNavigate(); // Hook for navigation
-  const [application, setApplication] = useState(null); // State to store application details
-  const hasFetched = useRef(false); // Ref to prevent multiple fetches
-  const [codeChallenge, setCodeChallenge] = useState(false); // State to track if the application requires a code challenge
-  const [showModal, setShowModal] = useState(false); // State to control modal visibility
+const SingleApplicationPage = () => {
+  const { appId } = useParams();
+  const navigate = useNavigate();
+  const [application, setApplication] = useState(null);
+  const hasFetched = useRef(false);
+  const [codeChallenge, setCodeChallenge] = useState(false);
   const showNotification = useNotification();
 
-  // Fetches application details
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
 
     fetchApp();
-  
   }, [appId, navigate]);
-
 
   const fetchApp = async () => {
     try {
       const response = await getApplicationById(appId);
-      console.log('Full response:', response);
-      
       if (!response) {
-        console.error('Unexpected response structure:', response);
         showNotification("Failed to fetch application");
         navigate("/applicant-dashboard");
         return;
       }
-      
+
       setApplication(response);
-
-      setCodeChallenge(response.status == "code challenge");
-
+      setCodeChallenge(response.status === "Code Challenge");
     } catch (error) {
-      console.error('Error fetching application:', error);
+      console.error("Error fetching application:", error);
       showNotification("Failed to fetch application");
       navigate("/applicant-dashboard");
     }
+  };
+
+  const handleAssessment = () => {
+    const userConfirmed = window.confirm("Are you sure you want to proceed to the code assessment?");
+    if (!userConfirmed) return;
+    navigate(`/codeassessment/${appId}`);
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "Applied":
+        return "bg-yellow-500";
+      case "In Review":
+        return "bg-blue-500";
+      case "Shortlisted":
+        return "bg-purple-500";
+      case "Rejected":
+        return "bg-red-500";
+      case "Code Challenge":
+        return "bg-orange-500";
+      case "Accepted":
+        return "bg-green-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  if (!application) {
+    return (
+      <div className="bg-slate-900 min-h-screen flex items-center justify-center">
+        <p className="text-white">Loading...</p>
+      </div>
+    );
   }
 
-    const handleAssessment = async () => {
-      const userConfirmed = window.confirm("Are you sure you want to proceed to the code assessment?");
-      if (!userConfirmed) return;
-      navigate(`/codeassessment/${appId}`);
-    }
-    
-    // Handle withdrawal of application
-    const handleWithdraw = async () => {
-      try {
-        const message = await withdrawApplication(appId); // Use the updated service
-        showNotification(message, "success"); // Show success notification
-        navigate("/applicant-dashboard");
-      } catch (err) {
-        console.error(err);
-        showNotification(err.message || "Failed to withdraw application.", "error"); // Show error notification
-      } finally {
-        setShowModal(false); // Close the modal after the action
-      }
-    };
+  const { job, status, coverLetter, submittedAt } = application;
+  const formattedDate = new Date(submittedAt).toLocaleString();
 
-    // Helper function to return appropriate badge color for application status
-    const getStatusBadgeClass = (status) => {
-      switch (status) {
-        case "applied":
-          return "bg-yellow-500";
-        case "in review":
-          return "bg-blue-500";
-        case "shortlisted":
-          return "bg-purple-500";
-        case "rejected":
-          return "bg-red-500";
-        case "code challenge":
-          return "bg-orange-500";
-        case "hired":
-          return "bg-green-500";
-        default:
-          return "bg-gray-500";
-      }
-    };
-
-    // Show loading message while fetching application data
-    if (!application) {
-      return (
-        <div className="bg-slate-900 min-h-screen flex items-center justify-center">
-          <p className="text-white">Loading...</p>
+  return (
+    <div className="container mx-auto p-4 font-sans">
+      <div className="flex-1 p-10">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-left">Application Details</h1>
+          <span
+            className={`px-6 py-3 text-lg font-semibold rounded-lg ${getStatusBadgeClass(status)}`}
+          >
+            {status}
+          </span>
         </div>
-      );
-    }
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Job Title */}
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Job Title</h3>
+            <p>{job?.title || "Untitled Job"}</p>
+          </WhiteBox>
 
-    const { job, status, coverLetter, submittedAt } = application;
-    const formattedDate = new Date(submittedAt).toLocaleString();
+          {/* Job Company */}
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Job Company</h3>
+            <p>{job?.company || "Unknown Company"}</p>
+          </WhiteBox>
 
-    return (
-      <div className="bg-slate-900 min-h-screen w-full flex flex-col items-center px-4 py-8">
-        <div className="max-w-xl w-full bg-white p-6 rounded-md shadow-md">
-          <h1 className="text-2xl font-bold mb-4">Application Details</h1>
-          {/* JOB TITLE */}
-          <p className="text-lg font-semibold text-gray-700 mb-2">
-            {job?.title || "Untitled Job"}
-          </p>
+          {/* Date of Submission */}
+          <WhiteBox className="text-center">
+            <h3 className="text-base font-bold">Date of Submission</h3>
+            <p>{formattedDate}</p>
+          </WhiteBox>
+        </div>
 
-          {/* STATUS WITH BADGE */}
-          <div className="flex items-center mb-2">
-            <span className="mr-2 font-medium text-gray-600">Status:</span>
-            <span
-              className={`inline-block px-3 py-1 text-sm font-semibold text-white rounded-md ${getStatusBadgeClass(
-                status
-              )}`}
-            >
-              {status}
-            </span>
+        {/* Main Info Card */}
+        <WhiteBox className="w-full mt-6">
+          <div className="mb-6">
+            <h3 className="text-2xl font-semibold mb-4">Cover Letter</h3>
+            <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">{coverLetter || "N/A"}</pre>
           </div>
-
-          {/* COVER LETTER */}
-          <div className="mb-2">
-            <p className="font-medium text-gray-600">Cover Letter:</p>
-            <p className="text-gray-800">{coverLetter || "N/A"}</p>
-          </div>
-
-          {/* SUBMITTED AT */}
-          <div className="mb-2">
-            <p className="font-medium text-gray-600">Submitted At:</p>
-            <p className="text-gray-800">{formattedDate}</p>
-          </div>
-
-          {/* EXTRA DETAILS HERE (could also show job.requirements, job.salaryRange, etc.) */}
-          {job?.location && (
-            <div className="mb-2">
-              <p className="font-medium text-gray-600">Job Location:</p>
-              <p className="text-gray-800">{job.location}</p>
-            </div>
-          )}
-
-          {/* ACTION BUTTONS! */}
-          <div className="flex items-center space-x-4 mt-6">
-            {/* Can link to another more detailed job details page */}
-            {job?._id && (
-              <button
-                onClick={() => navigate(`/user/jobs/details/${job._id}`)}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition duration-200"
-              >
-                View Job Details
-              </button>
-            )}
-
-            {codeChallenge && (
-              <button
-                onClick={handleAssessment}
-                className="px-4 py-2 bg-green-300 text-gray-800 rounded hover:bg-green-500 transition duration-200"
-              >
-                Proceed to assessment
-              </button>
+          {/* Questions and Answers Section */}
+          <div className="mb-6">
+            <h3 className="text-2xl font-semibold mb-4">Questions and Answers</h3>
+            {application.answers.length > 0 ? (
+              <ul className="list-disc pl-6">
+                {application.answers.map((answer, index) => (
+                  <li key={index} className="mb-4">
+                    <p className="font-medium">Question:</p>
+                    <p>{answer.questionText}</p>
+                    <p className="font-medium mt-2">Answer:</p>
+                    <p>{answer.answerText}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 italic">No questions answered.</p>
             )}
           </div>
-
-          {/* BACK LINK */}
-          <div className="mt-6">
+          {codeChallenge && (
             <button
-              onClick={() => navigate("/applicant-dashboard")}
-              className="text-blue-600 hover:underline"
+              onClick={handleAssessment}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
             >
-              &larr; Back to My Applications
+              Proceed to Assessment
             </button>
-          </div>
-        </div>
+          )}
+        </WhiteBox>
       </div>
+    </div>
   );
-}
+};
 
 export default SingleApplicationPage;
