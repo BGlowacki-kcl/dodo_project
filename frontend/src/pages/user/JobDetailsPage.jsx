@@ -1,10 +1,10 @@
 /**
  * JobDetailsPage.jsx
- * 
+ *
  * This component represents the Job Details Page in the application. It displays detailed information
  * about a specific job, including its title, company, location, salary range, employment type, experience level,
  * description, requirements, and additional details like questions or assessments required for the application.
- * 
+ *
  * Users can interact with the page to:
  * - View job details.
  * - Apply for the job.
@@ -18,16 +18,29 @@ import { getJobById } from "../../services/jobService";
 import { getAllUserApplications, applyToJob } from "../../services/applicationService";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
 import WhiteBox from "../../components/WhiteBox";
-import { FaBuilding, FaMapMarkerAlt, FaMoneyBillWave, FaBriefcase, FaUserTie, FaFileAlt, FaListAlt, FaQuestionCircle, FaCode, FaClipboardList } from "react-icons/fa";
+import {
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaMoneyBillWave,
+  FaBriefcase,
+  FaUserTie,
+  FaFileAlt,
+  FaListAlt,
+  FaQuestionCircle,
+  FaCode,
+  FaClipboardList,
+} from "react-icons/fa";
 
 const JobDetailsPage = () => {
-  const { jobId } = useParams(); 
-  const navigate = useNavigate(); 
-  const [job, setJob] = useState(null); 
-  const [applied, setApplied] = useState(false); 
-  const [shortlisted, setShortlisted] = useState(false); 
-  const [applicationStatus, setApplicationStatus] = useState(null); 
-  
+  // ----------------------------- State Variables -----------------------------
+  const { jobId } = useParams();
+  const navigate = useNavigate();
+  const [job, setJob] = useState(null);
+  const [applied, setApplied] = useState(false);
+  const [shortlisted, setShortlisted] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+
+  // ----------------------------- Data Fetching -----------------------------
   /**
    * Fetches job details by job ID and updates the state.
    * @param {String} jobId - The ID of the job to fetch.
@@ -93,6 +106,7 @@ const JobDetailsPage = () => {
     }
   };
 
+  // ----------------------------- Handlers -----------------------------
   /**
    * Toggles the shortlist status of the job.
    * Adds the job to the shortlist if not already shortlisted, otherwise removes it.
@@ -125,12 +139,15 @@ const JobDetailsPage = () => {
     }
   };
 
-  // Fetch data when the component mounts or when the jobId changes
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Fetches data when the component mounts or when the jobId changes.
+   */
   useEffect(() => {
     fetchData();
   }, [jobId]);
 
-  // Display a loading message if the job details are not yet loaded
+  // ----------------------------- Render -----------------------------
   if (!job) {
     return (
       <div className="bg-slate-900 min-h-screen flex items-center justify-center">
@@ -142,6 +159,7 @@ const JobDetailsPage = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex-1 p-10">
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold text-left text-black">Job Details</h1>
@@ -149,9 +167,11 @@ const JobDetailsPage = () => {
           <div className="flex items-center space-x-8">
             <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg shadow-md">
               <span className="font-semibold text-gray-700 mr-2">Deadline:</span>
-              <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                job.deadline ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
-              }`}>
+              <span
+                className={`px-3 py-1 text-sm font-medium rounded-full ${
+                  job.deadline ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
+                }`}
+              >
                 {job.deadline
                   ? new Date(job.deadline).toLocaleDateString("en-GB")
                   : "No deadline"}
@@ -192,6 +212,8 @@ const JobDetailsPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Job Details */}
         <div className="grid grid-cols-6 gap-4 mb-6">
           <WhiteBox className="text-center">
             <h3 className="text-base font-bold flex items-center justify-center">
@@ -233,6 +255,7 @@ const JobDetailsPage = () => {
           </WhiteBox>
         </div>
 
+        {/* Job Description */}
         <WhiteBox className="mt-6">
           <h2 className="text-2xl font-semibold mb-4 flex items-center">
             <FaListAlt className="mr-2" /> Job Description
@@ -240,6 +263,7 @@ const JobDetailsPage = () => {
           <p>{job.description}</p>
         </WhiteBox>
 
+        {/* Requirements */}
         <WhiteBox className="mt-6">
           <h2 className="text-2xl font-semibold mb-4 flex items-center">
             <FaClipboardList className="mr-2" /> Requirements
@@ -247,8 +271,8 @@ const JobDetailsPage = () => {
           {job.requirements && job.requirements.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {job.requirements.map((req, index) => (
-                <span 
-                  key={index} 
+                <span
+                  key={index}
                   className="bg-gray-200 px-4 py-2 rounded-lg text-sm text-gray-800 font-medium"
                 >
                   {req}
@@ -259,18 +283,28 @@ const JobDetailsPage = () => {
             <p className="text-gray-500 italic">No requirements needed</p>
           )}
         </WhiteBox>
+
+        {/* Additional Details */}
         <div className="grid grid-cols-2 gap-4 mt-6">
           <WhiteBox>
             <h2 className="text-xl font-semibold mb-2 flex items-center">
               <FaQuestionCircle className="mr-2" /> Questions?
             </h2>
-            <p className="text-gray-700">{job.questions && job.questions.length > 0 ? "Yes, this job requires answering questions during the application process." : "No, this job does not require answering questions during the application process."}</p>
+            <p className="text-gray-700">
+              {job.questions && job.questions.length > 0
+                ? "Yes, this job requires answering questions during the application process."
+                : "No, this job does not require answering questions during the application process."}
+            </p>
           </WhiteBox>
           <WhiteBox>
             <h2 className="text-xl font-semibold mb-2 flex items-center">
               <FaCode className="mr-2" /> Code Assessment?
             </h2>
-            <p className="text-gray-700">{job.assessments && job.assessments.length > 0 ? "Yes, this job requires taking an assessment during the application process." : "No, this job does not require taking an assessment during the application process."}</p>
+            <p className="text-gray-700">
+              {job.assessments && job.assessments.length > 0
+                ? "Yes, this job requires taking an assessment during the application process."
+                : "No, this job does not require taking an assessment during the application process."}
+            </p>
           </WhiteBox>
         </div>
       </div>
