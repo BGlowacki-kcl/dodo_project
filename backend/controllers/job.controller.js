@@ -134,10 +134,8 @@ export const deleteJob = async (req, res) => {
  */
 export const getJobCountByType = async (req, res) => {
     try {
-        console.log("Fetching job count by type");
         const { type } = req.query;
         const count = await Job.countDocuments({ employmentType: type });
-        console.log("Count:", count);
         return res.status(200).json({ success: true, data: count });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });
@@ -209,9 +207,7 @@ export const getAllJobLocations = async (req, res) => {
  */
 export const getAllJobTypes = async (req, res) => {
     try {
-        console.log("Fetching employment types");
         const employmentTypes = await Job.distinct('employmentType');
-        console.log(employmentTypes);
         return res.status(200).json({ success: true, data: employmentTypes });
     } catch (error) {
         return res.status(500).json({ 

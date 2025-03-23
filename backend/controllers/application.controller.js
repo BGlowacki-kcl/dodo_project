@@ -170,23 +170,22 @@ export const applicationController = {
         try {
             const { id } = req.query;
             const user = await User.findOne({ uid: req.uid });
-            if (!user) {
-                return res.status(403).json(createResponse(false, "Unauthorized"));
-            }
-
-            const app = await Application
-                .findById(id)
+            
+            const application = await Application.findById(id)
                 .populate("applicant", "name email skills resume")
                 .populate("job");
 
-            if (!app) {
+            if (!application) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
 
-            const applicationData = await buildApplicationData(app);
-            return res.json(createResponse(true, "Application found", applicationData));
+            if (!application.applicant._id.equals(user._id)) {
+                return res.status(403).json(createResponse(false, "Unauthorized"));
+            }
+
+            return res.status(200).json(createResponse(true, "Application found", application));
         } catch (error) {
-            return handleError(res, error, "Error getting application");
+            return res.status(500).json(createResponse(false, "Error getting application"));
         }
     },
 
@@ -243,8 +242,8 @@ export const applicationController = {
      */
     async createApplication(req, res) {
         try {
-            const { jobId, coverLetter, answers } = req.body;
-            if (!jobId || !isValidAnswersFormat(answers)) {
+            const { jobId, coverLetter, answers = [] } = req.body;
+            if (!jobId) {
                 return res.status(400).json(createResponse(false, "Invalid request data"));
             }
 
@@ -257,7 +256,7 @@ export const applicationController = {
                 job: jobId,
                 applicant: user._id,
                 coverLetter,
-                answers: formatAnswers(answers),
+                answers: formatAnswers(answers || []),
                 status: "applying",
             });
 
@@ -265,7 +264,7 @@ export const applicationController = {
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
         } catch (error) {
-            return handleError(res, error, "Error creating application");
+            return res.status(500).json(createResponse(false, "Error creating application"));
         }
     },
 
@@ -279,16 +278,20 @@ export const applicationController = {
         try {
             const { id } = req.query;
             const user = await User.findOne({ uid: req.uid });
-            const app = await Application.findById(id);
+            const application = await Application.findById(id);
 
-            if (!app || !app.applicant.equals(user._id)) {
+            if (!application) {
+                return res.status(404).json(createResponse(false, "Application not found"));
+            }
+
+            if (!application.applicant.equals(user._id)) {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
 
-            await app.deleteOne();
+            await application.deleteOne();
             return res.json(createResponse(true, "Application withdrawn"));
         } catch (error) {
-            return handleError(res, error, "Error withdrawing application");
+            return res.status(500).json(createResponse(false, "Error withdrawing application"));
         }
     },
 
