@@ -1,44 +1,67 @@
-import React from "react";
+import React, { useState } from "react";
+import WhiteBox from "./WhiteBox";
 
 const ExtractApplication = ({ coverLetter, questions, answers, codeChallenge }) => {
+  const [expandedQuestion, setExpandedQuestion] = useState(null);
+
+  const toggleQuestion = (questionId) => {
+    setExpandedQuestion((prev) => (prev === questionId ? null : questionId));
+  };
+
   return (
     <div>
       {/* Cover Letter */}
-      <div className="mb-8">
+      <WhiteBox className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Cover Letter</h2>
         <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-gray-700 whitespace-pre-line">{coverLetter || "No cover letter provided"}</p>
+          <p className="text-dtext text-base leading-relaxed whitespace-pre-line m-0 font-serif">
+            {(coverLetter?.trim() || "No cover letter provided")}
+          </p>
         </div>
-      </div>
+      </WhiteBox>
 
       {/* Questions and Answers */}
-      <div className="mb-8">
+      <WhiteBox className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Questions and Answers</h2>
         {questions?.length > 0 ? (
-          <ul className="list-disc pl-6">
-            {questions.map((question, index) => {
+          <div className="space-y-4">
+            {questions.map((question) => {
               const answer = answers.find((ans) => ans.questionId === question._id);
+              const isExpanded = expandedQuestion === question._id;
+
               return (
-                <li key={question._id} className="mb-4">
-                  <p className="font-medium text-gray-800">
-                    <strong>Question:</strong> {question.questionText}
-                  </p>
-                  <p className="text-gray-700">
-                    <strong>Answer:</strong> {answer?.answerText || "No answer provided"}
-                  </p>
-                </li>
+                <div
+                  key={question._id}
+                  className="border border-gray-300 rounded-lg overflow-hidden shadow-md"
+                >
+                  <button
+                    onClick={() => toggleQuestion(question._id)}
+                    className="w-full text-left px-4 py-3 bg-gray-100 hover:bg-gray-200 focus:outline-none"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {question.questionText}
+                    </h3>
+                  </button>
+                  {isExpanded && (
+                    <div className="p-4 bg-white">
+                      <p className="text-gray-700">
+                        <strong>Answer:</strong> {answer?.answerText || "No answer provided"}
+                      </p>
+                    </div>
+                  )}
+                </div>
               );
             })}
-          </ul>
+          </div>
         ) : (
           <p className="text-gray-500 italic">No questions available for this job.</p>
         )}
-      </div>
+      </WhiteBox>
 
       {/* Code Challenges */}
-      {codeChallenge?.assessments?.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Code Challenges</h2>
+      <WhiteBox className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Code Challenges</h2>
+        {codeChallenge?.assessments?.length > 0 ? (
           <div className="space-y-6">
             {codeChallenge.assessments.map((assessment) => {
               const submission = codeChallenge.submissions.find(
@@ -59,14 +82,16 @@ const ExtractApplication = ({ coverLetter, questions, answers, codeChallenge }) 
                       </p>
                     </div>
                   ) : (
-                    <p className="text-gray-500 italic">No submission available</p>
+                    <p className="text-gray-500 italic">No Submission Available</p>
                   )}
                 </div>
               );
             })}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-gray-500 italic">No code challenges available.</p>
+        )}
+      </WhiteBox>
     </div>
   );
 };
