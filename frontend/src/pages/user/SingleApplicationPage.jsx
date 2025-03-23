@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById } from "../../services/applicationService";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
+import ExtractApplication from "../../components/ExtractApplication";
 
 const SingleApplicationPage = () => {
   const { appId } = useParams();
@@ -106,36 +107,12 @@ const SingleApplicationPage = () => {
 
         {/* Main Info Card */}
         <WhiteBox className="w-full mt-6">
-          <div className="mb-6">
-            <h3 className="text-2xl font-semibold mb-4">Cover Letter</h3>
-            <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">{coverLetter || "N/A"}</pre>
-          </div>
-          {/* Questions and Answers Section */}
-          <div className="mb-6">
-            <h3 className="text-2xl font-semibold mb-4">Questions and Answers</h3>
-            {application.answers.length > 0 ? (
-              <ul className="list-disc pl-6">
-                {application.answers.map((answer, index) => (
-                  <li key={index} className="mb-4">
-                    <p className="font-medium">Question:</p>
-                    <p>{answer.questionText}</p>
-                    <p className="font-medium mt-2">Answer:</p>
-                    <p>{answer.answerText}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500 italic">No questions answered.</p>
-            )}
-          </div>
-          {codeChallenge && (
-            <button
-              onClick={handleAssessment}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200"
-            >
-              Proceed to Assessment
-            </button>
-          )}
+          <ExtractApplication
+            coverLetter={coverLetter}
+            questions={application.job?.questions || []}
+            answers={application.answers || []}
+            codeChallenge={application.codeChallenge}
+          />
         </WhiteBox>
       </div>
     </div>

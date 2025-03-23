@@ -3,6 +3,7 @@ import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
 import { getApplicationById, updateStatus } from "../../services/applicationService";
 import { userService } from "../../services/user.service";
+import ExtractApplication from "../../components/ExtractApplication";
 
 const ApplicantDetails = () => {
     const { applicationId } = useParams();
@@ -179,41 +180,13 @@ const ApplicantDetails = () => {
                                 </button>
                                 </div>
                             </div>
-
-                            {/* Cover Letter */}
-                            <div className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4">Cover Letter</h2>
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-gray-700 whitespace-pre-line">{applicant.coverLetter}</p>
-                                </div>
-                            </div>
-
-                            {/* Questions and Answers */}
-                            <div className="mb-8">
-                                <h2 className="text-xl font-semibold mb-4">Questions and Answers</h2>
-                                {applicant.questions.length > 0 ? (
-                                    <ul className="list-disc pl-6">
-                                        {applicant.questions.map((question, index) => {
-                                            const answer = applicant.answers.find(
-                                                (ans) => ans.questionId === question._id
-                                            );
-                                            return (
-                                                <li key={question._id} className="mb-4">
-                                                    <p className="font-medium text-gray-800">
-                                                        <strong>Question:</strong> {question.questionText}
-                                                    </p>
-                                                    <p className="text-gray-700">
-                                                        <strong>Answer:</strong> {answer?.answerText || "No answer provided"}
-                                                    </p>
-                                                </li>
-                                            );
-                                        })}
-                                    </ul>
-                                ) : (
-                                    <p className="text-gray-500 italic">No questions available for this job.</p>
-                                )}
-                            </div>
-
+                            <ExtractApplication
+                                coverLetter={applicant.coverLetter}
+                                questions={applicant.questions || []}
+                                answers={applicant.answers || []}
+                                codeChallenge={codeChallenge}
+                            />
+                            {/* Skills and Resume sections remain unchanged */}
                             {/* Skills */}
                             <div className="mb-8">
                                 <h2 className="text-xl font-semibold mb-4">Skills</h2>
