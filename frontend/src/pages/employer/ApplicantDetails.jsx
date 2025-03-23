@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
-import { getApplicationById, updateStatus } from "../../services/applicationService";
+import { getApplicationById, updateStatus } from "../../services/application.service";
 import { userService } from "../../services/user.service";
 
 const ApplicantDetails = () => {

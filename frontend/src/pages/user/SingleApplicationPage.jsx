@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getApplicationById, withdrawApplication } from "../../services/applicationService";
+import { getApplicationById, withdrawApplication } from "../../services/application.service";
 import { useNotification } from "../../context/notification.context";
 
 /* 

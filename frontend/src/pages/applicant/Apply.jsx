@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { applyToJob, saveApplication, getApplicationById, getAllUserApplications, submitApplication, withdrawApplication } from '../../services/applicationService';
-import { getJobQuestionsById } from '../../services/jobService';
+import { applyToJob, saveApplication, getApplicationById, getAllUserApplications, submitApplication, withdrawApplication } from '../../services/application.service';
+import { getJobQuestionsById } from '../../services/job.service';
 import { useNotification } from "../../context/notification.context";
 
 const Apply = () => {

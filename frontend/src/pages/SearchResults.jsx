@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getAllJobs, getFilteredJobs } from "../services/jobService";
+import { getAllJobs, getFilteredJobs } from "../services/job.service";
 import SearchFilters from "../components/SearchFilters";
 import JobCard from "../components/JobCard";
 import ReactPaginate from "react-paginate";

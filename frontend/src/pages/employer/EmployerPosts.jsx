@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SearchBar from '../../components/SearchBar';
-import { getAllJobs, deleteJob } from '../../services/jobService';
+import { getAllJobs, deleteJob, getJobsByEmployer } from '../../services/job.service';
 
 import Metrics from "../../components/Metrics.jsx";
 import EmployerSideBar from "../../components/EmployerSideBar.jsx";
-import { getJobsByEmployer } from "../../services/jobService";
 
 
 const EmployerPostsPage = () => {

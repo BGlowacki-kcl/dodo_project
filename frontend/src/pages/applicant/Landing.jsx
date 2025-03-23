@@ -5,7 +5,7 @@ import Box from "../../components/Box";
 import job from "../../assets/job.jpg";
 import internship from "../../assets/intern.jpg";
 import placement from "../../assets/placement.jpg";
-import { getJobCountByType, getAllJobTypes, getAllJobRoles, getAllJobLocations } from "../../services/jobService";
+import { getJobCountByType, getAllJobTypes, getAllJobRoles, getAllJobLocations } from "../../services/job.service";
 
 const Landing = () => {
     const navigate = useNavigate();

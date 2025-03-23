@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createJob } from '../../services/jobService';
+import { createJob } from '../../services/job.service';
 import EmployerSideBar from "../../components/EmployerSideBar";
 import { assessmentService } from '../../services/assessment.service';
 import { userService } from "../../services/user.service";  

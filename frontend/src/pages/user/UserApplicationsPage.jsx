@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom"; // <-- import Link
-import { getAllUserApplications } from "../../services/applicationService";
+import { getAllUserApplications } from "../../services/application.service";
 
 function UserApplicationsPage() {
     const [applications, setApplications] = useState([]);

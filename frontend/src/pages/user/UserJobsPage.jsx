@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { applyToJob } from "../../services/applicationService";
-import { getAllJobs } from "../../services/jobService";
+import { applyToJob, getAllUserApplications } from "../../services/application.service";
+import { getAllJobs } from "../../services/job.service";
 import { addJobToShortlist, getShortlist } from "../../services/shortlist.service";
-import { getAllUserApplications } from "../../services/applicationService";
 import { userService } from "../../services/user.service";
 
 function UserJobsPage() {

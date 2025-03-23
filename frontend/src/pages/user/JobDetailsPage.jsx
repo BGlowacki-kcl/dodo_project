@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getJobById } from "../../services/jobService";
-import { getAllUserApplications, applyToJob } from "../../services/applicationService";
+import { getJobById } from "../../services/job.service";
+import { getAllUserApplications, applyToJob } from "../../services/application.service";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
 import { userService } from "../../services/user.service"; // Import a method to get the user ID
 

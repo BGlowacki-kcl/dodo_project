@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
-import { getJobApplicants } from "../../services/applicationService";
+import { getJobApplicants } from "../../services/application.service";
 
 const EmployerApplicants = () => {
     const { jobId } = useParams();

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Pie, Line } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from "chart.js";
-import { getDashboardData } from '../../services/applicationService';
+import { getDashboardData } from '../../services/application.service';
 import { FaChartPie, FaClipboardList } from "react-icons/fa";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);

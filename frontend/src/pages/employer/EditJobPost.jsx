@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getJobById, updateJob } from '../../services/jobService';
+import { getJobById, updateJob } from '../../services/job.service';
 import EmployerSideBar from "../../components/EmployerSideBar";
 
 function EditJobPost() {
