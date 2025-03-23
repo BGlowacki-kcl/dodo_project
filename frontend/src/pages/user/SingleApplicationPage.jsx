@@ -5,6 +5,7 @@ import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
 import ExtractApplication from "../../components/ExtractApplication";
 import ModalMessages from "../../components/ModalMessages";
+import useLocalStorage from "../../hooks/useLocalStorage";
 
 const SingleApplicationPage = () => {
   const { appId } = useParams();
@@ -16,6 +17,7 @@ const SingleApplicationPage = () => {
   const hasFetched = useRef(false);
   const [codeChallenge, setCodeChallenge] = useState(false);
   const showNotification = useNotification();
+  const [viewedStatuses, setViewedStatuses] = useLocalStorage("viewedStatuses", {});
 
   useEffect(() => {
     if (hasFetched.current) return;
@@ -37,12 +39,13 @@ const SingleApplicationPage = () => {
       setCodeChallenge(response.status === "Code Challenge");
 
       // Show modal only once per status
-      const viewedStatuses = JSON.parse(localStorage.getItem("viewedStatuses")) || {};
       if (!viewedStatuses[response._id] || viewedStatuses[response._id] !== response.status) {
         setModalMessage(getModalMessage(response.status));
         setShowModal(true);
-        viewedStatuses[response._id] = response.status;
-        localStorage.setItem("viewedStatuses", JSON.stringify(viewedStatuses));
+        setViewedStatuses((prev) => ({
+          ...prev,
+          [response._id]: response.status,
+        }));
       }
     } catch (error) {
       console.error("Error fetching application:", error);
