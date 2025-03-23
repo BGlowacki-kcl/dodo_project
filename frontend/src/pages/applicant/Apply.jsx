@@ -93,7 +93,7 @@ const Apply = () => {
     const fetchApplicationDetails = async (application) => {
         setApplicationId(application._id);
         const applicationDetails = await getApplicationById(application._id);
-        if (applicationDetails.status === "applying") {
+        if (applicationDetails.status === "Applying") {
             setCoverLetter(applicationDetails.coverLetter || "");
             setAnswers(
                 (applicationDetails.answers || []).reduce((acc, ans) => {

@@ -18,8 +18,8 @@ const ApplicantActivity = ({ userId }) => {
                 const applications = await getAllUserApplications(userId);
                 setApplications(applications);
                 setApplicationsSent(applications.length);
-                setRejections(applications.filter(app => app.status === 'rejected').length);
-                setAcceptances(applications.filter(app => app.status === 'accepted').length);
+                setRejections(applications.filter(app => app.status === 'Rejected').length);
+                setAcceptances(applications.filter(app => app.status === 'Accepted').length);
             } catch (error) {
                 console.error('Error fetching applications:', error);
             }
@@ -57,7 +57,7 @@ const ApplicantActivity = ({ userId }) => {
                 <ApplicationCards
                     applications={applications.map((app) => ({
                         ...app,
-                        onClick: app.status === "applying" ? () => navigate(`/apply/${app.job._id}`) : null,
+                        onClick: app.status === "Applying" ? () => navigate(`/apply/${app.job._id}`) : null,
                     }))}
                 />
             </WhiteBox>

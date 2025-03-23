@@ -31,7 +31,7 @@ const ApplicantDetails = () => {
                     applicationId: response._id,
                     name: response.name || 'No name provided',
                     email: response.email || 'No email provided',
-                    status: response.status || 'applied',
+                    status: response.status || 'Applied',
                     coverLetter: response.coverLetter || 'No cover letter provided',
                     submittedAt: response.submittedAt || new Date().toISOString(),
                     skills: userResponse.skills || [],
@@ -65,24 +65,24 @@ const ApplicantDetails = () => {
         let isRejectDisabled = false;
     
         switch (status) {
-            case 'applying':
-            case 'accepted':
-            case 'rejected':
+            case 'Applying':
+            case 'Accepted':
+            case 'Rejected':
                 isShortlistDisabled = true;
                 isRejectDisabled = true;
                 break;
     
-            case 'code challenge':
+            case 'Code Challenge':
                 shortlistCaption = "In Code Challenge";
                 isShortlistDisabled = true;
                 isRejectDisabled = true;
                 break;
     
-            case 'shortlisted':
+            case 'Shortlisted':
                 shortlistCaption = "Move to Code Challenge";
                 break;
     
-            case 'in review':
+            case 'In Review':
                 shortlistCaption = "Accept";
                 break;
     
@@ -98,7 +98,7 @@ const ApplicantDetails = () => {
         try {
             if (!applicationId) throw new Error('Application ID not available');
     
-            await updateStatus(applicationId, newStatus === 'rejected');
+            await updateStatus(applicationId, newStatus === 'Rejected');
     
             setApplicant((prev) => ({
                 ...prev,
@@ -239,8 +239,8 @@ const ApplicantDetails = () => {
                         <div className="bg-white rounded-lg shadow-lg p-6 h-fit">
                             <h2 className="text-xl font-semibold mb-4">Application Status</h2>
                             <div className={`text-lg font-medium ${
-                                applicant.status === 'accepted' ? 'text-green-600' :
-                                applicant.status === 'rejected' ? 'text-red-600' :
+                                applicant.status === 'Accepted' ? 'text-green-600' :
+                                applicant.status === 'Rejected' ? 'text-red-600' :
                                 'text-blue-600'
                             }`}>
                                 {applicant.status?.charAt(0).toUpperCase() + applicant.status?.slice(1)}

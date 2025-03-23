@@ -47,7 +47,7 @@ describe("UserJobsPage", () => {
       {
         _id: "applicationId1",
         job: { _id: "appliedJobId" },
-        status: "applied",
+        status: "Applied",
       },
     ]);
 

@@ -41,7 +41,7 @@ export const applicationController = {
             const { id } = req.params;
             const { status } = req.body;
 
-            const validStatuses = ["applying", "applied", "in review", "shortlisted", "rejected", "hired"];
+            const validStatuses = ["Applying", "Applied", "In Review", "Shortlisted", "Rejected", "Accepted"];
             if (!validStatuses.includes(status)) {
                 return res.status(400).json(createResponse(false, "Invalid application status"));
             }
@@ -76,7 +76,7 @@ export const applicationController = {
             }
 
             // Exclude applications in the "applying" stage
-            const applications = await Application.find({ job: jobId, status: { $ne: "applying" } }).populate("applicant", "name email");
+            const applications = await Application.find({ job: jobId, status: { $ne: "Applying" } }).populate("applicant", "name email");
 
             const applicants = applications.map(app => ({
                 id: app.applicant._id,
@@ -224,7 +224,7 @@ export const applicationController = {
                 applicant: user._id,
                 coverLetter,
                 answers: formattedAnswers,
-                status: "applying",
+                status: "Applying",
             });
     
             await Job.findByIdAndUpdate(jobId, { $addToSet: { applicants: user._id } });
@@ -280,30 +280,30 @@ export const applicationController = {
             }
             console.log("toReject: ", toReject);
             if(toReject){
-                if(app.status === "accepted"){
+                if(app.status === "Accepted"){
                     return res.status(400).json(createResponse(false, "Cannot reject an accepted application"));
                 }
-                app.status = "rejected";
+                app.status = "Rejected";
                 await app.save();
                 return res.json(createResponse(true, "Application rejected", app));
             }
-            if(app.status.trim() === "code challenge" && user.role.trim() === "employer"){
+            if(app.status.trim() === "Code Challenge" && user.role.trim() === "employer"){
                 return res.status(400).json(createResponse(false, "Cannot update status"));
             }
-            if(app.status !== "code Challenge" && user.role === "applicant"){
+            if(app.status !== "Code Challenge" && user.role === "applicant"){
                 return res.status(400).json(createResponse(false, "Cannot update status"));
             }
 
             const hasCodeAssessment = app.job.assessments.length > 0;
             console.log("hasCodeAssessment: ", hasCodeAssessment);
-            const statuses = ['applied', 'shortlisted', 'code challenge', 'in review', 'accepted'];
+            const statuses = ['Applied', 'Shortlisted', 'Code Challenge', 'In Review', 'Accepted'];
             const currentIndex = statuses.indexOf(app.status);
             if (currentIndex === -1 || currentIndex === statuses.length - 1) {
                 return res.status(400).json(createResponse(false, "No further status available"));
             }
             app.status = statuses[currentIndex + 1];
             console.log("app.status (chnaged): ", app.status);
-            if(app.status === 'code challenge' && !hasCodeAssessment) {
+            if(app.status === 'Code Challenge' && !hasCodeAssessment) {
                 app.status = statuses[currentIndex + 2];
             }
             await app.save();
@@ -358,7 +358,7 @@ export const applicationController = {
             const user = await User.findOne({ uid });
             const application = await Application.findOne({ _id: applicationId, applicant: user._id });
 
-            if (!application || application.status !== "applying") {
+            if (!application || application.status !== "Applying") {
                 return res.status(400).json(createResponse(false, "Cannot save application"));
             }
 
@@ -396,11 +396,11 @@ export const applicationController = {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
 
-            if (application.status !== "applying") {
+            if (application.status !== "Applying") {
                 return res.status(400).json(createResponse(false, "Application cannot be submitted in its current state"));
             }
 
-            application.status = "applied";
+            application.status = "Applied";
             await application.save();
 
             return res.status(200).json(createResponse(true, "Application submitted successfully", application));
