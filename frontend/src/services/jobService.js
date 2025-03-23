@@ -2,58 +2,13 @@
  * Job Service
  * Handles all API interactions related to job management
  */
-import { checkTokenExpiration } from "./auth.service.js";
+import { makeApiRequest } from "./helper.js";
 
 /**
  * API base URL for job endpoints
  * @constant {string}
  */
 const API_BASE_URL = "/api/job";
-
-/**
- * Gets authentication headers for API requests
- * @returns {Object} - Headers with authorization token
- */
-function getAuthHeaders() {
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${sessionStorage.getItem("token") || ""}`,
-  };
-}
-
-/**
- * Makes an API request with error handling
- * @param {string} endpoint - API endpoint
- * @param {string} method - HTTP method
- * @param {Object} [body] - Request body (optional)
- * @param {string} errorMessage - Custom error message
- * @returns {Promise<Object>} - API response data
- * @throws {Error} - If request fails
- */
-async function makeApiRequest(endpoint, method, body = null, errorMessage) {
-  try {
-    const requestOptions = {
-      method,
-      headers: getAuthHeaders(),
-    };
-
-    if (body) {
-      requestOptions.body = JSON.stringify(body);
-    }
-
-    const response = await fetch(endpoint, requestOptions);
-    checkTokenExpiration(response);
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || errorMessage);
-    }
-
-    return await response.json();
-  } catch (error) {
-    throw error;
-  }
-}
 
 /**
  * Retrieves all jobs
