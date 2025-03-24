@@ -12,7 +12,7 @@ import ApplicationCards from "./ApplicationCards";
 import { FaFolderOpen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import WhiteBox from "./WhiteBox";
-import ReactPaginate from 'react-paginate';
+import Pagination from "./Pagination";
 
 const ApplicantActivity = ({ userId }) => {
   // ----------------------------- State Variables -----------------------------
@@ -91,7 +91,7 @@ const ApplicantActivity = ({ userId }) => {
             <FaFolderOpen className="mr-2" /> My Applications
           </h2>
           <ApplicationCards
-            applications={applications.map((app) => ({
+            applications={currentItems.map((app) => ({
               ...app,
               onClick:
                 app.status === "Applying"
@@ -99,27 +99,9 @@ const ApplicantActivity = ({ userId }) => {
                   : null,
             }))}
           />
+          <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
         </WhiteBox>
 
-        {/* Pagination Controls */}
-        {applications.length > itemsPerPage && (
-            <div className="mt-6 flex justify-center">
-                <ReactPaginate
-                    previousLabel={"Prev"}
-                    nextLabel={"Next"}
-                    pageCount={pageCount}
-                    onPageChange={handlePageClick}
-                    containerClassName={"flex space-x-2"}
-                    pageClassName={"px-3 py-1 border rounded cursor-pointer"}
-                    activeClassName={"bg-primary bg-secondary text-white"}
-                    previousClassName={"px-3 py-1 border rounded cursor-pointer"}
-                    nextClassName={"px-3 py-1 border rounded cursor-pointer"}
-                    breakLabel={"..."}
-                    breakClassName={"px-3 py-1"}
-                    renderOnZeroPageCount={null}
-                />
-            </div>
-        )}
       </div>
     </div>
   );
