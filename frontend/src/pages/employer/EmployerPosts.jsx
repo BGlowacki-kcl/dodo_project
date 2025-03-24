@@ -1,134 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import SearchBar from '../../components/SearchBar';
-import { getAllJobs, deleteJob } from '../../services/jobService';
-
-import Metrics from "../../components/Metrics.jsx";
-import EmployerSideBar from "../../components/EmployerSideBar.jsx";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getJobsByEmployer } from "../../services/jobService";
-
+import { getDashboardData } from "../../services/applicationService";
+import WhiteBox from "../../components/WhiteBox";
+import SearchFilters from "../../components/SearchFilters";
+import Pagination from "../../components/Pagination";
+import PostCard from "../../components/PostCard";
 
 const EmployerPostsPage = () => {
-  const [selectedJob, setSelectedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [applicants, setApplicants] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const jobsPerPage = 3;
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const jobsData = await getJobsByEmployer();
-        setJobs(jobsData);
-        if (jobsData.length > 0) {
-          setSelectedJob(jobsData[0]);
-        }
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-      }
-    };
-  
-    fetchJobs();
-  }, []);
-
-  const handleEdit = (jobId) => {
-    navigate(`/posts/edit/${jobId}`);
-  };
-
-  const handleAddJob = () => {
-    navigate("/posts/new");
-  };
-
-  const handleViewApplicants = (jobId) => {
-    navigate(`/employer/applicants/${jobId}`);
-  };
-
-  const handleDelete = async (jobId) => {
+  const fetchJobs = async () => {
     try {
-      await deleteJob(jobId);
-      setJobs(jobs.filter(job => job._id !== jobId));
-      setSelectedJob(null);
-      alert("Job post deleted successfully!");
+      const jobsData = await getJobsByEmployer();
+      setJobs(jobsData);
     } catch (error) {
-      console.error("Failed to delete job post:", error);
-      alert("Failed to delete job post");
+      console.error("Error fetching jobs:", error);
     }
   };
 
+  const fetchData = async () => {
+    try {
+      const data = await getDashboardData();
+      console.log("Dashboard Data Response:", data); // Debugging
+
+      setApplicants(data.totalStatus || []);
+      console.log("Status data:", data.totalStatus); // Debugging
+
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchJobs();
+    fetchData();
+  }, []);
+
+  const applyFilters = (selectedJobTypes, selectedTitles, selectedLocations) => {
+    const filteredJobs = jobs.filter((job) => {
+      const matchesJobType = selectedJobTypes.length === 0 || selectedJobTypes.includes(job.employmentType);
+      const matchesTitle = selectedTitles.length === 0 || selectedTitles.includes(job.title);
+      const matchesLocation = selectedLocations.length === 0 || selectedLocations.includes(job.location);
+      return matchesJobType && matchesTitle && matchesLocation;
+    });
+    setJobs(filteredJobs);
+  };
+
+  const handlePageChange = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  const offset = currentPage * jobsPerPage;
+  const currentJobs = jobs.slice(offset, offset + jobsPerPage);
+  const pageCount = Math.ceil(jobs.length / jobsPerPage);
+
+  const calculateApplicants = (jobId) => {
+    // Filter applicants for the specific job
+    console.log("Applicants:", applicants); // Debugging
+    const jobApplicants = applicants.filter((status) => status.jobId === jobId);
+  
+    // Calculate total applicants excluding "Applying" status
+    const totalApplicants = jobApplicants
+      .filter((status) => status._id !== "Applying")
+      .reduce((sum, status) => sum + status.count, 0);
+  
+    // Calculate pending applicants excluding "Accepted", "Rejected", and "Applying" statuses
+    const pendingApplicants = jobApplicants
+      .filter(
+        (status) =>
+          status._id !== "Accepted" &&
+          status._id !== "Rejected" &&
+          status._id !== "Applying"
+      )
+      .reduce((sum, status) => sum + status.count, 0);
+  
+    return { totalApplicants, pendingApplicants };
+  };
+
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar with fixed width */}
-      
-
-      {/* Main Content - Takes up remaining space */}
-      <div className="flex-1 p-8">
-        <h1 className="text-3xl font-bold text-[#1B2A41] mb-6">
-          Employer Job Posts
-        </h1>
-
-        <div className="grid grid-cols-3 gap-6">
-          {/* Job List Sidebar */}
-          <div className="bg-white text-[#1B2A41] p-4 rounded-lg shadow-lg h-96 overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">Job Posts</h2>
-
-            {jobs.length > 0 ? (
-              <div className="space-y-4">
-                {jobs.map((job) => (
-                  <div
-                    key={job._id}
-                    onClick={() => setSelectedJob(job)}
-                    className={`p-4 rounded-lg cursor-pointer shadow-md transition transform ${
-                      selectedJob?._id === job._id
-                        ? "border-2 border-[#1B2A41] scale-105 bg-white"
-                        : "bg-[#1B2A41] text-white"
-                    }`}
-                  >
-                    <h3 className="text-lg font-semibold">{job.title}</h3>
-                    <p className="text-sm text-gray-600">{job.company}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">No job posts available.</p>
-            )}
-          </div>
-
-          <button
-            onClick={handleAddJob}
-            className="absolute bottom-25 left-30 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
-          >
-            Add Job Post
-          </button>
-
-          {/* Main Section - Metrics */}
-          <div className="col-span-2 space-y-6">
-            <div className="bg-[#1B2A41] p-6 rounded-lg shadow-lg relative">
-              {selectedJob ? (
-                <>
-                  <button
-                    onClick={() => handleEdit(selectedJob._id)}
-                    className="absolute top-8 right-10 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
-                  >
-                    Edit Job
-                  </button>
-                  <button
-                    onClick={() => handleViewApplicants(selectedJob._id)}
-                    className="absolute top-8 right-40 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
-                  >
-                    View Applicants
-                  </button>
-                  <button
-                    onClick={() => handleDelete(selectedJob._id)}
-                    className="absolute top-8 left-60 px-4 py-2 bg-[#1B2A41] text-white rounded-lg  transition duration-100"
-                  >
-                    Delete Job
-                  </button>
-                  <Metrics selectedJob={selectedJob} />
-                </>
-              ) : (
-                <p className="text-gray-700">Select a job to view metrics.</p>
-              )}
-            </div>
-          </div>
+    <div className="flex flex-row max-h-screen">
+      <div className="w-30%">
+        <SearchFilters applyFilters={applyFilters} hideCompanyFilter={true} />
+      </div>
+      <div className="bg-background min-h-screen w-full flex flex-col items-center">
+        <div className="text-center mt-2 mb-2">
+          <h1 className="text-heading font-heading font-bold">Employer Posts</h1>
+          <p className="text-medium mt-2">
+            Manage and filter your job posts to find the right candidates.
+          </p>
         </div>
+        <div className="flex flex-col space-y-4 px-4 pb-3 items-center w-full max-w-3xl">
+          {currentJobs.map((job) => {
+            const { totalApplicants, pendingApplicants } = calculateApplicants(job._id);
+            return (
+              <PostCard
+                key={job._id}
+                jobId={job._id} // Pass jobId to PostCard
+                title={job.title}
+                type={job.employmentType}
+                location={job.location}
+                totalApplicants={totalApplicants}
+                pendingApplicants={pendingApplicants}
+              />
+            );
+          })}
+          {jobs.length === 0 && <p className="text-white text-center">No job posts found.</p>}
+        </div>
+        <Pagination pageCount={pageCount} onPageChange={handlePageChange} />
       </div>
     </div>
   );

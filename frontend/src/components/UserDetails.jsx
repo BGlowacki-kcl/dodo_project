@@ -1,0 +1,482 @@
+import React, { useState } from "react";
+import WhiteBox from "./WhiteBox";
+import { FaEdit, FaSave, FaTrash, FaPlus, FaGraduationCap, FaBriefcase, FaTools, FaUser, FaLink } from "react-icons/fa";
+import { useNotification } from "../context/notification.context"; // Import useNotification
+
+const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, isProfilePage }) => {
+  const [dateError, setDateError] = useState("");
+  const showNotification = useNotification(); // Initialize notification hook
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString("en-GB", options);
+  };
+
+  const formatDateForInput = (dateValue) => {
+    if (!dateValue) return "";
+    if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+      return dateValue;
+    }
+    const date = new Date(dateValue);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+
+  const validateDates = (startDate, endDate) => {
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      const errorMessage = "Start date cannot be after the end date.";
+      setDateError(errorMessage);
+      showNotification(errorMessage, "error"); // Show error notification
+      return false;
+    }
+    setDateError("");
+    return true;
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* First Row: Personal Information and Links */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Personal Information */}
+        <WhiteBox>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-black">
+              <FaUser className="inline-block mr-2" /> Personal Information
+            </h2>
+            {isProfilePage && (
+              isEditing.personal ? (
+                <FaSave
+                  className="cursor-pointer"
+                  onClick={() => {
+                    console.log("Save icon clicked for personal section"); // Debug log
+                    onEdit("personal");
+                  }}
+                />
+              ) : (
+                <FaEdit
+                  className="cursor-pointer"
+                  onClick={() => {
+                    console.log("Edit icon clicked for personal section"); // Debug log
+                    onEdit("personal");
+                  }}
+                />
+              )
+            )}
+          </div>
+          <div className="space-y-2">
+            <p className="text-lg text-black">
+              <strong>Name:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="name"
+                  value={user.name || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full text-base"
+                />
+              ) : (
+                <span className="text-base">{user.name || "N/A"}</span>
+              )}
+            </p>
+            <p className="text-lg text-black">
+              <strong>Email:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="email"
+                  value={user.email || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full text-base"
+                />
+              ) : (
+                <span className="text-base">{user.email || "N/A"}</span>
+              )}
+            </p>
+            <p className="text-lg text-black">
+              <strong>Phone Number:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="phoneNumber"
+                  value={user.phoneNumber || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full text-base"
+                />
+              ) : (
+                <span className="text-base">{user.phoneNumber || "N/A"}</span>
+              )}
+            </p>
+            <p className="text-lg text-black">
+              <strong>Location:</strong>{" "}
+              {isEditing.personal ? (
+                <input
+                  type="text"
+                  name="location"
+                  value={user.location || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full text-base"
+                />
+              ) : (
+                <span className="text-base">{user.location || "N/A"}</span>
+              )}
+            </p>
+          </div>
+        </WhiteBox>
+
+        {/* Links */}
+        <WhiteBox>
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold mb-4 text-black">
+              <FaLink className="inline-block mr-2" /> Links
+            </h2>
+            {isProfilePage && (
+              isEditing.links ? (
+                <FaSave className="cursor-pointer" onClick={() => onEdit("links")} />
+              ) : (
+                <FaEdit className="cursor-pointer" onClick={() => onEdit("links")} />
+              )
+            )}
+          </div>
+          <div className="space-y-2">
+            <p className="text-lg text-black">
+              <strong>GitHub:</strong>{" "}
+              {isEditing.links ? (
+                <input
+                  type="text"
+                  name="github"
+                  value={user.github || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full text-base"
+                />
+              ) : (
+                <a
+                  href={user.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 text-base"
+                >
+                  {user.github || "N/A"}
+                </a>
+              )}
+            </p>
+            <p className="text-lg text-black">
+              <strong>LinkedIn:</strong>{" "}
+              {isEditing.links ? (
+                <input
+                  type="text"
+                  name="linkedin"
+                  value={user.linkedin || ""}
+                  onChange={onChange}
+                  className="border p-1 w-full text-base"
+                />
+              ) : (
+                <a
+                  href={user.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 text-base"
+                >
+                  {user.linkedin || "N/A"}
+                </a>
+              )}
+            </p>
+          </div>
+        </WhiteBox>
+      </div>
+
+      {/* Education Section */}
+      <WhiteBox>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold mb-4 text-black">
+            <FaGraduationCap className="inline-block mr-2" /> Education
+          </h2>
+          {isProfilePage && (
+            isEditing.education ? (
+              <FaSave className="cursor-pointer" onClick={() => onEdit("education")} />
+            ) : (
+              <FaEdit className="cursor-pointer" onClick={() => onEdit("education")} />
+            )
+          )}
+        </div>
+        <div className="space-y-4">
+          {user.education?.length > 0 ? (
+            user.education.map((edu, index) => (
+              <div key={index} className="p-4 border rounded-lg relative">
+                <p className="text-lg text-black">
+                  <strong>Institution:</strong>{" "}
+                  {isEditing.education ? (
+                    <input
+                      type="text"
+                      name={`education.${index}.institution`}
+                      value={edu.institution || ""}
+                      onChange={onChange}
+                      className="border p-1 w-full text-base"
+                    />
+                  ) : (
+                    <span className="text-base">{edu.institution || "N/A"}</span>
+                  )}
+                </p>
+                <p className="text-lg text-black">
+                  <strong>Degree:</strong>{" "}
+                  {isEditing.education ? (
+                    <input
+                      type="text"
+                      name={`education.${index}.degree`}
+                      value={edu.degree || ""}
+                      onChange={onChange}
+                      className="border p-1 w-full text-base"
+                    />
+                  ) : (
+                    <span className="text-base">{edu.degree || "N/A"}</span>
+                  )}
+                </p>
+                <p className="text-lg text-black">
+                  <strong>Field of Study:</strong>{" "}
+                  {isEditing.education ? (
+                    <input
+                      type="text"
+                      name={`education.${index}.fieldOfStudy`}
+                      value={edu.fieldOfStudy || ""}
+                      onChange={onChange}
+                      className="border p-1 w-full text-base"
+                    />
+                  ) : (
+                    <span className="text-base">{edu.fieldOfStudy || "N/A"}</span>
+                  )}
+                </p>
+                <p className="text-lg text-black">
+                  <strong>Start Date:</strong>{" "}
+                  {isEditing.education ? (
+                    <input
+                      type="date"
+                      name={`education.${index}.startDate`}
+                      value={formatDateForInput(edu.startDate)}
+                      onChange={onChange}
+                      className="border p-1 w-full text-base"
+                    />
+                  ) : (
+                    <span className="text-base">{formatDate(edu.startDate)}</span>
+                  )}
+                </p>
+                <p className="text-lg text-black">
+                  <strong>End Date:</strong>{" "}
+                  {isEditing.education ? (
+                    <input
+                      type="date"
+                      name={`education.${index}.endDate`}
+                      value={formatDateForInput(edu.endDate)}
+                      onChange={onChange}
+                      className="border p-1 w-full text-base"
+                    />
+                  ) : (
+                    <span className="text-base">{formatDate(edu.endDate)}</span>
+                  )}
+                </p>
+                {isEditing.education && (
+                  <FaTrash
+                    className="absolute top-2 right-2 cursor-pointer text-red-500"
+                    onClick={() => onRemove("education", index)}
+                  />
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-black italic">No education details available.</p>
+          )}
+          {isEditing.education && (
+            <button
+              className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
+              onClick={() => onAdd("education")}
+            >
+              <FaPlus className="mr-2" /> Add Education
+            </button>
+          )}
+        </div>
+      </WhiteBox>
+
+      {/* Experience Section */}
+      <WhiteBox>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold mb-4 text-black">
+            <FaBriefcase className="inline-block mr-2" /> Experience
+          </h2>
+          {isProfilePage && (
+            isEditing.experience ? (
+              <FaSave className="cursor-pointer" onClick={() => onEdit("experience")} />
+            ) : (
+              <FaEdit className="cursor-pointer" onClick={() => onEdit("experience")} />
+            )
+          )}
+        </div>
+        <div>
+          {user.experience?.length > 0 ? (
+            user.experience.map((exp, index) => (
+              <div key={index} className="mb-4 p-4 border rounded-lg relative">
+                <div className="flex flex-col md:flex-row justify-between">
+                  {/* Left Column: Company, Title, Start Date, End Date */}
+                  <div className="flex-1">
+                    <p className="text-lg text-black">
+                      <strong>Company:</strong>{" "}
+                      {isEditing.experience ? (
+                        <input
+                          type="text"
+                          name={`experience.${index}.company`}
+                          value={exp.company || ""}
+                          onChange={onChange}
+                          className="border p-1 w-full text-base"
+                        />
+                      ) : (
+                        <span className="text-base">{exp.company || "N/A"}</span>
+                      )}
+                    </p>
+                    <p className="text-lg text-black">
+                      <strong>Title:</strong>{" "}
+                      {isEditing.experience ? (
+                        <input
+                          type="text"
+                          name={`experience.${index}.title`}
+                          value={exp.title || ""}
+                          onChange={onChange}
+                          className="border p-1 w-full text-base"
+                        />
+                      ) : (
+                        <span className="text-base">{exp.title || "N/A"}</span>
+                      )}
+                    </p>
+                    <p className="text-lg text-black">
+                      <strong>Start Date:</strong>{" "}
+                      {isEditing.experience ? (
+                        <input
+                          type="date"
+                          name={`experience.${index}.startDate`}
+                          value={formatDateForInput(exp.startDate)}
+                          onChange={(e) => {
+                            const newStartDate = e.target.value;
+                            const isValid = validateDates(newStartDate, exp.endDate);
+                            if (isValid) onChange(e);
+                          }}
+                          className="border p-1 w-full text-base"
+                        />
+                      ) : (
+                        <span className="text-base">{formatDate(exp.startDate)}</span>
+                      )}
+                    </p>
+                    <p className="text-lg text-black">
+                      <strong>End Date:</strong>{" "}
+                      {isEditing.experience ? (
+                        <input
+                          type="date"
+                          name={`experience.${index}.endDate`}
+                          value={formatDateForInput(exp.endDate)}
+                          onChange={(e) => {
+                            const newEndDate = e.target.value;
+                            const isValid = validateDates(exp.startDate, newEndDate);
+                            if (isValid) onChange(e);
+                          }}
+                          className="border p-1 w-full text-base"
+                        />
+                      ) : (
+                        <span className="text-base">{formatDate(exp.endDate)}</span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Right Column: Description */}
+                  <div className="flex-1 md:ml-4">
+                    <p className="text-lg text-black">
+                      <strong>Description:</strong>
+                    </p>
+                    {isEditing.experience ? (
+                      <textarea
+                        name={`experience.${index}.description`}
+                        value={exp.description || ""}
+                        onChange={onChange}
+                        className="border p-1 w-full text-base"
+                      />
+                    ) : (
+                      <p className="text-base text-black">{exp.description || "N/A"}</p>
+                    )}
+                  </div>
+                </div>
+                {isEditing.experience && (
+                  <FaTrash
+                    className="absolute top-2 right-2 cursor-pointer text-red-500"
+                    onClick={() => onRemove("experience", index)}
+                  />
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-black italic">No experience details available.</p>
+          )}
+          {dateError && <p className="text-red-500 text-sm">{dateError}</p>}
+          {isEditing.experience && (
+            <button
+              className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
+              onClick={() => onAdd("experience")}
+            >
+              <FaPlus className="mr-2" /> Add Experience
+            </button>
+          )}
+        </div>
+      </WhiteBox>
+
+      {/* Skills Section */}
+      <WhiteBox>
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold mb-4 text-black">
+            <FaTools className="inline-block mr-2" /> Skills
+          </h2>
+          {isProfilePage && (
+            isEditing.skills ? (
+              <FaSave className="cursor-pointer" onClick={() => onEdit("skills")} />
+            ) : (
+              <FaEdit className="cursor-pointer" onClick={() => onEdit("skills")} />
+            )
+          )}
+        </div>
+        <div className="space-y-4">
+          {isEditing.skills ? (
+            <div>
+              {user.skills?.map((skill, index) => (
+                <div key={index} className="flex items-center">
+                  <input
+                    type="text"
+                    name={`skills.${index}`}
+                    value={skill || ""}
+                    onChange={onChange}
+                    className="border p-1 flex-1 text-base"
+                  />
+                  <FaTrash
+                    className="ml-2 cursor-pointer text-red-500"
+                    onClick={() => onRemove("skills", index)}
+                  />
+                </div>
+              ))}
+              <button
+                className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
+                onClick={() => onAdd("skills")}
+              >
+                <FaPlus className="mr-2" /> Add Skill
+              </button>
+            </div>
+          ) : (
+            user.skills?.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {user.skills.map((skill, index) => (
+                  <span key={index} className="bg-gray-200 px-2 py-1 rounded text-base">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-black italic">No skills available.</p>
+            )
+          )}
+        </div>
+      </WhiteBox>
+    </div>
+  );
+};
+
+export default UserDetails;

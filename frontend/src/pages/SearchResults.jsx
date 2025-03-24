@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { getAllJobs, getFilteredJobs } from "../services/jobService";
 import SearchFilters from "../components/SearchFilters";
 import JobCard from "../components/JobCard";
-import ReactPaginate from "react-paginate";
 import { addJobToShortlist, getShortlist } from "../services/shortlist.service";
 import { useNotification } from "../context/notification.context";
+import Pagination from "../components/Pagination";
 
 const SearchResults = () => {
     const url = useLocation();
@@ -173,23 +173,7 @@ const SearchResults = () => {
                 </div>
 
                 {/* PAGINATION CONTROLS */}
-                {pageCount > 1 && (
-                    <ReactPaginate
-                        previousLabel={"Prev"}
-                        nextLabel={"Next"}
-                        breakLabel={"..."}
-                        pageCount={pageCount}
-                        marginPagesDisplayed={2}
-                        pageRangeDisplayed={3}
-                        onPageChange={handlePageChange}
-                        containerClassName={"pagination flex justify-center space-x-2"}
-                        pageClassName={"border px-3 py-1 rounded-md hover:bg-gray-200"}
-                        activeClassName={"bg-primary"}
-                        previousClassName={"border px-3 py-1 rounded-md hover:bg-gray-200"}
-                        nextClassName={"border px-3 py-1 rounded-md hover:bg-gray-200"}
-                        disabledClassName={"opacity-50 cursor-not-allowed"}
-                    />
-                )}
+                <Pagination pageCount={pageCount} onPageChange={handlePageChange} />
             </div>
         </div>
     );

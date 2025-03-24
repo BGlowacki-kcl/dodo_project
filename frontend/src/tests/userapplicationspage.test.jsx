@@ -27,13 +27,13 @@ describe("UserApplicationsPage", () => {
     getAllUserApplications.mockResolvedValueOnce([
       {
         _id: "app1",
-        status: "applied",
+        status: "Applied",
         submittedAt: "2025-03-09T15:28:36.140Z",
         job: { title: "Frontend Dev" },
       },
       {
         _id: "app2",
-        status: "shortlisted",
+        status: "Shortlisted",
         submittedAt: "2025-03-10T15:28:36.140Z",
         job: { title: "Backend Dev" },
       },
@@ -56,7 +56,7 @@ describe("UserApplicationsPage", () => {
 
     //Filter by status "applied"
     const filterSelect = screen.getByLabelText("Filter by Status");  
-    fireEvent.change(filterSelect, { target: { value: "applied" } }); 
+    fireEvent.change(filterSelect, { target: { value: "Applied" } }); 
     expect(screen.getByText("Frontend Dev")).toBeInTheDocument();
     expect(screen.queryByText("Backend Dev")).not.toBeInTheDocument();
   });
