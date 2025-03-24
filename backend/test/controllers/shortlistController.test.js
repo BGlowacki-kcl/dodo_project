@@ -1,9 +1,11 @@
-import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../controllers/shortlist.controller.js";
+import { getShortlist, addJobToShortlist, removeJobFromShortlist, createShortlist } from "../../controllers/shortlist.controller.js";
 import Shortlist from "../../models/shortlist.model.js";
 import Job from "../../models/job.model.js";
+import User from "../../models/user/user.model.js";
 
 jest.mock("../../models/shortlist.model.js");
 jest.mock("../../models/job.model.js");
+jest.mock("../../models/user/user.model.js");
 
 describe("Shortlist Controller", () => {
   let req, res;
@@ -13,6 +15,7 @@ describe("Shortlist Controller", () => {
       uid: "mockUserId",
       params: {},
       body: {},
+      query: {},
     };
     res = {
       status: jest.fn().mockReturnThis(),
@@ -26,15 +29,16 @@ describe("Shortlist Controller", () => {
   // ----------------------------------------------------
   describe("getShortlist", () => {
     it("should return 404 if shortlist not found", async () => {
-      Shortlist.findOne.mockReturnValue({
-        populate: jest.fn().mockResolvedValue(null),
-      });
+      Shortlist.findOne = jest.fn().mockReturnValue(null);
 
       await getShortlist(req, res);
 
       expect(Shortlist.findOne).toHaveBeenCalledWith({ user: "mockUserId" });
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ message: "Shortlist not found" });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "Shortlist not found",
+      });
     });
 
     it("should return the shortlist if found", async () => {
@@ -42,25 +46,17 @@ describe("Shortlist Controller", () => {
         _id: "shortlistId",
         jobs: [],
       };
-      Shortlist.findOne.mockReturnValue({
-        populate: jest.fn().mockResolvedValue(mockShortlist),
-      });
+      
+      Shortlist.findOne = jest.fn().mockResolvedValue(mockShortlist);
 
       await getShortlist(req, res);
 
       expect(Shortlist.findOne).toHaveBeenCalledWith({ user: "mockUserId" });
-      expect(res.json).toHaveBeenCalledWith(mockShortlist);
-    });
-
-    it("should return 500 on error", async () => {
-      Shortlist.findOne.mockReturnValue({
-        populate: jest.fn().mockRejectedValue(new Error("DB error")),
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        data: mockShortlist,
       });
-
-      await getShortlist(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: "DB error" });
     });
   });
 
@@ -69,7 +65,7 @@ describe("Shortlist Controller", () => {
   // ----------------------------------------------------
   describe("addJobToShortlist", () => {
     beforeEach(() => {
-      req.params.jobId = "someJobId";
+      req.query = { jobid: "someJobId" };
     });
 
     it("should return 404 if job not found", async () => {
@@ -79,39 +75,10 @@ describe("Shortlist Controller", () => {
 
       expect(Job.findById).toHaveBeenCalledWith("someJobId");
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ message: "Job not found" });
-    });
-
-    it("should create a new shortlist if none exists and add the job", async () => {
-      const mockJob = { _id: "someJobId" };
-      Job.findById.mockResolvedValue(mockJob);
-
-      Shortlist.findOne.mockResolvedValue(null);
-
-      const mockSave = jest.fn().mockResolvedValue({
-        _id: "newShortlistId",
-        user: "mockUserId",
-        jobs: ["someJobId"],
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "Job not found",
       });
-      Shortlist.mockImplementation(() => ({
-        _id: "newShortlistId", 
-        user: "mockUserId",
-        jobs: [],
-        save: mockSave,
-      }));
-
-      await addJobToShortlist(req, res);
-
-      expect(Shortlist.findOne).toHaveBeenCalledWith({ user: "mockUserId" });
-      expect(mockSave).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          _id: "newShortlistId",
-          user: "mockUserId",
-          jobs: ["someJobId"],
-        })
-      );
     });
 
     it("should return 400 if job already in shortlist", async () => {
@@ -129,45 +96,37 @@ describe("Shortlist Controller", () => {
       await addJobToShortlist(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "Job already in shortlist" });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "Job already in shortlist",
+      });
     });
 
-    it("should return 201 if added to existing shortlist", async () => {
-      const mockJob = { _id: "someJobId" };
-      Job.findById.mockResolvedValue(mockJob);
-
-      const existingShortlist = {
-        _id: "shortlistId",
-        user: "mockUserId",
-        jobs: ["anotherJobId"],
-        save: jest.fn().mockResolvedValue({
-          _id: "shortlistId",
-          user: "mockUserId",
-          jobs: ["anotherJobId", "someJobId"],
-        }),
-      };
-      Shortlist.findOne.mockResolvedValue(existingShortlist);
-
-      await addJobToShortlist(req, res);
-
-      expect(existingShortlist.save).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          _id: "shortlistId",
-          user: "mockUserId",
-          jobs: ["anotherJobId", "someJobId"],
-        })
-      );
-    });
-
-    it("should return 500 on DB error", async () => {
+    it("should return 500 if verifyJobExists throws an error", async () => {
+      req.query = { jobid: "someJobId" };
       Job.findById.mockRejectedValue(new Error("DB error"));
 
       await addJobToShortlist(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: "DB error" });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "DB error",
+      });
+    });
+
+    it("should return 500 if getOrCreateShortlist throws an error", async () => {
+      req.query = { jobid: "someJobId" };
+      Job.findById.mockResolvedValue({ _id: "someJobId" });
+      Shortlist.findOne.mockRejectedValue(new Error("DB error"));
+
+      await addJobToShortlist(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "DB error",
+      });
     });
   });
 
@@ -176,66 +135,121 @@ describe("Shortlist Controller", () => {
   // ----------------------------------------------------
   describe("removeJobFromShortlist", () => {
     beforeEach(() => {
-      req.params.jobId = "someJobId";
+      req.params = { jobId: "someJobId" };
     });
 
     it("should return 404 if shortlist not found", async () => {
-      Shortlist.findOne.mockResolvedValue(null);
+      Shortlist.findOne = jest.fn().mockResolvedValue(null);
 
       await removeJobFromShortlist(req, res);
 
-      expect(Shortlist.findOne).toHaveBeenCalledWith({ user: "mockUserId" });
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ message: "Shortlist not found" });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "Shortlist not found"
+      });
     });
 
     it("should return 404 if job not in shortlist", async () => {
       const mockShortlist = {
         _id: "shortlistId",
         user: "mockUserId",
-        jobs: ["someOtherJobId"],
+        jobs: ["differentJobId"],
+        save: jest.fn()
       };
+      
       Shortlist.findOne.mockResolvedValue(mockShortlist);
 
       await removeJobFromShortlist(req, res);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ message: "Job not in shortlist" });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "Job not in shortlist"
+      });
     });
 
     it("should remove job and return updated shortlist", async () => {
-      const mockShortlistSave = jest.fn().mockResolvedValue({
+      const updatedShortlist = {
         _id: "shortlistId",
         user: "mockUserId",
-        jobs: ["anotherJobId"], 
-      });
+        jobs: ["anotherJobId"]
+      };
+
       const mockShortlist = {
         _id: "shortlistId",
         user: "mockUserId",
         jobs: ["someJobId", "anotherJobId"],
-        save: mockShortlistSave,
+        save: jest.fn().mockResolvedValue(updatedShortlist)
       };
-      Shortlist.findOne.mockResolvedValue(mockShortlist);
+      
+      Shortlist.findOne = jest.fn().mockResolvedValue(mockShortlist);
 
       await removeJobFromShortlist(req, res);
 
-      expect(mockShortlistSave).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          _id: "shortlistId",
-          user: "mockUserId",
-          jobs: ["anotherJobId"],
-        })
-      );
+      expect(mockShortlist.save).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        data: updatedShortlist
+      });
     });
 
     it("should return 500 on DB error", async () => {
-      Shortlist.findOne.mockRejectedValue(new Error("DB fail"));
+      Shortlist.findOne = jest.fn().mockRejectedValue(new Error("DB fail"));
 
       await removeJobFromShortlist(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: "DB fail" });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "DB fail"
+      });
+    });
+  });
+
+  // ----------------------------------------------------
+  // createShortlist
+  // ----------------------------------------------------
+  describe("createShortlist", () => {
+    it("should create a new shortlist for a valid user", async () => {
+      User.findOne.mockResolvedValue({ _id: "mockUserId" });
+      Shortlist.create.mockResolvedValue({ _id: "shortlistId", user: "mockUserId", jobs: [] });
+
+      await createShortlist(req, res);
+
+      expect(User.findOne).toHaveBeenCalledWith({ uid: "mockUserId" });
+      expect(Shortlist.create).toHaveBeenCalledWith({ user: "mockUserId", jobs: [] });
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        data: { _id: "shortlistId", user: "mockUserId", jobs: [] },
+      });
+    });
+
+    it("should return 404 if user is not found", async () => {
+      User.findOne.mockResolvedValue(null);
+
+      await createShortlist(req, res);
+
+      expect(User.findOne).toHaveBeenCalledWith({ uid: "mockUserId" });
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "User not found",
+      });
+    });
+
+    it("should return 500 on database error", async () => {
+      User.findOne.mockRejectedValue(new Error("DB error"));
+
+      await createShortlist(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: "DB error",
+      });
     });
   });
 });

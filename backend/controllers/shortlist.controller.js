@@ -8,9 +8,11 @@ import User from "../models/user/user.model.js";
  * @returns {Promise<Object>} Shortlist document
  */
 const fetchShortlist = async (userId) => {
-    const shortlist = await Shortlist.findOne({ user: userId }).populate("jobs");
+    const shortlist = await Shortlist.findOne({ user: userId });
     if (!shortlist) {
-        throw new Error("Shortlist not found");
+        const error = new Error("Shortlist not found");
+        error.status = 404;
+        throw error;
     }
     return shortlist;
 };
@@ -23,7 +25,9 @@ const fetchShortlist = async (userId) => {
 const verifyJobExists = async (jobId) => {
     const job = await Job.findById(jobId);
     if (!job) {
-        throw new Error("Job not found");
+        const error = new Error("Job not found");
+        error.status = 404;
+        throw error;
     }
     return job;
 };
@@ -36,7 +40,7 @@ const verifyJobExists = async (jobId) => {
 const getOrCreateShortlist = async (userId) => {
     let shortlist = await Shortlist.findOne({ user: userId });
     if (!shortlist) {
-        shortlist = new Shortlist({ user: userId, jobs: [] });
+        shortlist = await Shortlist.create({ user: userId, jobs: [] });
     }
     return shortlist;
 };
@@ -58,10 +62,12 @@ const isJobInShortlist = (shortlist, jobId) => shortlist.jobs.includes(jobId);
 const removeJob = async (shortlist, jobId) => {
     const jobIndex = shortlist.jobs.indexOf(jobId);
     if (jobIndex === -1) {
-        throw new Error("Job not in shortlist");
+        const error = new Error("Job not in shortlist");
+        error.status = 404;
+        throw error;
     }
     shortlist.jobs.splice(jobIndex, 1);
-    return shortlist.save();
+    return await shortlist.save();
 };
 
 /**
@@ -97,7 +103,7 @@ export const getShortlist = async (req, res) => {
         const shortlist = await fetchShortlist(userId);
         return res.status(200).json({ success: true, data: shortlist });
     } catch (error) {
-        const status = error.message === "Shortlist not found" ? 404 : 500;
+        const status = error.status || 500;
         return res.status(status).json({ success: false, message: error.message });
     }
 };
@@ -124,7 +130,7 @@ export const addJobToShortlist = async (req, res) => {
         const updatedShortlist = await shortlist.save();
         return res.status(201).json({ success: true, data: updatedShortlist });
     } catch (error) {
-        const status = error.message === "Job not found" ? 404 : 500;
+        const status = error.status || 500;
         return res.status(status).json({ success: false, message: error.message });
     }
 };
@@ -144,7 +150,7 @@ export const removeJobFromShortlist = async (req, res) => {
         const updatedShortlist = await removeJob(shortlist, jobId);
         return res.status(200).json({ success: true, data: updatedShortlist });
     } catch (error) {
-        const status = error.message === "Shortlist not found" || error.message === "Job not in shortlist" ? 404 : 500;
-        return res.status(status).json({ success: true, message: error.message });
+        const status = error.status || 500;
+        return res.status(status).json({ success: false, message: error.message });
     }
 };

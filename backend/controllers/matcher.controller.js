@@ -66,7 +66,7 @@ export async function query(cvText, jobDescription) {
  * @returns {void}
  * @throws {Error} If validation fails
  */
-const validateUser = (uid, user) => {
+export const validateUser = (uid, user) => {
     if (!uid) throw new Error("User ID is required");
     if (!user) throw new Error("User not found");
     if (!user.resume) throw new Error("User CV is missing");
@@ -77,7 +77,7 @@ const validateUser = (uid, user) => {
  * @param {Array<string>} excludeJobIds - Array of job IDs to exclude
  * @returns {Promise<Array>} Array of job documents
  */
-const fetchJobs = async (excludeJobIds) => 
+export const fetchJobs = async (excludeJobIds) => 
     Job.find({ _id: { $nin: excludeJobIds } }).limit(30);
 
 /**
@@ -86,7 +86,7 @@ const fetchJobs = async (excludeJobIds) =>
  * @param {string} resume - User's resume text
  * @returns {Promise<Array>} Array of jobs with similarity scores
  */
-const computeJobMatches = async (jobs, resume) => 
+export const computeJobMatches = async (jobs, resume) => 
     Promise.all(jobs.map(async (job) => {
         const { similarityScore } = await query(resume, job.description);
         return { ...job.toObject(), similarityScore };
@@ -97,7 +97,7 @@ const computeJobMatches = async (jobs, resume) =>
  * @param {Array} jobMatches - Array of jobs with similarity scores
  * @returns {Array} Sorted array of job matches
  */
-const sortJobMatches = (jobMatches) => 
+export const sortJobMatches = (jobMatches) => 
     jobMatches.sort((a, b) => b.similarityScore - a.similarityScore);
 
 /**
