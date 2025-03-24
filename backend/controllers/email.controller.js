@@ -1,3 +1,15 @@
+/**
+ * Email Controller
+ * 
+ * This module manages the sending of emails using Nodemailer. It includes:
+ * - Creating and configuring an email transporter
+ * - Validating required email fields
+ * - Building email options for sending
+ * - Sending emails through an Express route
+ * 
+ * It is primarily used for handling contact form submissions.
+ */
+
 import nodemailer from 'nodemailer';
 
 /**

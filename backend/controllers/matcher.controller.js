@@ -1,3 +1,17 @@
+/**
+ * Job Matcher Controller
+ * 
+ * This module provides job recommendations for users based on their CVs.
+ * - Queries the Hugging Face API to compute similarity scores between a user's resume and job descriptions
+ * - Validates user data before generating recommendations
+ * - Fetches jobs excluding specified job IDs
+ * - Computes and sorts job matches based on similarity scores
+ * - Returns top recommended jobs for a user
+ * 
+ * It relies on the Hugging Face JobBERT model for text similarity calculations.
+ */
+
+
 import { JobSeeker } from '../models/user/jobSeeker.model.js';
 import Job from '../models/job.model.js';
 import dotenv from 'dotenv';

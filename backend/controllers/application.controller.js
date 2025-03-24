@@ -1,3 +1,17 @@
+/**
+ * Application Controller
+ * 
+ * This module handles all job application-related operations, including:
+ * - Retrieving, updating, and deleting applications
+ * - Managing application status and progression
+ * - Handling assessment deadlines
+ * - Fetching applicants for a job
+ * - Providing employer dashboard insights
+ * - Saving and submitting applications
+ * 
+ * The controller interacts with the Application, Job, and User models.
+ */
+
 import mongoose from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
@@ -406,44 +420,6 @@ export const applicationController = {
         }
     }
 };
-
-// /**
-//  * Builds detailed application data including assessments
-//  * @param {Object} application - Application document
-//  * @returns {Promise<Object>} Formatted application data
-//  */
-// const buildApplicationData = async (application) => {
-//     const job = await Job.findById(application.job);
-//     const assessments = await CodeAssessment.find({ _id: { $in: job.assessments } });
-//     const submissions = await CodeSubmission.find({ application: application._id });
-
-//     return {
-//         id: application._id,
-//         applicantId: application.applicant._id,
-//         name: application.applicant.name,
-//         email: application.applicant.email,
-//         status: application.status,
-//         coverLetter: application.coverLetter,
-//         submittedAt: application.submittedAt,
-//         skills: application.applicant.skills,
-//         resume: application.applicant.resume,
-//         job: application.job,
-//         assessments: { assessments, submissions },
-//         answers: application.answers.map(answer => ({
-//             questionId: answer.questionId.toString(),
-//             answerText: answer.answerText,
-//         })),
-//     };
-// };
-
-// /**
-//  * Validates answers format
-//  * @param {Array} answers - Answers array to validate
-//  * @returns {boolean} Whether answers format is valid
-//  */
-// const isValidAnswersFormat = (answers) => 
-//     answers && Array.isArray(answers) && 
-//     answers.every(answer => answer.questionId && answer.answerText);
 
 /**
  * Formats answers for storage

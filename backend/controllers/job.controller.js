@@ -262,8 +262,8 @@ export const getJobQuestionsById = async (req, res) => {
     }
 };
 
-// if(process.env.NODE_ENV === "test"){
-//     module.exports = {
+// if (process.env.NODE_ENV === "test") {
+//     export const testExports = {
 //         createJob,
 //         getJobs,
 //         getJobById,
@@ -280,4 +280,4 @@ export const getJobQuestionsById = async (req, res) => {
 //         areRequiredFieldsPresent,
 //         createResponse
 //     };
-//  }
+// }
