@@ -10,7 +10,12 @@ import {
     getAllJobRoles,
     getAllJobLocations,
     getAllJobTypes,
-    getFilteredJobs
+    getFilteredJobs,
+    buildJobFilter,
+    getJobQuestionsById,
+    getJobsByEmployer,
+    areRequiredFieldsPresent,
+    createResponse
 } from '../../controllers/job.controller.js';
 
 jest.mock('../../models/job.model.js');
@@ -287,7 +292,7 @@ describe('Job Controller', () => {
             expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
                 success: false,
                 message: "Failed to fetch job roles",
-                error: "DB error"
+                data: "DB error"  // Changed from error to data
             }));
         });
     });
@@ -317,7 +322,7 @@ describe('Job Controller', () => {
             expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
                 success: false,
                 message: "Failed to fetch job locations",
-                error: "DB error"
+                data: "DB error"  // Changed from error to data
             }));
         });
     });
@@ -347,7 +352,7 @@ describe('Job Controller', () => {
             expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
                 success: false,
                 message: "Failed to fetch job types",
-                error: "DB error"
+                data: "DB error"  // Changed from error to data
             }));
         });
     });
@@ -414,8 +419,268 @@ describe('Job Controller', () => {
             expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
                 success: false,
                 message: "Failed to fetch jobs",
-                error: "DB error"
+                data: "DB error"  // Changed from error to data
             }));
+        });
+    });
+
+    describe('getJobsByEmployer', () => {
+        it('should return jobs for an employer', async () => {
+            const mockEmployer = { _id: 'empId123' };
+            const mockJobs = [
+                { title: 'Job 1', postedBy: 'empId123' },
+                { title: 'Job 2', postedBy: 'empId123' }
+            ];
+
+            Employer.findOne.mockResolvedValue(mockEmployer);
+            Job.find.mockResolvedValue(mockJobs);
+
+            req.uid = 'mockUid';
+            await getJobsByEmployer(req, res);
+
+            expect(Employer.findOne).toHaveBeenCalledWith({ uid: 'mockUid' });
+            expect(Job.find).toHaveBeenCalledWith({ postedBy: mockEmployer._id });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'Jobs retrieved successfully',
+                data: mockJobs
+            });
+        });
+
+        it('should return 404 if employer not found', async () => {
+            Employer.findOne.mockResolvedValue(null);
+            
+            await getJobsByEmployer(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Employer not found'
+            });
+        });
+
+        it('should handle database errors', async () => {
+            Employer.findOne.mockRejectedValue(new Error('Database error'));
+            
+            await getJobsByEmployer(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Database error'
+            });
+        });
+    });
+
+    describe('getJobQuestionsById', () => {
+        it('should return questions for a valid job', async () => {
+            const mockJob = {
+                _id: 'job123',
+                questions: ['Question 1', 'Question 2']
+            };
+            
+            req.query = { jobId: 'job123' };
+            Job.findById.mockResolvedValue(mockJob);
+
+            await getJobQuestionsById(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                message: 'Job questions retrieved successfully',
+                data: mockJob.questions
+            });
+        });
+
+        it('should return 404 if job not found', async () => {
+            req.query = { jobId: 'nonexistent' };
+            Job.findById.mockResolvedValue(null);
+
+            await getJobQuestionsById(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(404);
+            expect(res.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Job not found'
+            });
+        });
+
+        it('should handle database errors', async () => {
+            req.query = { jobId: 'errorId' };
+            Job.findById.mockRejectedValue(new Error('Database error'));
+
+            await getJobQuestionsById(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Database error'
+            });
+        });
+    });
+
+    describe('buildJobFilter', () => {
+        it('should handle empty query parameters', () => {
+            const query = {};
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({});
+        });
+
+        it('should handle single string values', () => {
+            const query = {
+                jobType: 'Full-time',
+                location: 'Remote',
+                role: 'Developer'
+            };
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({
+                employmentType: 'Full-time',
+                location: 'Remote',
+                title: 'Developer'
+            });
+        });
+
+        it('should handle array values', () => {
+            const query = {
+                jobType: ['Full-time', 'Part-time'],
+                location: ['Remote', 'On-site'],
+                role: ['Developer', 'Designer']
+            };
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({
+                employmentType: { $in: ['Full-time', 'Part-time'] },
+                location: { $in: ['Remote', 'On-site'] },
+                title: { $in: ['Developer', 'Designer'] }
+            });
+        });
+    });
+
+    describe('areRequiredFieldsPresent', () => {
+        it('should return true when all required fields are present', () => {
+            const data = {
+                title: 'Software Engineer',
+                company: 'Tech Corp',
+                location: 'Remote',
+                description: 'Job description',
+                postedBy: 'userId123'
+            };
+            expect(areRequiredFieldsPresent(data)).toBe(true);
+        });
+
+        it('should return false when any required field is missing', () => {
+            const data = {
+                title: 'Software Engineer',
+                company: 'Tech Corp',
+                location: 'Remote'
+                // missing description and postedBy
+            };
+            expect(areRequiredFieldsPresent(data)).toBe(false);
+        });
+
+        it('should return false when required fields are empty', () => {
+            const data = {
+                title: '',
+                company: 'Tech Corp',
+                location: 'Remote',
+                description: 'Job description',
+                postedBy: 'userId123'
+            };
+            expect(areRequiredFieldsPresent(data)).toBe(false);
+        });
+
+        it('should return false when fields are null or undefined', () => {
+            const data = {
+                title: null,
+                company: undefined,
+                location: 'Remote',
+                description: 'Description',
+                postedBy: '123'
+            };
+            expect(areRequiredFieldsPresent(data)).toBe(false);
+        });
+
+        it('should handle edge case with missing properties', () => {
+            const data = {};
+            expect(areRequiredFieldsPresent(data)).toBe(false);
+        });
+    });
+
+    describe('createResponse helper', () => {
+        it('should create response without data', () => {
+            const response = createResponse(true, 'Test message');
+            expect(response).toEqual({
+                success: true,
+                message: 'Test message'
+            });
+        });
+
+        it('should create response with data', () => {
+            const data = { test: 'data' };
+            const response = createResponse(true, 'Test message', data);
+            expect(response).toEqual({
+                success: true,
+                message: 'Test message',
+                data: { test: 'data' }
+            });
+        });
+
+        it('should handle null data', () => {
+            const response = createResponse(true, 'Test message', null);
+            expect(response).toEqual({
+                success: true,
+                message: 'Test message'
+            });
+        });
+    });
+
+    describe('buildJobFilter edge cases', () => {
+        it('should handle null query parameters', () => {
+            const query = {
+                jobType: null,
+                location: null,
+                role: null
+            };
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({});
+        });
+
+        it('should handle undefined query parameters', () => {
+            const query = {
+                jobType: undefined,
+                location: undefined,
+                role: undefined
+            };
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({});
+        });
+
+        it('should handle mixed array and string parameters', () => {
+            const query = {
+                jobType: ['Full-time'],
+                location: 'Remote',
+                role: ['Developer']
+            };
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({
+                employmentType: { $in: ['Full-time'] },
+                location: 'Remote',
+                title: { $in: ['Developer'] }
+            });
+        });
+
+        it('should handle empty array parameters', () => {
+            const query = {
+                jobType: [],
+                location: [],
+                role: []
+            };
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({
+                employmentType: { $in: [] },
+                location: { $in: [] },
+                title: { $in: [] }
+            });
         });
     });
 });

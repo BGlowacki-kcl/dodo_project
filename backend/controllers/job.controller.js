@@ -12,9 +12,14 @@ const createResponse = (success, message, data = null) => ({
  * @param {Object} data - Job data object
  * @returns {boolean} Whether all required fields are present
  */
-const areRequiredFieldsPresent = ({ title, company, location, description, postedBy }) =>
-    title && company && location && description && postedBy;
-
+const areRequiredFieldsPresent = ({ title, company, location, description, postedBy }) => {
+    if(title && company && location && description && postedBy){
+        return true;
+    } else {
+        return false;
+    }
+}
+// if - statemetn
 /**
  * Creates a new job posting
  * @param {Object} req - Express request object
@@ -259,8 +264,20 @@ export const getJobQuestionsById = async (req, res) => {
 
 if(process.env.NODE_ENV === "test"){
     module.exports = {
-        createResponse,
+        createJob,
+        getJobs,
+        getJobById,
+        updateJob,
+        deleteJob,
+        getJobCountByType,
+        getAllJobRoles,
+        getAllJobLocations,
+        getAllJobTypes,
+        getFilteredJobs,
+        buildJobFilter,
+        getJobQuestionsById,
+        getJobsByEmployer,
         areRequiredFieldsPresent,
-        buildJobFilter
+        createResponse
     };
-}
+ }
