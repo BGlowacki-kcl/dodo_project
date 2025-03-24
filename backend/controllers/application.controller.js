@@ -26,7 +26,7 @@ import CodeSubmission from "../models/codeSubmission.js";
  * @param {Object} [data] - Response data (optional)
  * @returns {Object} Standardized response object
  */
-const createResponse = (success, message, data = null) => ({
+export const createResponse = (success, message, data = null) => ({
     success,
     message,
     ...(data && { data }),
@@ -39,7 +39,7 @@ const createResponse = (success, message, data = null) => ({
  * @param {string} [defaultMessage] - Default error message
  * @returns {Object} Error response
  */
-const handleError = (res, error, defaultMessage = "Server error") => {
+export const handleError = (res, error, defaultMessage = "Server error") => {
     const statusCode = error.status || 500;
     return res.status(statusCode).json(createResponse(false, error.message || defaultMessage));
 };
@@ -49,7 +49,7 @@ const handleError = (res, error, defaultMessage = "Server error") => {
  * @param {string} status - Status to validate
  * @returns {boolean} Whether status is valid
  */
-const isValidStatus = (status) => {
+export const isValidStatus = (status) => {
     const validStatuses = ["applying", "applied", "in review", "shortlisted", "rejected", "hired"];
     return validStatuses.includes(status);
 };
@@ -60,7 +60,7 @@ const isValidStatus = (status) => {
  * @param {string} userId - User ID to check against
  * @returns {Promise<boolean>} Whether user owns the job
  */
-const verifyJobOwnership = async (jobId, userId) => {
+export const verifyJobOwnership = async (jobId, userId) => {
     try {
         const job = await Job.findById(jobId);
         if(job){
@@ -426,7 +426,7 @@ export const applicationController = {
  * @param {Array} answers - Raw answers array
  * @returns {Array} Formatted answers with ObjectId
  */
-const formatAnswers = (answers) => 
+export const formatAnswers = (answers) => 
     answers.map(answer => ({
         questionId: new mongoose.Types.ObjectId(answer.questionId),
         answerText: answer.answerText,
@@ -438,7 +438,7 @@ const formatAnswers = (answers) =>
  * @param {Object} application - Application document
  * @returns {Promise<void>}
  */
-const handleRejection = async (res, application) => {
+export const handleRejection = async (res, application) => {
     if (application.status === "accepted") {
         return res.status(400).json(createResponse(false, "Cannot reject an accepted application"));
     }
@@ -454,7 +454,7 @@ const handleRejection = async (res, application) => {
  * @param {Object} user - User document
  * @returns {Promise<void>}
  */
-const handleStatusProgression = async (res, application, user) => {
+export const handleStatusProgression = async (res, application, user) => {
     const statuses = ['applied', 'shortlisted', 'code challenge', 'in review', 'accepted'];
     const currentIndex = statuses.indexOf(application.status);
 
@@ -481,7 +481,7 @@ const handleStatusProgression = async (res, application, user) => {
  * @param {string} uid - User ID
  * @returns {Promise<Array>} Array of jobs
  */
-const getJobsByEmployer = async (uid) => {
+export const getJobsByEmployer = async (uid) => {
     const employer = await User.findOne({ uid });
     if (!employer) throw new Error("Employer not found");
     return Job.find({ postedBy: employer._id });
@@ -493,7 +493,7 @@ const getJobsByEmployer = async (uid) => {
  * @param {Array} jobs - Array of job documents
  * @returns {Promise<Object>} Dashboard data
  */
-const buildDashboardData = async (employer, jobs) => {
+export const buildDashboardData = async (employer, jobs) => {
     const totalStatus = await getTotalStatus(jobs);
     const lineGraphData = await getLineGraphData(jobs);
     return {
@@ -510,7 +510,7 @@ const buildDashboardData = async (employer, jobs) => {
  * @param {Array} jobs - Array of job documents
  * @returns {Promise<Array>} Status aggregation
  */
-const getTotalStatus = async (jobs) => {
+export const getTotalStatus = async (jobs) => {
     const jobIds = jobs.map(job => job._id);
     return Application.aggregate([
         { $match: { job: { $in: jobIds } } },
@@ -523,7 +523,7 @@ const getTotalStatus = async (jobs) => {
  * @param {Array} jobs - Array of job documents
  * @returns {Promise<Array>} Line graph data
  */
-const getLineGraphData = async (jobs) => {
+export const getLineGraphData = async (jobs) => {
     const jobIds = jobs.map(job => job._id);
     return Application.aggregate([
         { $match: { job: { $in: jobIds }, status: { $ne: "applying" } } },
@@ -540,21 +540,3 @@ const getLineGraphData = async (jobs) => {
         { $project: { jobId: "$_id.jobId", date: "$_id.date", count: 1, _id: 0 } }
     ]);
 };
-
-
-// if(process.env.NODE_ENV == "test"){
-//     module.exports = {
-//         getLineGraphData,
-//         applicationController,
-//         createResponse,
-//         handleStatusProgression,
-//         getJobsByEmployer,
-//         buildDashboardData,
-//         getTotalStatus,
-//         handleRejection,
-//         formatAnswers,
-//         isValidStatus,
-//         verifyJobOwnership,
-//         handleError
-//     };
-// }

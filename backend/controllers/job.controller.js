@@ -1,7 +1,7 @@
 import Job from '../models/job.model.js';
 import { Employer } from '../models/user/Employer.model.js';
 
-const createResponse = (success, message, data = null) => ({
+export const createResponse = (success, message, data = null) => ({
     success,
     message,
     ...(data && { data })
@@ -12,7 +12,7 @@ const createResponse = (success, message, data = null) => ({
  * @param {Object} data - Job data object
  * @returns {boolean} Whether all required fields are present
  */
-const areRequiredFieldsPresent = ({ title, company, location, description, postedBy }) => {
+export const areRequiredFieldsPresent = ({ title, company, location, description, postedBy }) => {
     if(title && company && location && description && postedBy){
         return true;
     } else {
@@ -218,7 +218,7 @@ export const getAllJobTypes = async (req, res) => {
  * @param {Object} query - Query parameters
  * @returns {Object} MongoDB filter object
  */
-const buildJobFilter = ({ jobType, location, role }) => {
+export const buildJobFilter = ({ jobType, location, role }) => {
     const filter = {};
     if (jobType) filter.employmentType = Array.isArray(jobType) ? { $in: jobType } : jobType;
     if (location) filter.location = Array.isArray(location) ? { $in: location } : location;
@@ -261,23 +261,3 @@ export const getJobQuestionsById = async (req, res) => {
         return res.status(500).json(createResponse(false, error.message));
     }
 };
-
-// if (process.env.NODE_ENV === "test") {
-//     export const testExports = {
-//         createJob,
-//         getJobs,
-//         getJobById,
-//         updateJob,
-//         deleteJob,
-//         getJobCountByType,
-//         getAllJobRoles,
-//         getAllJobLocations,
-//         getAllJobTypes,
-//         getFilteredJobs,
-//         buildJobFilter,
-//         getJobQuestionsById,
-//         getJobsByEmployer,
-//         areRequiredFieldsPresent,
-//         createResponse
-//     };
-// }
