@@ -30,6 +30,7 @@ import ApplicantDetails from './pages/employer/ApplicantDetails';
 import Contact from './pages/Contact';
 import Apply from './pages/applicant/Apply';
 import JobDetailsPage from './pages/user/JobDetailsPage.jsx';
+import PostDetails from './pages/employer/PostDetails';
 
 /**
  * Main application component
@@ -121,6 +122,7 @@ function defineRouteConfig() {
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/employer/posts/:jobId', element: <PostDetails />, roles: ['employer'] },
 
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	];
