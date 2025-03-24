@@ -44,7 +44,7 @@ const FilterDropdown = ({ title, options, selectedOptions, setSelectedOptions, c
     );
 };
 
-const SearchFilters = ({ applyFilters }) => {
+const SearchFilters = ({ applyFilters, hideCompanyFilter = false }) => {
     const url = useLocation();
     const searchParams = new URLSearchParams(url.search);
     
@@ -93,7 +93,9 @@ const SearchFilters = ({ applyFilters }) => {
                 <FilterDropdown title="Job Type" options={jobTypes} selectedOptions={selectedJobTypesArray} setSelectedOptions={setSelectedJobTypesArray} category="jobTypes" />
                 <FilterDropdown title="Role" options={titles} selectedOptions={selectedTitlesArray} setSelectedOptions={setSelectedTitlesArray} category="titles" />
                 <FilterDropdown title="Location" options={locations} selectedOptions={selectedLocationsArray} setSelectedOptions={setSelectedLocationsArray} category="locations" />
-                <FilterDropdown title="Company" options={companies} selectedOptions={selectedCompaniesArray} setSelectedOptions={setSelectedCompaniesArray} category="companies" />
+                {!hideCompanyFilter && (
+                    <FilterDropdown title="Company" options={companies} selectedOptions={selectedCompaniesArray} setSelectedOptions={setSelectedCompaniesArray} category="companies" />
+                )}
             </div>
 
             {/* Apply Filters Button */}
