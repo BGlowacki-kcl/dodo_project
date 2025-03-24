@@ -262,22 +262,22 @@ export const getJobQuestionsById = async (req, res) => {
     }
 };
 
-if(process.env.NODE_ENV === "test"){
-    module.exports = {
-        createJob,
-        getJobs,
-        getJobById,
-        updateJob,
-        deleteJob,
-        getJobCountByType,
-        getAllJobRoles,
-        getAllJobLocations,
-        getAllJobTypes,
-        getFilteredJobs,
-        buildJobFilter,
-        getJobQuestionsById,
-        getJobsByEmployer,
-        areRequiredFieldsPresent,
-        createResponse
-    };
- }
+// if(process.env.NODE_ENV === "test"){
+//     module.exports = {
+//         createJob,
+//         getJobs,
+//         getJobById,
+//         updateJob,
+//         deleteJob,
+//         getJobCountByType,
+//         getAllJobRoles,
+//         getAllJobLocations,
+//         getAllJobTypes,
+//         getFilteredJobs,
+//         buildJobFilter,
+//         getJobQuestionsById,
+//         getJobsByEmployer,
+//         areRequiredFieldsPresent,
+//         createResponse
+//     };
+//  }

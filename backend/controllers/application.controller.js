@@ -566,19 +566,19 @@ const getLineGraphData = async (jobs) => {
 };
 
 
-if(process.env.NODE_ENV == "test"){
-    module.exports = {
-        getLineGraphData,
-        applicationController,
-        createResponse,
-        handleStatusProgression,
-        getJobsByEmployer,
-        buildDashboardData,
-        getTotalStatus,
-        handleRejection,
-        formatAnswers,
-        isValidStatus,
-        verifyJobOwnership,
-        handleError
-    };
-}
+// if(process.env.NODE_ENV == "test"){
+//     module.exports = {
+//         getLineGraphData,
+//         applicationController,
+//         createResponse,
+//         handleStatusProgression,
+//         getJobsByEmployer,
+//         buildDashboardData,
+//         getTotalStatus,
+//         handleRejection,
+//         formatAnswers,
+//         isValidStatus,
+//         verifyJobOwnership,
+//         handleError
+//     };
+// }
