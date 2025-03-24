@@ -1,3 +1,15 @@
+/**
+ * Education fixture data
+ * Contains sample academic institutions, degrees, and study fields
+ * Used for generating realistic candidate profiles and test data
+ * @type {Object}
+ */
+
+/**
+ * List of prestigious universities
+ * Used for generating education backgrounds for candidates
+ * @type {Array<String>}
+ */
 export const universityNames = [
     "King's College London",
     "Imperial College London",
@@ -13,6 +25,11 @@ export const universityNames = [
     "University of California, Berkeley"
 ];
 
+/**
+ * Common academic degree types
+ * Used for generating education qualifications
+ * @type {Array<String>}
+ */
 export const degreeTitles = [
     "Bachelor of Science (BSc)",
     "Bachelor of Arts (BA)",
@@ -21,6 +38,11 @@ export const degreeTitles = [
     "Doctor of Philosophy (PhD)"
 ];
 
+/**
+ * Academic disciplines
+ * Represents possible major subjects for educational backgrounds
+ * @type {Array<String>}
+ */
 export const fieldsOfStudy = [
     "Computer Science",
     "Electrical Engineering",
