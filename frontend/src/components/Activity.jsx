@@ -12,6 +12,7 @@ import ApplicationCards from "./ApplicationCards";
 import { FaFolderOpen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import WhiteBox from "./WhiteBox";
+import ReactPaginate from 'react-paginate';
 
 const ApplicantActivity = ({ userId }) => {
   // ----------------------------- State Variables -----------------------------
@@ -19,6 +20,10 @@ const ApplicantActivity = ({ userId }) => {
   const [applicationsSent, setApplicationsSent] = useState(0);
   const [rejections, setRejections] = useState(0);
   const [acceptances, setAcceptances] = useState(0);
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const itemsPerPage = 5;
+
   const navigate = useNavigate();
 
   // ----------------------------- Data Fetching -----------------------------
@@ -44,6 +49,14 @@ const ApplicantActivity = ({ userId }) => {
 
     fetchApplications();
   }, [userId]);
+
+    const pageCount = Math.ceil(applications.length / itemsPerPage);
+    const offset = currentPage * itemsPerPage;
+    const currentItems = applications.slice(offset, offset + itemsPerPage);
+
+    const handlePageClick = ({ selected }) => {
+        setCurrentPage(selected);
+    };
 
   // ----------------------------- Render -----------------------------
   return (
@@ -87,6 +100,26 @@ const ApplicantActivity = ({ userId }) => {
             }))}
           />
         </WhiteBox>
+
+        {/* Pagination Controls */}
+        {applications.length > itemsPerPage && (
+            <div className="mt-6 flex justify-center">
+                <ReactPaginate
+                    previousLabel={"Prev"}
+                    nextLabel={"Next"}
+                    pageCount={pageCount}
+                    onPageChange={handlePageClick}
+                    containerClassName={"flex space-x-2"}
+                    pageClassName={"px-3 py-1 border rounded cursor-pointer"}
+                    activeClassName={"bg-primary bg-secondary text-white"}
+                    previousClassName={"px-3 py-1 border rounded cursor-pointer"}
+                    nextClassName={"px-3 py-1 border rounded cursor-pointer"}
+                    breakLabel={"..."}
+                    breakClassName={"px-3 py-1"}
+                    renderOnZeroPageCount={null}
+                />
+            </div>
+        )}
       </div>
     </div>
   );

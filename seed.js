@@ -150,7 +150,7 @@ const generateJobs = async (num, employers) => {
                 "Placement",
             ]),
             requirements: faker.helpers.arrayElements(techSkills, 3),
-            experienceLevel: faker.helpers.arrayElement(["entry", "mid", "senior"]),
+            experienceLevel: faker.helpers.arrayElement(["Entry", "Mid", "Senior"]),
             postedBy: employer._id,
             questions: [],
             // Randomly select up to 4 assessments from the available list
@@ -158,6 +158,7 @@ const generateJobs = async (num, employers) => {
                 availableAssessments,
                 faker.number.int({ min: 0, max: 4 })
             ).map(a => a._id),
+            deadline: faker.date.between({ from: Date.now(), to: '2025-12-30' })
         };
 
         if (faker.datatype.boolean()) {
@@ -187,7 +188,7 @@ const generateApplications = (num, jobSeekers, jobs) => {
         const application = {
             job: job._id,
             applicant: jobSeeker._id,
-            status: faker.helpers.arrayElement(['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted']),
+            status: faker.helpers.arrayElement(['Applying', 'Applied', 'In Review', 'Shortlisted', 'Code Challenge', 'Rejected', 'Accepted']),
             coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email),
             answers: []
         };
@@ -233,34 +234,36 @@ const generateCodeSubmissions = async (jobs, applications) => {
     const jobMap = new Map();
     jobs.forEach(job => jobMap.set(job._id.toString(), job));
 
-    const languages = ["python", "cpp", "javascript"];
+    const languages = ["Python", "Cpp", "Javascript"];
     const codeSubmissions = [];
 
     for (const application of applications) {
-        const job = jobMap.get(application.job.toString());
-        if (job && job.assessments && job.assessments.length > 0) {
-            // For each assessment linked to this job, create a code submission.
-            for (const assessmentId of job.assessments) {
-                const assessment = assessmentMap.get(assessmentId.toString());
-                if (!assessment) continue;
+        if (application.status === 'In review' || application.status === 'Accepted' || application.status === 'Rejected') {
+            const job = jobMap.get(application.job.toString());
+            if (job && job.assessments && job.assessments.length > 0) {
+                // For each assessment linked to this job, create a code submission.
+                for (const assessmentId of job.assessments) {
+                    const assessment = assessmentMap.get(assessmentId.toString());
+                    if (!assessment) continue;
 
-                const lang = faker.helpers.arrayElement(languages);
+                    const lang = faker.helpers.arrayElement(languages);
 
-                const answerObj = codeAnswers[assessment.title];
-                if (!answerObj || !answerObj[lang]) continue;
+                    const answerObj = codeAnswers[assessment.title];
+                    if (!answerObj || !answerObj[lang]) continue;
 
-                const solutionCode = answerObj[lang];
+                    const solutionCode = answerObj[lang];
 
-                const score = 10;
+                    const score = 10;
 
-                codeSubmissions.push({
-                    assessment: assessment._id,
-                    application: application._id,
-                    solutionCode,
-                    score,
-                    language: lang,
-                    submittedAt: new Date(),
-                });
+                    codeSubmissions.push({
+                        assessment: assessment._id,
+                        application: application._id,
+                        solutionCode,
+                        score,
+                        language: lang,
+                        submittedAt: faker.date.past()
+                    });
+                }
             }
         }
     }
@@ -299,12 +302,6 @@ const seedDatabase = async () => {
         const createdApplications = await Application.insertMany(applications);
         console.log("Applications added...");
 
-        // Update the applicants field in the Job documents
-        for (const job of createdJobs) {
-            await Job.findByIdAndUpdate(job._id, { applicants: job.applicants });
-        }
-        console.log("Applicants added to jobs...");
-
         const shortlistsData = generateShortlists(createdJobSeekers, createdJobs);
         await Shortlist.insertMany(shortlistsData);
         console.log("Shortlists added...");
@@ -325,8 +322,3 @@ const seedDatabase = async () => {
 
 //  Run Seeder
 seedDatabase();
-
-
-
-
-

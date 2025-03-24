@@ -173,9 +173,22 @@ export const getAllJobTypes = async (req, res) => {
     }
 };
 
+export const getAllCompanies = async (req, res) => {
+    try {
+        const company = await Job.distinct('company');
+        res.status(200).json(company);
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ 
+        message: "Failed to fetch companies",
+        error: error.message 
+        });
+    }
+};
+
 export const getFilteredJobs = async (req, res) => {
     try {
-        const { jobType, location, role } = req.query;
+        const { jobType, location, role, company } = req.query;
 
         const filter = {};
 
@@ -183,6 +196,7 @@ export const getFilteredJobs = async (req, res) => {
         if (jobType) filter.employmentType = Array.isArray(jobType) ? { $in: jobType } : jobType;
         if (location) filter.location = Array.isArray(location) ? { $in: location } : location;
         if (role) filter.title = Array.isArray(role) ? { $in: role } : role;
+        if (company) filter.company = Array.isArray(company) ? { $in: company } : company;
 
         const jobs = await Job.find(filter);
         res.status(200).json(jobs);
