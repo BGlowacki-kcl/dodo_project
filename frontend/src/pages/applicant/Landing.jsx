@@ -5,7 +5,6 @@ import job from "../../assets/job.jpg";
 import internship from "../../assets/intern.jpg";
 import placement from "../../assets/placement.jpg";
 import { getJobCountByType, getAllJobTypes, getAllJobRoles, getAllJobLocations } from "../../services/jobService";
-import WhiteBox from "../../components/WhiteBox";
 
 const Landing = () => {
     const navigate = useNavigate();
@@ -81,8 +80,7 @@ const Landing = () => {
             </div>
 
             {/* Dropdown Filters */}
-            <WhiteBox className="mb-12">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Search for Jobs</h2>
+            <div className="mb-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
                     <ComboBox
                         label="Job Type"
@@ -105,10 +103,10 @@ const Landing = () => {
                         Search
                     </button>
                 </div>
-            </WhiteBox>
+            </div>
 
             {/* Job Type Boxes */}
-            <WhiteBox>
+            <div>
                 <h2 className="text-2xl font-semibold text-center mb-6">Explore Job Types</h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <Box
@@ -130,7 +128,7 @@ const Landing = () => {
                         onClick={() => boxSearch("Graduate")}
                     />
                 </div>
-            </WhiteBox>
+            </div>
         </div>
     );
 };
