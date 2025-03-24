@@ -19,9 +19,6 @@ import EmployerDashboard from "./pages/employer/EmployerDashboard.jsx";
 import EmployerPosts from './pages/employer/EmployerPosts.jsx';
 import Swiping from './pages/applicant/Swiping.jsx';
 import CreateJobPost from './pages/employer/CreateJobPost.jsx';
-import EditJobPost from './pages/employer/EditJobPost.jsx';
-import UserJobsPage from './pages/user/UserJobsPage.jsx';
-import UserApplicationsPage from './pages/user/UserApplicationsPage.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
@@ -122,7 +119,6 @@ function defineRouteConfig() {
 		{ path: '/posts/new', element: <CreateJobPost />, roles: ['employer'] },
 		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
-		{ path: '/posts/edit/:jobId', element: <EditJobPost />, roles: ['employer']},
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
 		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
 
