@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import WhiteBox from "./WhiteBox";
 import { FaEdit, FaSave, FaTrash, FaPlus, FaGraduationCap, FaBriefcase, FaTools, FaUser, FaLink } from "react-icons/fa";
+import { useNotification } from "../context/notification.context"; // Import useNotification
 
 const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, isProfilePage }) => {
+  const [dateError, setDateError] = useState("");
+  const showNotification = useNotification(); // Initialize notification hook
+
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-GB");
+    if (!dateString) return "N/A";
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString("en-GB", options);
   };
 
   const formatDateForInput = (dateValue) => {
@@ -12,7 +18,19 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
     if (typeof dateValue === "string" && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
       return dateValue;
     }
-    return new Date(dateValue).toISOString().split("T")[0];
+    const date = new Date(dateValue);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  };
+
+  const validateDates = (startDate, endDate) => {
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      const errorMessage = "Start date cannot be after the end date.";
+      setDateError(errorMessage);
+      showNotification(errorMessage, "error"); // Show error notification
+      return false;
+    }
+    setDateError("");
+    return true;
   };
 
   return (
@@ -27,14 +45,26 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             </h2>
             {isProfilePage && (
               isEditing.personal ? (
-                <FaSave className="cursor-pointer" onClick={() => onEdit("personal")} />
+                <FaSave
+                  className="cursor-pointer"
+                  onClick={() => {
+                    console.log("Save icon clicked for personal section"); // Debug log
+                    onEdit("personal");
+                  }}
+                />
               ) : (
-                <FaEdit className="cursor-pointer" onClick={() => onEdit("personal")} />
+                <FaEdit
+                  className="cursor-pointer"
+                  onClick={() => {
+                    console.log("Edit icon clicked for personal section"); // Debug log
+                    onEdit("personal");
+                  }}
+                />
               )
             )}
           </div>
           <div className="space-y-2">
-            <p className="text-black">
+            <p className="text-lg text-black">
               <strong>Name:</strong>{" "}
               {isEditing.personal ? (
                 <input
@@ -42,13 +72,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                   name="name"
                   value={user.name || ""}
                   onChange={onChange}
-                  className="border p-1 w-full"
+                  className="border p-1 w-full text-base"
                 />
               ) : (
-                user.name || "N/A"
+                <span className="text-base">{user.name || "N/A"}</span>
               )}
             </p>
-            <p className="text-black">
+            <p className="text-lg text-black">
               <strong>Email:</strong>{" "}
               {isEditing.personal ? (
                 <input
@@ -56,13 +86,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                   name="email"
                   value={user.email || ""}
                   onChange={onChange}
-                  className="border p-1 w-full"
+                  className="border p-1 w-full text-base"
                 />
               ) : (
-                user.email || "N/A"
+                <span className="text-base">{user.email || "N/A"}</span>
               )}
             </p>
-            <p className="text-black">
+            <p className="text-lg text-black">
               <strong>Phone Number:</strong>{" "}
               {isEditing.personal ? (
                 <input
@@ -70,13 +100,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                   name="phoneNumber"
                   value={user.phoneNumber || ""}
                   onChange={onChange}
-                  className="border p-1 w-full"
+                  className="border p-1 w-full text-base"
                 />
               ) : (
-                user.phoneNumber || "N/A"
+                <span className="text-base">{user.phoneNumber || "N/A"}</span>
               )}
             </p>
-            <p className="text-black">
+            <p className="text-lg text-black">
               <strong>Location:</strong>{" "}
               {isEditing.personal ? (
                 <input
@@ -84,10 +114,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                   name="location"
                   value={user.location || ""}
                   onChange={onChange}
-                  className="border p-1 w-full"
+                  className="border p-1 w-full text-base"
                 />
               ) : (
-                user.location || "N/A"
+                <span className="text-base">{user.location || "N/A"}</span>
               )}
             </p>
           </div>
@@ -108,7 +138,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             )}
           </div>
           <div className="space-y-2">
-            <p className="text-black">
+            <p className="text-lg text-black">
               <strong>GitHub:</strong>{" "}
               {isEditing.links ? (
                 <input
@@ -116,20 +146,20 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                   name="github"
                   value={user.github || ""}
                   onChange={onChange}
-                  className="border p-1 w-full"
+                  className="border p-1 w-full text-base"
                 />
               ) : (
                 <a
                   href={user.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500"
+                  className="text-blue-500 text-base"
                 >
                   {user.github || "N/A"}
                 </a>
               )}
             </p>
-            <p className="text-black">
+            <p className="text-lg text-black">
               <strong>LinkedIn:</strong>{" "}
               {isEditing.links ? (
                 <input
@@ -137,14 +167,14 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                   name="linkedin"
                   value={user.linkedin || ""}
                   onChange={onChange}
-                  className="border p-1 w-full"
+                  className="border p-1 w-full text-base"
                 />
               ) : (
                 <a
                   href={user.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500"
+                  className="text-blue-500 text-base"
                 >
                   {user.linkedin || "N/A"}
                 </a>
@@ -172,7 +202,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
           {user.education?.length > 0 ? (
             user.education.map((edu, index) => (
               <div key={index} className="p-4 border rounded-lg relative">
-                <p className="text-black">
+                <p className="text-lg text-black">
                   <strong>Institution:</strong>{" "}
                   {isEditing.education ? (
                     <input
@@ -180,13 +210,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                       name={`education.${index}.institution`}
                       value={edu.institution || ""}
                       onChange={onChange}
-                      className="border p-1 w-full"
+                      className="border p-1 w-full text-base"
                     />
                   ) : (
-                    edu.institution || "N/A"
+                    <span className="text-base">{edu.institution || "N/A"}</span>
                   )}
                 </p>
-                <p className="text-black">
+                <p className="text-lg text-black">
                   <strong>Degree:</strong>{" "}
                   {isEditing.education ? (
                     <input
@@ -194,13 +224,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                       name={`education.${index}.degree`}
                       value={edu.degree || ""}
                       onChange={onChange}
-                      className="border p-1 w-full"
+                      className="border p-1 w-full text-base"
                     />
                   ) : (
-                    edu.degree || "N/A"
+                    <span className="text-base">{edu.degree || "N/A"}</span>
                   )}
                 </p>
-                <p className="text-black">
+                <p className="text-lg text-black">
                   <strong>Field of Study:</strong>{" "}
                   {isEditing.education ? (
                     <input
@@ -208,13 +238,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                       name={`education.${index}.fieldOfStudy`}
                       value={edu.fieldOfStudy || ""}
                       onChange={onChange}
-                      className="border p-1 w-full"
+                      className="border p-1 w-full text-base"
                     />
                   ) : (
-                    edu.fieldOfStudy || "N/A"
+                    <span className="text-base">{edu.fieldOfStudy || "N/A"}</span>
                   )}
                 </p>
-                <p className="text-black">
+                <p className="text-lg text-black">
                   <strong>Start Date:</strong>{" "}
                   {isEditing.education ? (
                     <input
@@ -222,13 +252,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                       name={`education.${index}.startDate`}
                       value={formatDateForInput(edu.startDate)}
                       onChange={onChange}
-                      className="border p-1 w-full"
+                      className="border p-1 w-full text-base"
                     />
                   ) : (
-                    formatDate(edu.startDate)
+                    <span className="text-base">{formatDate(edu.startDate)}</span>
                   )}
                 </p>
-                <p className="text-black">
+                <p className="text-lg text-black">
                   <strong>End Date:</strong>{" "}
                   {isEditing.education ? (
                     <input
@@ -236,10 +266,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                       name={`education.${index}.endDate`}
                       value={formatDateForInput(edu.endDate)}
                       onChange={onChange}
-                      className="border p-1 w-full"
+                      className="border p-1 w-full text-base"
                     />
                   ) : (
-                    formatDate(edu.endDate)
+                    <span className="text-base">{formatDate(edu.endDate)}</span>
                   )}
                 </p>
                 {isEditing.education && (
@@ -285,7 +315,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                 <div className="flex flex-col md:flex-row justify-between">
                   {/* Left Column: Company, Title, Start Date, End Date */}
                   <div className="flex-1">
-                    <p className="text-black">
+                    <p className="text-lg text-black">
                       <strong>Company:</strong>{" "}
                       {isEditing.experience ? (
                         <input
@@ -293,13 +323,13 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                           name={`experience.${index}.company`}
                           value={exp.company || ""}
                           onChange={onChange}
-                          className="border p-1 w-full"
+                          className="border p-1 w-full text-base"
                         />
                       ) : (
-                        exp.company || "N/A"
+                        <span className="text-base">{exp.company || "N/A"}</span>
                       )}
                     </p>
-                    <p className="text-black">
+                    <p className="text-lg text-black">
                       <strong>Title:</strong>{" "}
                       {isEditing.experience ? (
                         <input
@@ -307,45 +337,53 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                           name={`experience.${index}.title`}
                           value={exp.title || ""}
                           onChange={onChange}
-                          className="border p-1 w-full"
+                          className="border p-1 w-full text-base"
                         />
                       ) : (
-                        exp.title || "N/A"
+                        <span className="text-base">{exp.title || "N/A"}</span>
                       )}
                     </p>
-                    <p className="text-black">
+                    <p className="text-lg text-black">
                       <strong>Start Date:</strong>{" "}
                       {isEditing.experience ? (
                         <input
                           type="date"
                           name={`experience.${index}.startDate`}
                           value={formatDateForInput(exp.startDate)}
-                          onChange={onChange}
-                          className="border p-1 w-full"
+                          onChange={(e) => {
+                            const newStartDate = e.target.value;
+                            const isValid = validateDates(newStartDate, exp.endDate);
+                            if (isValid) onChange(e);
+                          }}
+                          className="border p-1 w-full text-base"
                         />
                       ) : (
-                        formatDate(exp.startDate)
+                        <span className="text-base">{formatDate(exp.startDate)}</span>
                       )}
                     </p>
-                    <p className="text-black">
+                    <p className="text-lg text-black">
                       <strong>End Date:</strong>{" "}
                       {isEditing.experience ? (
                         <input
                           type="date"
                           name={`experience.${index}.endDate`}
                           value={formatDateForInput(exp.endDate)}
-                          onChange={onChange}
-                          className="border p-1 w-full"
+                          onChange={(e) => {
+                            const newEndDate = e.target.value;
+                            const isValid = validateDates(exp.startDate, newEndDate);
+                            if (isValid) onChange(e);
+                          }}
+                          className="border p-1 w-full text-base"
                         />
                       ) : (
-                        formatDate(exp.endDate)
+                        <span className="text-base">{formatDate(exp.endDate)}</span>
                       )}
                     </p>
                   </div>
 
                   {/* Right Column: Description */}
                   <div className="flex-1 md:ml-4">
-                    <p className="text-black">
+                    <p className="text-lg text-black">
                       <strong>Description:</strong>
                     </p>
                     {isEditing.experience ? (
@@ -353,10 +391,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                         name={`experience.${index}.description`}
                         value={exp.description || ""}
                         onChange={onChange}
-                        className="border p-1 w-full"
+                        className="border p-1 w-full text-base"
                       />
                     ) : (
-                      <p className="text-black">{exp.description || "N/A"}</p>
+                      <p className="text-base text-black">{exp.description || "N/A"}</p>
                     )}
                   </div>
                 </div>
@@ -371,6 +409,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
           ) : (
             <p className="text-black italic">No experience details available.</p>
           )}
+          {dateError && <p className="text-red-500 text-sm">{dateError}</p>}
           {isEditing.experience && (
             <button
               className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
@@ -406,7 +445,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                     name={`skills.${index}`}
                     value={skill || ""}
                     onChange={onChange}
-                    className="border p-1 flex-1"
+                    className="border p-1 flex-1 text-base"
                   />
                   <FaTrash
                     className="ml-2 cursor-pointer text-red-500"
@@ -425,7 +464,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             user.skills?.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {user.skills.map((skill, index) => (
-                  <span key={index} className="bg-gray-200 px-2 py-1 rounded">
+                  <span key={index} className="bg-gray-200 px-2 py-1 rounded text-base">
                     {skill}
                   </span>
                 ))}
