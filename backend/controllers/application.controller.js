@@ -47,8 +47,16 @@ const isValidStatus = (status) => {
  * @returns {Promise<boolean>} Whether user owns the job
  */
 const verifyJobOwnership = async (jobId, userId) => {
-    const job = await Job.findById(jobId);
-    return job && job.postedBy.toString() === userId;
+    try {
+        const job = await Job.findById(jobId);
+        if(job){
+            return job.postedBy.toString() == userId;
+        } else {
+            throw new Error("Job not found");
+        }
+    } catch (err){
+        return false;
+    }
 };
 
 /**
@@ -399,43 +407,43 @@ export const applicationController = {
     }
 };
 
-/**
- * Builds detailed application data including assessments
- * @param {Object} application - Application document
- * @returns {Promise<Object>} Formatted application data
- */
-const buildApplicationData = async (application) => {
-    const job = await Job.findById(application.job);
-    const assessments = await CodeAssessment.find({ _id: { $in: job.assessments } });
-    const submissions = await CodeSubmission.find({ application: application._id });
+// /**
+//  * Builds detailed application data including assessments
+//  * @param {Object} application - Application document
+//  * @returns {Promise<Object>} Formatted application data
+//  */
+// const buildApplicationData = async (application) => {
+//     const job = await Job.findById(application.job);
+//     const assessments = await CodeAssessment.find({ _id: { $in: job.assessments } });
+//     const submissions = await CodeSubmission.find({ application: application._id });
 
-    return {
-        id: application._id,
-        applicantId: application.applicant._id,
-        name: application.applicant.name,
-        email: application.applicant.email,
-        status: application.status,
-        coverLetter: application.coverLetter,
-        submittedAt: application.submittedAt,
-        skills: application.applicant.skills,
-        resume: application.applicant.resume,
-        job: application.job,
-        assessments: { assessments, submissions },
-        answers: application.answers.map(answer => ({
-            questionId: answer.questionId.toString(),
-            answerText: answer.answerText,
-        })),
-    };
-};
+//     return {
+//         id: application._id,
+//         applicantId: application.applicant._id,
+//         name: application.applicant.name,
+//         email: application.applicant.email,
+//         status: application.status,
+//         coverLetter: application.coverLetter,
+//         submittedAt: application.submittedAt,
+//         skills: application.applicant.skills,
+//         resume: application.applicant.resume,
+//         job: application.job,
+//         assessments: { assessments, submissions },
+//         answers: application.answers.map(answer => ({
+//             questionId: answer.questionId.toString(),
+//             answerText: answer.answerText,
+//         })),
+//     };
+// };
 
-/**
- * Validates answers format
- * @param {Array} answers - Answers array to validate
- * @returns {boolean} Whether answers format is valid
- */
-const isValidAnswersFormat = (answers) => 
-    answers && Array.isArray(answers) && 
-    answers.every(answer => answer.questionId && answer.answerText);
+// /**
+//  * Validates answers format
+//  * @param {Array} answers - Answers array to validate
+//  * @returns {boolean} Whether answers format is valid
+//  */
+// const isValidAnswersFormat = (answers) => 
+//     answers && Array.isArray(answers) && 
+//     answers.every(answer => answer.questionId && answer.answerText);
 
 /**
  * Formats answers for storage
@@ -556,3 +564,21 @@ const getLineGraphData = async (jobs) => {
         { $project: { jobId: "$_id.jobId", date: "$_id.date", count: 1, _id: 0 } }
     ]);
 };
+
+
+if(process.env.NODE_ENV == "test"){
+    module.exports = {
+        getLineGraphData,
+        applicationController,
+        createResponse,
+        handleStatusProgression,
+        getJobsByEmployer,
+        buildDashboardData,
+        getTotalStatus,
+        handleRejection,
+        formatAnswers,
+        isValidStatus,
+        verifyJobOwnership,
+        handleError
+    };
+}
