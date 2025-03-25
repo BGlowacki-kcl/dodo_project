@@ -53,7 +53,6 @@ export const checkRole = (roles) => async (req, res, next) => {
                     message: 'Token expired',
                     action: 'LOGOUT'
                 });
-                console.log("Given resp: ",resp);
                 return resp;
             }
             return res.status(403).json({ 

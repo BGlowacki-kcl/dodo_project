@@ -246,9 +246,35 @@ describe('Email Controller', () => {
             expect(nodemailer.createTransport).toHaveBeenCalledWith(
                 expect.objectContaining({
                     service: 'custom-service',
+                    host: 'smtp.gmail.com',
                     auth: {
                         user: 'custom@example.com',
                         pass: 'custompass'
+                    }
+                })
+            );
+        });
+
+        it('should default EMAIL_SERVICE to "gmail" if not set', async () => {
+            delete process.env.EMAIL_SERVICE; // Unset EMAIL_SERVICE
+            req.body = {
+                name: 'Test User',
+                email: 'sender@test.com',
+                subject: 'Test Subject',
+                message: 'Test Message'
+            };
+
+            await sendEmail(req, res);
+
+            expect(nodemailer.createTransport).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    service: 'gmail', // Default value
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASS
                     }
                 })
             );
