@@ -16,10 +16,6 @@ dotenv.config();
 
 const app = express();
 
-app.get('/', (req, res) => {
-    res.send('Server is ready');
-});
-
 app.use(cors());
 
 app.use(express.json());
