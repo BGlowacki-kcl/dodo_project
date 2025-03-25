@@ -8,47 +8,35 @@ const Swiping = () => {
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [interactedJobIds, setInteractedJobIds] = useState([]); // Track interacted jobs
+  const [interactedJobIds, setInteractedJobIds] = useState([]);
 
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Fetch the user's shortlist
           const shortlistResponse = await getShortlist();
-
-          // Extract job IDs from the shortlist response
           const shortlistedJobIds = shortlistResponse.jobs.map(job => job._id);
-
-          // Update interactedJobIds with the shortlisted job IDs
           setInteractedJobIds(prevIds => [...prevIds, ...shortlistedJobIds]);
 
-          // Fetch recommended jobs
           const jobs = await getRecommendedJobs();
-
-          // Filter out shortlisted jobs
           const filteredJobs = jobs.filter(job => !shortlistedJobIds.includes(job._id));
-          // Update recommendedJobs state
           setRecommendedJobs(filteredJobs);
         } catch (error) {
-          console.error("Error fetching jobs or shortlist:", error);
+          console.error("Error fetching jobs:", error);
         } finally {
           setLoading(false);
         }
       } else {
-        console.log("User not authenticated.");
         setLoading(false);
       }
     });
-
     return () => unsubscribe();
   }, []);
 
   const handleShortlist = async (jobId) => {
     try {
       await addJobToShortlist(jobId);
-      console.log("Job added to shortlist:", jobId);
       setInteractedJobIds(prevIds => [...prevIds, jobId]);
     } catch (error) {
       console.error("Error adding job to shortlist:", error);
@@ -66,21 +54,26 @@ const Swiping = () => {
   };
 
   return (
-      <div className="pt-10 bg-cover bg-center h-screen w-full grid grid-cols-10 bg-[#1b2a41]">
-        <div className="col-start-4">
+      <div className="min-h-screen w-full bg-[#1b2a41] flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
           {loading ? (
-              <p>Loading job recommendations...</p>
+              <div className="text-white text-center py-8">
+                <p className="text-xl">Loading job recommendations...</p>
+              </div>
           ) : recommendedJobs.length > 0 ? (
               <SwipeBox
                   key={currentIndex}
                   {...recommendedJobs[currentIndex]}
                   onSwipe={handleSwipe}
                   onShortlist={handleShortlist}
-                  onSkip={() => handleSkip(recommendedJobs[currentIndex]._id)} // Pass the skip handler
+                  onSkip={() => handleSkip(recommendedJobs[currentIndex]._id)}
                   jobId={recommendedJobs[currentIndex]._id}
               />
           ) : (
-              <p>No job recommendations available.</p>
+              <div className="text-white text-center py-8">
+                <p className="text-xl">No job recommendations available</p>
+                <p className="text-gray-400 mt-2">Check back later or adjust your preferences</p>
+              </div>
           )}
         </div>
       </div>
