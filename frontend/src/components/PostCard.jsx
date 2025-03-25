@@ -6,8 +6,8 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, j
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    console.log(`Navigating to /employer/posts/${jobId}`);
-    navigate(`/employer/posts/${jobId}`);
+    navigate(`/employer/post/${jobId}`);
+    console.log(`Navigating to /employer/post/${jobId}`);
   };
 
   return (
@@ -17,21 +17,21 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, j
     >
       {/* Left Section: Job Details */}
       <div>
-        <h3 className="text-lg font-bold text-gray-800">{title}</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-2xl font-bold text-black">{title}</h3>
+        <p className="text-sm text-black">
           <span className="font-semibold">Type:</span> {type}
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-black">
           <span className="font-semibold">Location:</span> {location}
         </p>
       </div>
 
       {/* Right Section: Statistics */}
       <div className="text-right">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-black">
           <span className="font-semibold">Total Applicants:</span> {totalApplicants}
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-black">
           <span className="font-semibold">Pending Applicants:</span> {pendingApplicants}
         </p>
       </div>
