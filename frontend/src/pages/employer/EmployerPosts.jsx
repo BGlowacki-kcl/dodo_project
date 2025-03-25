@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getJobsByEmployer } from "../../services/jobService";
-import { getDashboardData } from "../../services/applicationService";
+import { getApplicationsData } from "../../services/applicationService";
 import Pagination from "../../components/Pagination";
 import PostCard from "../../components/PostCard";
 
@@ -15,7 +15,6 @@ const EmployerPostsPage = () => {
   const fetchJobs = async () => {
     try {
       const jobsData = await getJobsByEmployer();
-      console.log("Jobs Data Response:", jobsData); 
       setJobs(jobsData);
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -24,14 +23,10 @@ const EmployerPostsPage = () => {
 
   const fetchData = async () => {
     try {
-      const data = await getDashboardData();
-      console.log("Dashboard Data Response:", data); // Debugging
-
-      setApplicants(data.totalStatus || []);
-      console.log("Status data:", data.totalStatus); // Debugging
-
+      const data = await getApplicationsData();
+      setApplicants(data.groupedStatuses || []);
     } catch (error) {
-      console.error("Error fetching dashboard data:", error);
+      console.error("Error fetching applications data:", error);
     }
   };
 
@@ -44,32 +39,34 @@ const EmployerPostsPage = () => {
     setCurrentPage(selected);
   };
 
-  const offset = currentPage * jobsPerPage;
-  const currentJobs = jobs.slice(offset, offset + jobsPerPage);
-  const pageCount = Math.ceil(jobs.length / jobsPerPage);
-
   const calculateApplicants = (jobId) => {
-    // Filter applicants for the specific job
-    console.log("Applicants:", applicants); // Debugging
-    const jobApplicants = applicants.filter((status) => status.jobId === jobId);
+    const jobApplicants = applicants.find((group) => group.jobId === jobId);
+    if (!jobApplicants) return { totalApplicants: 0, pendingApplicants: 0, statusBreakdown: [] };
   
-    // Calculate total applicants excluding "Applying" status
-    const totalApplicants = jobApplicants
-      .filter((status) => status._id !== "Applying")
+    const totalApplicants = jobApplicants.statuses
+      .filter((status) => status.status !== "Applying")
       .reduce((sum, status) => sum + status.count, 0);
   
-    // Calculate pending applicants excluding "Accepted", "Rejected", and "Applying" statuses
-    const pendingApplicants = jobApplicants
+    const pendingApplicants = jobApplicants.statuses
       .filter(
         (status) =>
-          status._id !== "Accepted" &&
-          status._id !== "Rejected" &&
-          status._id !== "Applying"
+          status.status !== "Accepted" &&
+          status.status !== "Rejected" &&
+          status.status !== "Applying"
       )
       .reduce((sum, status) => sum + status.count, 0);
   
-    return { totalApplicants, pendingApplicants };
+    const statusBreakdown = jobApplicants.statuses.map((status) => ({
+      status: status.status,
+      count: status.count,
+    }));
+  
+    return { totalApplicants, pendingApplicants, statusBreakdown };
   };
+
+  const offset = currentPage * jobsPerPage;
+  const currentJobs = jobs.slice(offset, offset + jobsPerPage);
+  const pageCount = Math.ceil(jobs.length / jobsPerPage);
 
   return (
     <div className="container mx-auto p-4">
@@ -83,8 +80,8 @@ const EmployerPostsPage = () => {
 
         {/* Job Posts */}
         <div className="flex flex-col space-y-4">
-          {currentJobs.map((job) => {
-            const { totalApplicants, pendingApplicants } = calculateApplicants(job._id);
+        {currentJobs.map((job) => {
+            const { totalApplicants, pendingApplicants, statusBreakdown } = calculateApplicants(job._id);
             return (
               <PostCard
                 key={job._id}
@@ -94,6 +91,7 @@ const EmployerPostsPage = () => {
                 location={job.location}
                 totalApplicants={totalApplicants}
                 pendingApplicants={pendingApplicants}
+                statusBreakdown={statusBreakdown} // Pass breakdown here
               />
             );
           })}
