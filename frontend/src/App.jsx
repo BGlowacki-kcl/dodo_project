@@ -121,8 +121,8 @@ function defineRouteConfig() {
 		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
-		{ path: '/employer/posts/:jobId', element: <PostDetails />, roles: ['employer'] },
+		{ path: '/applicant/:applicationId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/employer/post/:jobId', element: <PostDetails />, roles: ['employer'] },
 
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	];
