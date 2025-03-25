@@ -3,7 +3,7 @@ import { app } from "../../app.js";
 import { mockUser } from "../fixtures/user.fixture.js";
 import User from "../../models/user/user.model.js";
 import { JobSeeker } from "../../models/user/jobSeeker.model.js";
-import { userController, getUserRole } from "../../controllers/user.controller.js";
+import { userController, getUserRole, fetchUserByUid } from "../../controllers/user.controller.js";
 
 // Fix middleware mock to properly set uid
 jest.mock('../../middlewares/auth.middleware.js', () => ({
@@ -388,5 +388,109 @@ describe("DELETE /api/user", () => {
 
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toBe("DB error");
+  });
+});
+
+describe('getUserRole helper function', () => {
+  it('should return role for valid email', async () => {
+    User.findOne = jest.fn().mockResolvedValue({ role: 'jobSeeker' });
+    const role = await getUserRole('test@example.com');
+    expect(role).toBe('jobSeeker');
+  });
+
+  it('should throw error when email is missing', async () => {
+    await expect(getUserRole()).rejects.toThrow('Email is required');
+  });
+
+  it('should throw error when user not found', async () => {
+    User.findOne = jest.fn().mockResolvedValue(null);
+    await expect(getUserRole('test@example.com')).rejects.toThrow('User not found');
+  });
+});
+
+describe('fetchUserByUid helper function', () => {
+  it('should return null when user not found', async () => {
+    User.findOne = jest.fn().mockResolvedValue(null);
+    const result = await fetchUserByUid('nonexistent-uid');
+    expect(result).toBeNull();
+  });
+
+  it('should return user when found', async () => {
+    User.findOne = jest.fn().mockResolvedValue(mockUser);
+    const result = await fetchUserByUid('mock-firebase-uid');
+    expect(result).toEqual(mockUser);
+  });
+
+  it('should handle database errors', async () => {
+    User.findOne = jest.fn().mockRejectedValue(new Error('Database error'));
+    await expect(fetchUserByUid('any-uid')).rejects.toThrow('Database error');
+  });
+});
+
+describe('createBasicUser error cases', () => {
+  it('should handle invalid role type', async () => {
+    const response = await request(app)
+      .post('/api/user/basic')
+      .send({ 
+        email: 'test@example.com', 
+        role: 'invalidRole' 
+      })
+      .set('Authorization', 'Bearer mockToken');
+
+      expect(response.body.message).toBe('Invalid role');
+    expect(response.statusCode).toBe(400);
+  });
+
+  it('should handle database connection errors', async () => {
+    User.findOne = jest.fn().mockRejectedValue(new Error('Connection error'));
+    
+    const response = await request(app)
+      .post('/api/user/basic')
+      .send({ 
+        email: 'test@example.com', 
+        role: 'jobSeeker' 
+      })
+      .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body.message).toBe('Server error');
+  });
+});
+
+describe('Edge cases for user operations', () => {
+  it('should handle malformed request data in updateUser', async () => {
+    User.findOne = jest.fn().mockResolvedValue({
+      ...mockUser,
+      save: jest.fn().mockRejectedValue(new Error('Validation error'))
+    });
+
+    const response = await request(app)
+      .put('/api/user')
+      .send({ 
+        invalidField: 'test' 
+      })
+      .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body.message).toBe('Server error');
+  });
+
+  it('should handle concurrent update attempts', async () => {
+    const mockSave = jest.fn()
+      .mockRejectedValueOnce(new Error('Version error'))
+      .mockResolvedValueOnce({ ...mockUser, name: 'Updated' });
+
+    User.findOne = jest.fn().mockResolvedValue({
+      ...mockUser,
+      save: mockSave
+    });
+
+    const response = await request(app)
+      .put('/api/user')
+      .send({ name: 'Updated' })
+      .set('Authorization', 'Bearer mockToken');
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body.message).toBe('Server error');
   });
 });

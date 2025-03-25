@@ -30,7 +30,7 @@ const validateAuth = (uid) => {
  * @param {string} uid - User ID
  * @returns {Promise<Object>} User document
  */
-const fetchUserByUid = async (uid) => {
+export const fetchUserByUid = async (uid) => {
     const user = await User.findOne({ uid });
     return user;
 };
@@ -104,7 +104,7 @@ export const userController = {
 
             const user = await fetchUserByUid(uid);
             if (!user) {
-                return res.status(404).json(createResponse(false, "User not found"));
+                return res.status(404).json(createResponse(false, "No user found with this ID"));
             }
             return res.status(200).json(createResponse(true, "User found", user));
         } catch (error) {
@@ -208,6 +208,10 @@ export const userController = {
 
             if (!email || !role) {
                 return res.status(400).json(createResponse(false, "Missing required fields"));
+            }
+
+            if(role !== "jobSeeker" && role != "employer"){
+                return res.status(400).json(createResponse(false, "Invalid role"));
             }
 
             const existingUser = await User.findOne({ uid });
