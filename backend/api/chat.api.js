@@ -58,23 +58,46 @@ Your response should ONLY contain the formatted JSON data—no explanations, not
 `;
 
 export default async function chat(req, res) {
-    const openai = new OpenAI({
-        baseURL: "https://openrouter.ai/api/v1",
-        apiKey: process.env.OPENROUTER_API_KEY,
-    })
-    const { query } = req.body;
     try {
+        if (!process.env.OPENROUTER_API_KEY) {
+            throw new Error("API key not configured");
+        }
+
+        const { query } = req.body;
+        if (!query) {
+            throw new Error("Query is required");
+        }
+
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_API_KEY,
+        });
+
         const completion = await openai.chat.completions.create({
             model: "meta-llama/llama-3.2-3b-instruct:free",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: query },
             ],
-        })
+        });
+
         return res.status(200).json({ success: true, data: completion });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ success: false, message: "Internal server error "+err });
+    } catch (error) {
+        if (error.message === "Query is required") {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Query is required" 
+            });
+        }
+        if (error.message === "API key not configured") {
+            return res.status(500).json({ 
+                success: false, 
+                message: "API key not configured" 
+            });
+        }
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal server error: " + error.message
+        });
     }
-    
 }
