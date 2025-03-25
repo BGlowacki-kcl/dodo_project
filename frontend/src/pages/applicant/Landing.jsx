@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import ComboBox from "../../components/ComboBox";
+import { ComboBox } from "../../components/ComboBox";
 import Box from "../../components/Box";
 import job from "../../assets/job.jpg";
-import internship from "../../assets/intern.jpg";
+import intern from "../../assets/intern.jpg";
 import placement from "../../assets/placement.jpg";
 import { getJobCountByType, getAllJobTypes, getAllJobRoles, getAllJobLocations } from "../../services/jobService";
 
@@ -59,6 +59,10 @@ const Landing = () => {
         navigate(queryParams.toString() ? `/search-results?${queryParams}` : "/search-results");
     };
 
+    const boxSearch = (selectedJobType) => {
+        navigate(`/search-results?jobType=${selectedJobType}`);
+    };
+
     return (
         <div className="flex flex-col items-center bg-gray-50 min-h-screen p-10">
             <div className="text-center">
@@ -76,16 +80,19 @@ const Landing = () => {
                 Search Jobs
             </button>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
-                {isLoading ? (
-                    <p>Loading...</p>
-                ) : (
-                    <>
-                        <Box image={internship} text="Internships" counter={internshipCounter} onClick={() => navigate("/search-results?jobType=Internship")} />
-                        <Box image={placement} text="Placements" counter={placementCounter} onClick={() => navigate("/search-results?jobType=Placement")} />
-                        <Box image={job} text="Graduate" counter={graduateCounter} onClick={() => navigate("/search-results?jobType=Graduate")} />
-                    </>
-                )}
+            <div className="mt-10 w-full">
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {isLoading ? (
+                        <p className="text-center">Loading...</p>
+                    ) : (
+                        <>
+                            <Box image={intern} text="Internships" counter={internshipCounter} onClick={() => boxSearch("Internship")} />
+                            <Box image={placement} text="Placements" counter={placementCounter} onClick={() => boxSearch("Placement")} />
+                            <Box image={job} text="Graduate" counter={graduateCounter} onClick={() => boxSearch("Graduate")} />
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Footer Section */}
