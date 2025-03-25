@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getJobsByEmployer } from "../../services/jobService";
 import { getDashboardData } from "../../services/applicationService";
-import WhiteBox from "../../components/WhiteBox";
-import SearchFilters from "../../components/SearchFilters";
 import Pagination from "../../components/Pagination";
 import PostCard from "../../components/PostCard";
 
@@ -11,12 +9,13 @@ const EmployerPostsPage = () => {
   const [jobs, setJobs] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const jobsPerPage = 3;
+  const jobsPerPage = 4;
   const navigate = useNavigate();
 
   const fetchJobs = async () => {
     try {
       const jobsData = await getJobsByEmployer();
+      console.log("Jobs Data Response:", jobsData); 
       setJobs(jobsData);
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -40,16 +39,6 @@ const EmployerPostsPage = () => {
     fetchJobs();
     fetchData();
   }, []);
-
-  const applyFilters = (selectedJobTypes, selectedTitles, selectedLocations) => {
-    const filteredJobs = jobs.filter((job) => {
-      const matchesJobType = selectedJobTypes.length === 0 || selectedJobTypes.includes(job.employmentType);
-      const matchesTitle = selectedTitles.length === 0 || selectedTitles.includes(job.title);
-      const matchesLocation = selectedLocations.length === 0 || selectedLocations.includes(job.location);
-      return matchesJobType && matchesTitle && matchesLocation;
-    });
-    setJobs(filteredJobs);
-  };
 
   const handlePageChange = ({ selected }) => {
     setCurrentPage(selected);
@@ -83,24 +72,23 @@ const EmployerPostsPage = () => {
   };
 
   return (
-    <div className="flex flex-row max-h-screen">
-      <div className="w-30%">
-        <SearchFilters applyFilters={applyFilters} hideCompanyFilter={true} />
-      </div>
-      <div className="bg-background min-h-screen w-full flex flex-col items-center">
-        <div className="text-center mt-2 mb-2">
-          <h1 className="text-heading font-heading font-bold">Employer Posts</h1>
-          <p className="text-medium mt-2">
-            Manage and filter your job posts to find the right candidates.
-          </p>
+    <div className="container mx-auto p-4">
+      <div className="flex-1 p-4 md:p-10">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-left text-black">My Posts</h1>
+          </div>
         </div>
-        <div className="flex flex-col space-y-4 px-4 pb-3 items-center w-full max-w-3xl">
+
+        {/* Job Posts */}
+        <div className="flex flex-col space-y-4">
           {currentJobs.map((job) => {
             const { totalApplicants, pendingApplicants } = calculateApplicants(job._id);
             return (
               <PostCard
                 key={job._id}
-                jobId={job._id} // Pass jobId to PostCard
+                jobId={job._id}
                 title={job.title}
                 type={job.employmentType}
                 location={job.location}
@@ -109,8 +97,10 @@ const EmployerPostsPage = () => {
               />
             );
           })}
-          {jobs.length === 0 && <p className="text-white text-center">No job posts found.</p>}
+          {jobs.length === 0 && <p className="text-black text-center">No job posts found.</p>}
         </div>
+
+        {/* Pagination */}
         <Pagination pageCount={pageCount} onPageChange={handlePageChange} />
       </div>
     </div>
