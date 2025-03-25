@@ -2,7 +2,7 @@ import React from "react";
 import WhiteBox from "./WhiteBox";
 import { useNavigate } from "react-router-dom";
 
-const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, jobId }) => {
+const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, statusBreakdown, jobId }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
@@ -12,11 +12,11 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, j
 
   return (
     <WhiteBox
-      className="flex justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
+      className="flex flex-col md:flex-row justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
       onClick={handleCardClick}
     >
       {/* Left Section: Job Details */}
-      <div>
+      <div className="flex-1">
         <h3 className="text-2xl font-bold text-black">{title}</h3>
         <p className="text-sm text-black">
           <span className="font-semibold">Type:</span> {type}
@@ -26,14 +26,40 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, j
         </p>
       </div>
 
+      {/* Center Section: Status Breakdown Table */}
+      <div className="flex justify-center items-center mt-4 w-1/2">
+        <table className="table-auto border-collapse border border-gray-300 w-3/4 text-sm bg-white shadow-lg rounded-lg">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-black">Metric</th>
+              <th className="border border-gray-300 px-4 py-2 text-right font-semibold text-black">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* Status Breakdown Rows */}
+            {statusBreakdown.map((status) => (
+              <tr key={status.status} className="hover:bg-gray-50">
+                <td className="border border-gray-300 px-4 py-2">{status.status}</td>
+                <td className="border border-gray-300 px-4 py-2 text-right">{status.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       {/* Right Section: Statistics */}
-      <div className="text-right">
-        <p className="text-sm text-black">
-          <span className="font-semibold">Total Applicants:</span> {totalApplicants}
-        </p>
-        <p className="text-sm text-black">
-          <span className="font-semibold">Pending Applicants:</span> {pendingApplicants}
-        </p>
+      <div className="flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:space-x-4 ml-auto">
+        {/* Pending Applicants Box */}
+        <div className="bg-gray-100 p-4 rounded shadow text-center">
+          <p className="text-sm font-semibold text-black">Pending Applicants</p>
+          <p className="text-xl font-bold text-black">{pendingApplicants}</p>
+        </div>
+
+        {/* Total Applicants Box */}
+        <div className="bg-gray-100 p-4 rounded shadow text-center">
+          <p className="text-sm font-semibold text-black">Total Applicants</p>
+          <p className="text-xl font-bold text-black">{totalApplicants}</p>
+        </div>
       </div>
     </WhiteBox>
   );
