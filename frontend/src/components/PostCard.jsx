@@ -9,6 +9,14 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, s
     navigate(`/employer/post/${jobId}`); // Navigate to the specific job's statistics page
   };
 
+  // Define the desired order of statuses
+  const statusOrder = ["Applied", "Shortlisted", "Code Challenge", "In Review", "Rejected", "Accepted"];
+
+  // Sort the statusBreakdown array based on the defined order
+  const sortedStatuses = statusBreakdown
+    .filter((status) => status.status !== "Applying") // Exclude "Applying" status
+    .sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
+
   return (
     <WhiteBox
       className="flex flex-col md:flex-row justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
@@ -35,14 +43,12 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, s
             </tr>
           </thead>
           <tbody>
-            {statusBreakdown
-              .filter((status) => status.status !== "Applying") // Exclude "Applying" status
-              .map((status) => (
-                <tr key={status.status} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-4 py-2">{status.status}</td>
-                  <td className="border border-gray-300 px-4 py-2 text-right">{status.count}</td>
-                </tr>
-              ))}
+            {sortedStatuses.map((status) => (
+              <tr key={status.status} className="hover:bg-gray-50">
+                <td className="border border-gray-300 px-4 py-2">{status.status}</td>
+                <td className="border border-gray-300 px-4 py-2 text-right">{status.count}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
