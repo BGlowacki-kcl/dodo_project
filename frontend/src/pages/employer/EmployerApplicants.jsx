@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import EmployerSideBar from "../../components/EmployerSideBar";
 import { useNavigate, useParams } from "react-router-dom";
 import { getJobApplicants } from "../../services/application.service";
 
@@ -28,7 +27,6 @@ const EmployerApplicants = () => {
 
     return (
         <div className="flex min-h-screen bg-gray-100">
-            <EmployerSideBar />
 
             <div className="flex-1 p-8 ml-64">
                 <h1 className="text-2xl font-bold mb-6">Applicants for Job ID: {jobId}</h1>
@@ -57,7 +55,7 @@ const EmployerApplicants = () => {
                         >
                             <h2 className="text-xl font-semibold text-gray-800">{applicant.name}</h2>
                             <p className="text-gray-600">{applicant.email}</p>
-                            <p className={`text-gray-500 mt-2 font-medium ${applicant.status === 'accepted' ? 'text-green-600' : applicant.status === 'rejected' ? 'text-red-600' : ''}`}>
+                            <p className={`text-gray-500 mt-2 font-medium ${applicant.status === 'Accepted' ? 'text-green-600' : applicant.status === 'Rejected' ? 'text-red-600' : ''}`}>
                                 <span className="font-medium">Status:</span>{" "}
                                 {applicant.status || "No cover letter provided"}
                             </p>

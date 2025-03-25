@@ -50,7 +50,7 @@ export const handleError = (res, error, defaultMessage = "Server error") => {
  * @returns {boolean} Whether status is valid
  */
 export const isValidStatus = (status) => {
-    const validStatuses = ["applying", "applied", "in review", "shortlisted", "rejected", "hired"];
+    const validStatuses = ["Applying", "Applied", "In Review", "Shortlisted", "Rejected", "Accepted"];
     return validStatuses.includes(status);
 };
 
@@ -147,7 +147,7 @@ export const applicationController = {
             }
 
             const applications = await Application
-                .find({ job: jobId, status: { $ne: "applying" } })
+                .find({ job: jobId, status: { $ne: "Applying" } })
                 .populate("applicant", "name email");
 
             const applicants = applications.map(app => ({
@@ -190,24 +190,47 @@ export const applicationController = {
      */
     async getOneApplication(req, res) {
         try {
-            const { id } = req.query;
-            const user = await User.findOne({ uid: req.uid });
-            
-            const application = await Application.findById(id)
-                .populate("applicant", "name email skills resume")
+            const { id } = req.query; // Application ID
+
+            // Fetch application and populate applicant details
+            const app = await Application.findById(id)
+                .populate("applicant", "name email skills resume education experience phoneNumber location")
                 .populate("job");
 
-            if (!application) {
+            if (!app) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
 
-            if (!application.applicant._id.equals(user._id)) {
-                return res.status(403).json(createResponse(false, "Unauthorized"));
-            }
+            
 
-            return res.status(200).json(createResponse(true, "Application found", application));
-        } catch (error) {
-            return res.status(500).json(createResponse(false, "Error getting application"));
+            const applicationData = {
+                id: app._id,
+                applicant: app.applicant,
+                status: app.status,
+                coverLetter: app.coverLetter,
+                submittedAt: app.submittedAt,
+                answers: app.answers.map((answer) => ({
+                    questionId: answer.questionId.toString(),
+                    answerText: answer.answerText,
+                })),
+                job: app.job,
+                assessments: null, 
+            };
+
+            // Fetch assessments and submissions related to the application
+            const job = await Job.findById(app.job);
+            const assessmentIds = job.assessments;
+            const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
+            const submissions = await codeSubmission.find({ application: app._id });
+            const assessmentSubmission = { assessments, submissions };
+            console.log("assessmentSubmission: ", assessmentSubmission);
+
+            applicationData.assessments = assessmentSubmission;
+
+            return res.status(200).json(createResponse(true, "Application found", applicationData));
+        } catch (err) {
+            console.error("Error getting application:", err);
+            res.status(500).json(createResponse(false, err.message));
         }
     },
 
@@ -278,8 +301,8 @@ export const applicationController = {
                 job: jobId,
                 applicant: user._id,
                 coverLetter,
-                answers: formatAnswers(answers || []),
-                status: "applying",
+                answers: formattedAnswers,
+                status: "Applying",
             });
 
             await Job.findByIdAndUpdate(jobId, { $addToSet: { applicants: user._id } });
@@ -340,6 +363,43 @@ export const applicationController = {
             return await handleStatusProgression(res, app, user);
         } catch (error) {
             return handleError(res, error, "Error updating application status");
+
+//             if (!app) {
+//                 return res.status(404).json(createResponse(false, "Application not found"));
+//             }
+//             console.log("toReject: ", toReject);
+//             if(toReject){
+//                 if(app.status === "Accepted"){
+//                     return res.status(400).json(createResponse(false, "Cannot reject an accepted application"));
+//                 }
+//                 app.status = "Rejected";
+//                 await app.save();
+//                 return res.json(createResponse(true, "Application rejected", app));
+//             }
+//             if(app.status.trim() === "Code Challenge" && user.role.trim() === "employer"){
+//                 return res.status(400).json(createResponse(false, "Cannot update status"));
+//             }
+//             if(app.status !== "Code Challenge" && user.role === "applicant"){
+//                 return res.status(400).json(createResponse(false, "Cannot update status"));
+//             }
+
+//             const hasCodeAssessment = app.job.assessments.length > 0;
+//             console.log("hasCodeAssessment: ", hasCodeAssessment);
+//             const statuses = ['Applied', 'Shortlisted', 'Code Challenge', 'In Review', 'Accepted'];
+//             const currentIndex = statuses.indexOf(app.status);
+//             if (currentIndex === -1 || currentIndex === statuses.length - 1) {
+//                 return res.status(400).json(createResponse(false, "No further status available"));
+//             }
+//             app.status = statuses[currentIndex + 1];
+//             console.log("app.status (chnaged): ", app.status);
+//             if(app.status === 'Code Challenge' && !hasCodeAssessment) {
+//                 app.status = statuses[currentIndex + 2];
+//             }
+//             await app.save();
+//             res.json(createResponse(true, "Application status updated", app));
+//         } catch (err) {
+//             console.error("Error updating application status:", err);
+//             res.status(500).json(createResponse(false, err.message));
         }
     },
 
@@ -353,18 +413,34 @@ export const applicationController = {
         try {
             const { uid } = req;
             const employer = await User.findOne({ uid });
-            if (!uid || !employer) {
-                return res.status(400).json(createResponse(false, "Invalid request"));
-            }
 
-            const jobs = await getJobsByEmployer(uid);
-            if (!jobs.length) {
+    
+            if (!uid) {
+                return res.status(400).json(createResponse(false, "Bad Request: UID is missing"));
+            }
+    
+            const jobs = await getJobsByEmployerHelper(uid); // Ensure this function is returning valid data
+            if (!jobs || jobs.length === 0) {
                 return res.status(404).json(createResponse(false, "No jobs found for this employer"));
             }
+    
+            const totalStatus = await getTotalStatus(jobs);
+            const lineGraphData = await getLineGraphData(jobs); // Call the helper function
 
-            const dashboardData = await buildDashboardData(employer, jobs);
+            const dashboardData = {
+                totalJobs: jobs.length,
+                totalStatus,
+                companyName: employer.companyName || "",
+                jobs,
+                lineGraphData, 
+            };
+
+            console.log("Dashboard data:", dashboardData.jobs);
+           
+    
             return res.status(200).json(createResponse(true, "Dashboard data retrieved successfully", dashboardData));
         } catch (error) {
+            console.error("Error in getDashboardData:", error);
             return handleError(res, error, "Error fetching dashboard data");
         }
     },
@@ -381,7 +457,7 @@ export const applicationController = {
             const user = await User.findOne({ uid: req.uid });
             const application = await Application.findOne({ _id: applicationId, applicant: user._id });
 
-            if (!application || application.status !== "applying") {
+            if (!application || application.status !== "Applying") {
                 return res.status(400).json(createResponse(false, "Cannot save application"));
             }
 
@@ -407,11 +483,15 @@ export const applicationController = {
             const user = await User.findOne({ uid: req.uid });
             const application = await Application.findOne({ _id: applicationId, applicant: user._id });
 
-            if (!applicationId || !user || !application || application.status !== "applying") {
+
+            if (!applicationId || !user || !application) {
                 return res.status(400).json(createResponse(false, "Invalid application submission"));
             }
+            if (application.status !== "Applying") {
+                return res.status(400).json(createResponse(false, "Application cannot be submitted in its current state"));
+            }
 
-            application.status = "applied";
+            application.status = "Applied";
             await application.save();
 
             return res.status(200).json(createResponse(true, "Application submitted successfully", application));
@@ -486,6 +566,42 @@ export const getJobsByEmployer = async (uid) => {
     if (!employer) throw new Error("Employer not found");
     return Job.find({ postedBy: employer._id });
 };
+
+    async function getLineGraphData(jobs) {
+    try {
+        const jobIds = jobs.map(job => job._id);
+        const lineGraphData = await Application.aggregate([
+            { 
+                $match: { 
+                    job: { $in: jobIds }, 
+                    status: { $ne: "Applying" } // Exclude applications in the "applying" state
+                } 
+            },
+            { 
+                $group: { 
+                    _id: { 
+                        jobId: "$job", // Include jobId in the grouping
+                        date: { $dateToString: { format: "%d-%m-%Y", date: "$submittedAt" } } // Group by date
+                    }, 
+                    count: { $sum: 1 } // Count applications for each date
+                } 
+            },
+            { $sort: { "_id.date": 1 } }, // Sort by date in ascending order
+            { 
+                $project: { 
+                    jobId: "$_id.jobId", // Include jobId in the final output
+                    date: "$_id.date",
+                    count: 1,
+                    _id: 0 // Remove the _id field
+                } 
+            }
+        ]);
+        return lineGraphData;
+    } catch (error) {
+        console.error("Error fetching line graph data:", error);
+        throw new Error("Failed to fetch line graph data");
+    }
+}
 
 /**
  * Builds dashboard data object

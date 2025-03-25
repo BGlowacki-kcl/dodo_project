@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createJob } from '../../services/job.service';
-import EmployerSideBar from "../../components/EmployerSideBar";
 import { assessmentService } from '../../services/assessment.service';
 import { userService } from "../../services/user.service";  
 
@@ -144,7 +143,6 @@ function CreateJobPost() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <EmployerSideBar />
       <div className="flex-1 p-8 ml-64">
         <h1 className="text-3xl font-bold text-[#1B2A41] mb-6">
           Create New Job Post

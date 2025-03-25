@@ -45,7 +45,7 @@ const CodeAss = () => {
     
     const fetchTimer = async () => {
       const application = await getApplicationById(appId);
-      if(application.status !== "code challenge"){
+      if (application.status !== "Code Challenge") {
         navigate("/applicant-dashboard");
         showMessage("Application cannot be accessed", "info");
         return;

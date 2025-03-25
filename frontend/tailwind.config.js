@@ -18,10 +18,15 @@ export default {
         heading: ["Poppins", "sans-serif"], // Custom heading font
       },
       fontSize: {
-        heading: "2rem", // Main headings, section titles, etc.
-        medium: "1rem", // Paragraphs, general content, etc.
-        small: "0.75rem", // Less prominent info, captions, secondary text, etc.
-      }
+        fontSize: {
+          "4xl": "2.25rem", // Page headers (e.g., Job Details, Profile)
+          "2xl": "1.5rem", // Section subheaders (e.g., Personal Information, My Applications)
+          xl: "1.25rem", // Secondary subheaders (e.g., Questions, Code Assessment)
+          base: "1rem", // Default text size (general content)
+          sm: "0.875rem", // Smaller text (e.g., stat titles, captions)
+          xs: "0.75rem", // Extra small text (e.g., secondary info, labels)
+      },
+      },
     }
   },
   plugins: [],
