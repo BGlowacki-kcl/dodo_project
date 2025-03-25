@@ -22,7 +22,7 @@ import CreateJobPost from './pages/employer/CreateJobPost.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
-import CodeAss from './pages/applicant/CodeAss';
+import CodeAss from './pages/applicant/CodeAssessment';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 import SearchResults from './pages/SearchResults';
 import EmployerApplicants from './pages/employer/EmployerApplicants';

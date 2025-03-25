@@ -220,8 +220,8 @@ export const applicationController = {
             // Fetch assessments and submissions related to the application
             const job = await Job.findById(app.job);
             const assessmentIds = job.assessments;
-            const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
-            const submissions = await codeSubmission.find({ application: app._id });
+            const assessments = await CodeAssessment.find({ _id: { $in: assessmentIds } });
+            const submissions = await CodeSubmission.find({ application: app._id });
             const assessmentSubmission = { assessments, submissions };
             console.log("assessmentSubmission: ", assessmentSubmission);
 
@@ -266,15 +266,17 @@ export const applicationController = {
         try {
             const { id } = req.query;
             const { deadline } = req.body;
+            console.log(id);
             const application = await Application.findById(id);
             if (!application) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
-
+            console.log(application);
             application.finishAssessmentDate = deadline;
             await application.save();
             return res.json(createResponse(true, "Assessment deadline set", deadline));
         } catch (error) {
+            console.log(error);
             return handleError(res, error, "Error setting assessment deadline");
         }
     },
@@ -527,6 +529,22 @@ export const handleRejection = async (res, application) => {
     return res.json(createResponse(true, "Application rejected", application));
 };
 
+async function getJobsByEmployerHelper(uid) {
+    try {
+        const employer = await User.findOne({ uid  });
+        if (!employer) {
+            throw new Error("Employer not found");
+        }
+        const jobs = await Job.find({ postedBy: employer._id });
+        return jobs;
+    
+    } catch (error) {
+        console.error("Error fetching employer jobs:", error);
+        throw new Error(error.message);
+    }
+    
+}
+
 /**
  * Handles application status progression
  * @param {Object} res - Express response object
@@ -535,13 +553,13 @@ export const handleRejection = async (res, application) => {
  * @returns {Promise<void>}
  */
 export const handleStatusProgression = async (res, application, user) => {
-    const statuses = ['applied', 'shortlisted', 'code challenge', 'in review', 'accepted'];
+    const statuses = ['Applied', 'Shortlisted', 'Code Challenge', 'In Review', 'Accepted'];
     const currentIndex = statuses.indexOf(application.status);
 
-    if (user.role === "employer" && application.status === "code challenge") {
+    if (user.role === "employer" && application.status === "Code Challenge") {
         return res.status(400).json(createResponse(false, "Cannot update status"));
     }
-    if (user.role === "applicant" && application.status !== "code challenge") {
+    if (user.role === "applicant" && application.status !== "Code Challenge") {
         return res.status(400).json(createResponse(false, "Cannot update status"));
     }
     if (currentIndex === -1 || currentIndex === statuses.length - 1) {
@@ -549,7 +567,7 @@ export const handleStatusProgression = async (res, application, user) => {
     }
 
     application.status = statuses[currentIndex + 1];
-    if (application.status === 'code challenge' && !application.job.assessments.length) {
+    if (application.status === 'Code Challenge' && !application.job.assessments.length) {
         application.status = statuses[currentIndex + 2];
     }
     await application.save();
@@ -634,25 +652,25 @@ export const getTotalStatus = async (jobs) => {
     ]);
 };
 
-/**
- * Gets line graph data for job applications
- * @param {Array} jobs - Array of job documents
- * @returns {Promise<Array>} Line graph data
- */
-export const getLineGraphData = async (jobs) => {
-    const jobIds = jobs.map(job => job._id);
-    return Application.aggregate([
-        { $match: { job: { $in: jobIds }, status: { $ne: "applying" } } },
-        { 
-            $group: { 
-                _id: { 
-                    jobId: "$job",
-                    date: { $dateToString: { format: "%Y-%m-%d", date: "$submittedAt" } }
-                }, 
-                count: { $sum: 1 }
-            } 
-        },
-        { $sort: { "_id.date": 1 } },
-        { $project: { jobId: "$_id.jobId", date: "$_id.date", count: 1, _id: 0 } }
-    ]);
-};
+// /**
+//  * Gets line graph data for job applications
+//  * @param {Array} jobs - Array of job documents
+//  * @returns {Promise<Array>} Line graph data
+//  */
+// export const getLineGraphData = async (jobs) => {
+//     const jobIds = jobs.map(job => job._id);
+//     return Application.aggregate([
+//         { $match: { job: { $in: jobIds }, status: { $ne: "applying" } } },
+//         { 
+//             $group: { 
+//                 _id: { 
+//                     jobId: "$job",
+//                     date: { $dateToString: { format: "%Y-%m-%d", date: "$submittedAt" } }
+//                 }, 
+//                 count: { $sum: 1 }
+//             } 
+//         },
+//         { $sort: { "_id.date": 1 } },
+//         { $project: { jobId: "$_id.jobId", date: "$_id.date", count: 1, _id: 0 } }
+//     ]);
+// };

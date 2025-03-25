@@ -18,7 +18,7 @@ import {
   getAllUserApplications,
   submitApplication,
   withdrawApplication,
-} from "../../services/applicationService";
+} from "../../services/application.service";
 import { getJobQuestionsById } from "../../services/job.service";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";

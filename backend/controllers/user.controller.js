@@ -101,7 +101,8 @@ export const userController = {
      */
     async getUser(req, res) {
         try {
-            const { uid } = req.query;
+            const { uid } = req;
+            console.log(uid);
             if (!uid) {
                 return res.status(400).json(createResponse(false, "No user provided!"));
             }

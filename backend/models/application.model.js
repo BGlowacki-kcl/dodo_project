@@ -16,7 +16,7 @@ const jobApplicationSchema = new Schema({
 
   status: {
     type: String,
-    enum: ['applying', 'applied', 'in review', 'shortlisted', 'code challenge', 'rejected', 'accepted'],
+    enum: ['Applying', 'Applied', 'In Review', 'Shortlisted', 'Code Challenge', 'Rejected', 'Accepted'],
     default: 'Applying'
   },
 

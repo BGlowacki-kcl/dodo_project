@@ -5,6 +5,19 @@ import User from "../models/user/user.model.js";
 import Job from "../models/job.model.js";
 
 /**
+ * Creates a standardized response object
+ * @param {boolean} success - Indicates operation success
+ * @param {string} message - Response message
+ * @param {Object} [data] - Response data (optional)
+ * @returns {Object} Standardized response
+ */
+const createResponse = (success, message, data = null) => ({
+    success,
+    message,
+    ...(data && { data }),
+});
+
+/**
  * Assessment controller handling code assessment-related operations
  */
 const assessmentController = {
@@ -18,13 +31,13 @@ const assessmentController = {
         try {
             const { source_code, language } = req.body;
             if (!source_code || !language) {
-                return res.status(400).json({ message: "source_code and language are required" });
+                return res.status(400).json(createResponse(false, "source_code and language are required"));
             }
 
             const response = await executeCode(source_code, language);
-            return res.status(200).json({ message: "Sent code successfully", data: response });
+            return res.status(200).json(createResponse(true, "Sent code successfully", response));
         } catch (error) {
-            return res.status(500).json({ message: "Internal server error", error: error.message });
+            return res.status(500).json(createResponse(false, "Internal server error", { error: error.message }));
         }
     },
 
@@ -38,9 +51,9 @@ const assessmentController = {
         try {
             const { id } = req.query;
             const statusData = await fetchExecutionStatus(id);
-            return res.status(200).json({ data: statusData });
+            return res.status(200).json(createResponse(true, "Status retrieved successfully", statusData));
         } catch (error) {
-            return res.status(500).json({ message: "Internal server error", error: error.message });
+            return res.status(500).json(createResponse(false, "Internal server error", { error: error.message }));
         }
     },
 
@@ -56,13 +69,13 @@ const assessmentController = {
             const { uid } = req;
 
             if (!appId || !taskId) {
-                return res.status(400).json({ message: "No id provided" });
+                return res.status(400).json(createResponse(false, "No id provided"));
             }
 
             const taskData = await fetchTaskData(appId, taskId, uid);
-            return res.status(200).json({ message: "Successfully retrieved assessment", data: taskData });
+            return res.status(200).json(createResponse(true, "Successfully retrieved assessment", taskData));
         } catch (error) {
-            return res.status(500).json({ message: `Error: ${error.message}` });
+            return res.status(500).json(createResponse(false, `Error: ${error.message}`));
         }
     },
 
@@ -78,16 +91,13 @@ const assessmentController = {
             const { uid } = req;
 
             if (!appId) {
-                return res.status(400).json({ message: "No id provided" });
+                return res.status(400).json(createResponse(false, "No id provided"));
             }
 
             const assessmentsWithStatus = await fetchAssessmentsWithStatus(appId, uid);
-            return res.status(200).json({
-                message: "Successfully retrieved assessments with status",
-                data: assessmentsWithStatus,
-            });
+            return res.status(200).json(createResponse(true, "Successfully retrieved assessments with status", assessmentsWithStatus));
         } catch (error) {
-            return res.status(500).json({ message: `Error: ${error.message}` });
+            return res.status(500).json(createResponse(false, `Error: ${error.message}`));
         }
     },
 
@@ -103,9 +113,9 @@ const assessmentController = {
             const { appId, testsPassed, code, language, taskId } = req.body;
 
             const submissionResult = await processSubmission(uid, appId, taskId, code, language, testsPassed);
-            return res.status(200).json(submissionResult);
+            return res.status(200).json(createResponse(true, "Submitted successfully! Code saved", submissionResult));
         } catch (error) {
-            return res.status(500).json({ message: "Internal server error" });
+            return res.status(500).json(createResponse(false, "Internal server error", { error: error.message }));
         }
     },
 
@@ -118,9 +128,9 @@ const assessmentController = {
     async getAllTasks(req, res) {
         try {
             const allTasks = await CodeAssessment.find();
-            return res.status(200).json({ message: "Successfully received code assessments", data: allTasks });
+            return res.status(200).json(createResponse(true, "Successfully received code assessments", allTasks));
         } catch (error) {
-            return res.status(500).json({ message: "Internal server error" });
+            return res.status(500).json(createResponse(false, "Internal server error", { error: error.message }));
         }
     },
 
@@ -134,9 +144,9 @@ const assessmentController = {
         try {
             const assessmentData = req.body;
             const newAssessment = await createNewAssessment(assessmentData);
-            return res.status(200).json({ message: "Assessment added successfully", data: newAssessment });
+            return res.status(200).json(createResponse(true, "Assessment added successfully", newAssessment));
         } catch (error) {
-            return res.status(500).json({ message: "Internal server error" });
+            return res.status(500).json(createResponse(false, "Internal server error", { error: error.message }));
         }
     }
 };

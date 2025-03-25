@@ -129,16 +129,16 @@ const CodeAss = () => {
   const fetchAndSetFirstTask = async () => {
     try {
       const taskResponse = await assessmentService.getTasksId(appId);
-      console.log("Task Ids: ", taskResponse.data);
+      console.log("Task Ids: ", taskResponse);
       
-      if (taskResponse.data.length === 0) return; 
-      setTasksId(taskResponse.data);
+      if (taskResponse.length === 0) return; 
+      setTasksId(taskResponse);
       
-      const firstTaskResponse = await assessmentService.getTask(appId, taskResponse.data[0].id);
+      const firstTaskResponse = await assessmentService.getTask(appId, taskResponse[0].id);
       console.log("First task: ", firstTaskResponse);
       
-      setTask(firstTaskResponse.data.assessment);
-      setCodeForLanguage(language, firstTaskResponse.data.assessment);
+      setTask(firstTaskResponse.assessment);
+      setCodeForLanguage(language, firstTaskResponse.assessment);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
@@ -153,17 +153,17 @@ const CodeAss = () => {
 
     const response = await assessmentService.getTask(appId, taskId);
     console.log("Task retrived: ", response);
-    setTask(response.data.assessment);
+    setTask(response.assessment);
     setTestsPassed(0);
     console.log("RESSSS: ",response);
-    if(response.data.submission.length > 0){
-      setPrevSubmission(response.data.submission[0]);
-      setTestsPassed(response.data.submission[0].score);
-      setCode(response.data.submission[0].solutionCode);
-      setLanguage(response.data.submission[0].language);
+    if(response.sumission && response.submission.length > 0){
+      setPrevSubmission(response.submission[0]);
+      setTestsPassed(response.submission[0].score);
+      setCode(response.submission[0].solutionCode);
+      setLanguage(response.submission[0].language);
     } else {
-      console.log("NEW RES: ", response.data.assessment);
-      setCodeForLanguage(language, response.data.assessment);
+      console.log("NEW RES: ", response.assessment);
+      setCodeForLanguage(language, response.assessment);
     }
     setOutput("");
     showNotification("Task Changed", "success");
@@ -245,17 +245,17 @@ int func(${task.funcForCpp}) {
     console.log("Res: ", response);
     setLoading(false);
 
-    if(response.data.stderr && response.data.stderr != ""){
-      setError(response.data.stderr);
+    if(response.stderr && response.stderr != ""){
+      setError(response.stderr);
       return;
     }
-    console.log("Build_err: ",response.data.build_stderr);
-    if(response.data.build_stderr && response.data.build_stderr != ""){
-      setError(response.data.build_stderr);
+    console.log("Build_err: ",response.build_stderr);
+    if(response.build_stderr && response.build_stderr != ""){
+      setError(response.build_stderr);
       return;
     }
 
-    const lines = response.data.stdout.split("\n");
+    const lines = response.stdout.split("\n");
     let newTestsPassed = 0;
 
     const filteredLines = lines.filter((line) => {
