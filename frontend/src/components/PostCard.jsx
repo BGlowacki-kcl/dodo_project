@@ -6,8 +6,7 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, s
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    navigate(`/employer/post/${jobId}`);
-    console.log(`Navigating to /employer/post/${jobId}`);
+    navigate(`/employer/post/${jobId}`); // Navigate to the specific job's statistics page
   };
 
   return (
@@ -31,31 +30,29 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, s
         <table className="table-auto border-collapse border border-gray-300 w-3/4 text-sm bg-white shadow-lg rounded-lg">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-black">Metric</th>
+              <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-black">Status</th>
               <th className="border border-gray-300 px-4 py-2 text-right font-semibold text-black">Count</th>
             </tr>
           </thead>
           <tbody>
-            {/* Status Breakdown Rows */}
-            {statusBreakdown.map((status) => (
-              <tr key={status.status} className="hover:bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">{status.status}</td>
-                <td className="border border-gray-300 px-4 py-2 text-right">{status.count}</td>
-              </tr>
-            ))}
+            {statusBreakdown
+              .filter((status) => status.status !== "Applying") // Exclude "Applying" status
+              .map((status) => (
+                <tr key={status.status} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 px-4 py-2">{status.status}</td>
+                  <td className="border border-gray-300 px-4 py-2 text-right">{status.count}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
       {/* Right Section: Statistics */}
       <div className="flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:space-x-4 ml-auto">
-        {/* Pending Applicants Box */}
         <div className="bg-gray-100 p-4 rounded shadow text-center">
           <p className="text-sm font-semibold text-black">Pending Applicants</p>
           <p className="text-xl font-bold text-black">{pendingApplicants}</p>
         </div>
-
-        {/* Total Applicants Box */}
         <div className="bg-gray-100 p-4 rounded shadow text-center">
           <p className="text-sm font-semibold text-black">Total Applicants</p>
           <p className="text-xl font-bold text-black">{totalApplicants}</p>
