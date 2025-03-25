@@ -9,12 +9,31 @@
 
 import { useState, useEffect } from "react";
 import { Pie, Line } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from "chart.js";
-import { getDashboardData } from "../../services/applicationService";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+} from "chart.js";
+import { getApplicationsData } from "../../services/applicationService";
 import { FaChartPie, FaClipboardList } from "react-icons/fa";
 import WhiteBox from "../../components/WhiteBox";
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler
+);
 
 /**
  * Reusable component for displaying statistics.
@@ -40,31 +59,37 @@ const EmployerDashboard = () => {
   const [lineGraphData, setLineGraphData] = useState([]);
   const [viewAllApplications, setViewAllApplications] = useState(false);
 
+  
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch dashboard data when the component mounts.
+   */
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+
   // ----------------------------- Data Fetching -----------------------------
   /**
    * Fetches dashboard data from the backend and updates state variables.
    */
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await getDashboardData();
-        setTotalPosts(response.totalJobs || 0);
-        setStatus(response.totalStatus || []);
-        setCompanyName(response.companyName || "");
-        setJobs(response.jobs || []);
-        setLineGraphData(response.lineGraphData || []);
+  const fetchDashboardData = async () => {
+    try {
+      const response = await getApplicationsData();
+      setTotalPosts(response.totalJobs || 0);
+      setStatus(response.totalStatus || []);
+      setCompanyName(response.companyName || "");
+      setJobs(response.jobs || []);
+      setLineGraphData(response.lineGraphData || []);
 
-        if (response.jobs && response.jobs.length > 0) {
-          setSelectedJob(response.jobs[0]._id);
-        }
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        setError(error.message || "Failed to load dashboard data.");
+      if (response.jobs && response.jobs.length > 0) {
+        setSelectedJob(response.jobs[0]._id);
       }
-    };
-
-    fetchDashboardData();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setError(error.message || "Failed to load dashboard data.");
+    }
+  };
 
   // ----------------------------- Data Transformation -----------------------------
   /**
@@ -213,7 +238,6 @@ const EmployerDashboard = () => {
     .reduce((sum, status) => sum + status.count, 0);
 
   const engagementPercentage = totalEngagedApplicants / totalPosts || 0;
-
   // ----------------------------- Render -----------------------------
   return (
     <div className="container mx-auto p-4">
