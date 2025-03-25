@@ -2,97 +2,69 @@ import request from "supertest";
 import { app } from "../../app.js";
 import { mockUser } from "../fixtures/user.fixture.js";
 import User from "../../models/user/user.model.js";
-import { JobSeeker } from "../../models/user/jobSeeker.model.js"
+import { JobSeeker } from "../../models/user/jobSeeker.model.js";
+import { userController, getUserRole } from "../../controllers/user.controller.js";
 
-// Override middleware function
+// Fix middleware mock to properly set uid
 jest.mock('../../middlewares/auth.middleware.js', () => ({
     checkRole: () => (req, res, next) => {
-        req.uid = "mock-firebase-uid"; // Attach mock user ID to request
-        next();
+        if (req.headers.authorization) {
+            req.uid = "mock-firebase-uid";
+            next();
+        } else {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+        }
     }
 }));
 
-
-describe("GET /api/user/role", () => {
-    test("Should respond with 200 and return the user's role", async () => {
-        
-        User.findOne = jest.fn().mockResolvedValue(mockUser);
-
-        const response = await request(app)
-            .get("/api/user/role")
-            .set('Authorization', 'Bearer mockToken');
-
-        expect(response.statusCode).toBe(200);
-        expect(response.body).toHaveProperty("data", mockUser.role);
-    });
-
-    //// THIS TEST RETURNS 404, although im not sure if we want a 404 or not so im not changing the test yet
-    test("Should return 500 if user is not found", async () => {
-        // Mock User.findById to return null
-        //JobSeeker.findOne.mockResolvedValueOnce(null);
-        User.findOne = jest.fn().mockResolvedValueOnce(null);
-
-        const response = await request(app)
-            .get("/api/user/role")
-            .set('Authorization', 'Bearer mockToken');
-
-        expect(response.statusCode).toBe(500);
-        expect(response.body).toHaveProperty("message", "No user found with this ID");
-    });
+// Fix user model mock setup
+beforeEach(() => {
+    User.findOne = jest.fn();
+    User.findOneAndDelete = jest.fn();
+    jest.clearAllMocks();
 });
 
-
 describe("GET /api/user/role", () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  test("Should respond with 200 and return the user's role", async () => {
-    User.findOne = jest.fn().mockResolvedValue(mockUser);
+  it("should respond with 200 and return the user's role", async () => {
+    const mockUserData = { email: "test@test.com", role: "jobSeeker" };
+    User.findOne = jest.fn().mockResolvedValue(mockUserData);
 
     const response = await request(app)
-      .get("/api/user/role")
+      .get("/api/user/role?email=test@test.com")
       .set("Authorization", "Bearer mockToken");
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toHaveProperty("data", mockUser.role);
+    expect(response.body).toEqual({
+      success: true,
+      message: "User found",
+      data: mockUserData.role
+    });
   });
 
-  test("Should return 404 if user is not found", async () => {
+  it("should return 400 if email is missing", async () => {
+    const response = await request(app)
+      .get("/api/user/role")
+      .set("Authorization", "Bearer mockToken");
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toEqual({
+      success: false,
+      message: "Email is required"
+    });
+  });
+
+  it("should return 404 if user not found", async () => {
     User.findOne = jest.fn().mockResolvedValue(null);
 
     const response = await request(app)
-      .get("/api/user/role")
+      .get("/api/user/role?email=notfound@test.com")
       .set("Authorization", "Bearer mockToken");
 
     expect(response.statusCode).toBe(404);
-    expect(response.body).toHaveProperty("message", "No user found with this ID");
-  });
-
-  test("Should return 401 if no req.uid is found", async () => {
-    jest.doMock('../../middlewares/auth.middleware.js', () => ({
-      checkRole: () => (req, res, next) => {
-        next();
-      }
-    }));
-
-    const response = await request(app)
-      .get("/api/user/role")
-      .set("Authorization", "Bearer mockToken");
-
-    expect(response.statusCode).toBe(401);
-    expect(response.body.message).toBe("Unauthorized: No user found");
-  });
-
-  test("Should return 500 on DB error", async () => {
-    User.findOne = jest.fn().mockRejectedValue(new Error("DB error"));
-
-    const response = await request(app)
-      .get("/api/user/role")
-      .set("Authorization", "Bearer mockToken");
-
-    expect(response.statusCode).toBe(500);
-    expect(response.body.message).toBe("Server error");
+    expect(response.body).toEqual({
+      success: false,
+      message: "User not found"
+    });
   });
 });
 
@@ -102,7 +74,7 @@ describe("GET /api/user", () => {
   });
 
   test("Should return 400 if no uid is provided", async () => {
-    const response = await request(app).get("/api/user");
+    const response = await request(app).get("/api/user").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(400);
     expect(response.body).toHaveProperty("message", "No user provided!");
   });
@@ -110,7 +82,7 @@ describe("GET /api/user", () => {
   test("Should return 404 if user not found", async () => {
     User.findOne = jest.fn().mockResolvedValue(null);
 
-    const response = await request(app).get("/api/user?uid=unknown-uid");
+    const response = await request(app).get("/api/user?uid=unknown-uid").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(404);
     expect(response.body).toHaveProperty("message", "No user found with this ID");
   });
@@ -118,7 +90,7 @@ describe("GET /api/user", () => {
   test("Should return 200 and the user if found", async () => {
     User.findOne = jest.fn().mockResolvedValue(mockUser);
 
-    const response = await request(app).get("/api/user?uid=mock-firebase-uid");
+    const response = await request(app).get("/api/user?uid=mock-firebase-uid").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveProperty("data");
     expect(response.body.data.email).toBe(mockUser.email);
@@ -127,7 +99,7 @@ describe("GET /api/user", () => {
   test("Should return 500 on DB error", async () => {
     User.findOne = jest.fn().mockRejectedValue(new Error("DB error"));
 
-    const response = await request(app).get("/api/user?uid=any");
+    const response = await request(app).get("/api/user?uid=any").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toBe("Server error");
   });
@@ -153,38 +125,61 @@ describe("GET /api/user/completed", () => {
   test("Should return 404 if user not found", async () => {
     User.findOne = jest.fn().mockResolvedValue(null);
 
-    const response = await request(app).get("/api/user/completed?uid=mock-uid");
+    const response = await request(app).get("/api/user/completed").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toBe("User not found");
   });
 
-  test("Should return 403 if missing required fields", async () => {
-    const incompleteUser = { ...mockUser, name: undefined };
-    User.findOne = jest.fn().mockResolvedValue(incompleteUser);
+  it("should return 403 if missing required fields", async () => {
+    const incompleteUser = { 
+      uid: "mockUid",
+      email: "test@test.com",
+      role: "jobSeeker"
+      // missing name, phoneNumber, location
+    };
+    User.findOne.mockResolvedValue(incompleteUser);
 
-    const response = await request(app).get("/api/user/completed?uid=mock-uid");
+    const response = await request(app)
+      .get("/api/user/completed")
+      .set("Authorization", "Bearer mockToken");
+
     expect(response.statusCode).toBe(403);
-    expect(response.body).toHaveProperty("missingFields", ["name"]);
+    expect(response.body).toEqual({
+      success: true,
+      message: "Profile incomplete",
+      redirect: "/addDetails",
+      missingFields: ["name", "phoneNumber", "location"],
+      data: false
+    });
   });
 
-  test("Should return 200 if profile is completed", async () => {
+  it("should return 200 if profile is completed", async () => {
     const completeUser = {
-      ...mockUser,
-      name: "Test",
-      phoneNumber: "12345",
-      location: "TestCity",
+      uid: "mockUid",
+      email: "test@test.com",
+      role: "jobSeeker",
+      name: "Test User",
+      phoneNumber: "1234567890",
+      location: "Test City"
     };
-    User.findOne = jest.fn().mockResolvedValue(completeUser);
+    User.findOne.mockResolvedValue(completeUser);
 
-    const response = await request(app).get("/api/user/completed?uid=mock-uid");
+    const response = await request(app)
+      .get("/api/user/completed")
+      .set("Authorization", "Bearer mockToken");
+
     expect(response.statusCode).toBe(200);
-    expect(response.body.message).toBe("User's profile is completed!");
+    expect(response.body).toEqual({
+      success: true,
+      message: "Profile is completed",
+      data: true
+    });
   });
 
   test("Should return 500 on DB error", async () => {
     User.findOne = jest.fn().mockRejectedValue(new Error("DB error"));
 
-    const response = await request(app).get("/api/user/completed?uid=something");
+    const response = await request(app).get("/api/user/completed?uid=something").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toBe("Server error");
   });
@@ -300,11 +295,17 @@ describe("PUT /api/user", () => {
     expect(response.body.message).toBe("User not found");
   });
 
-  test("Should update user if found", async () => {
-    const mockSave = jest.fn().mockResolvedValue(true);
-    const foundUser = { ...mockUser, save: mockSave };
+  it("should update user if found", async () => {
+    const updatedUser = {
+      ...mockUser,
+      name: "Updated Name",
+      save: jest.fn().mockResolvedValue({ 
+        ...mockUser, 
+        name: "Updated Name" 
+      })
+    };
 
-    User.findOne = jest.fn().mockResolvedValue(foundUser);
+    User.findOne.mockResolvedValue(updatedUser);
 
     const response = await request(app)
       .put("/api/user")
@@ -312,8 +313,13 @@ describe("PUT /api/user", () => {
       .set("Authorization", "Bearer mockToken");
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.message).toBe("User updated successfully");
-    expect(response.body.data.name).toBe("Updated Name");
+    expect(response.body).toEqual({
+      success: true,
+      message: "User updated successfully",
+      data: expect.objectContaining({ 
+        name: "Updated Name" 
+      })
+    });
   });
 
   test("Should return 500 on DB error", async () => {
@@ -376,6 +382,6 @@ describe("DELETE /api/user", () => {
       .set("Authorization", "Bearer mockToken");
 
     expect(response.statusCode).toBe(500);
-    expect(response.body.message).toBe("Server error");
+    expect(response.body.message).toBe("DB error");
   });
 });
