@@ -81,6 +81,11 @@ describe("GET /api/user", () => {
 
   test("Should return 404 if user not found", async () => {
     User.findOne = jest.fn().mockResolvedValue(null);
+    jest.doMock('../../middlewares/auth.middleware.js', () => ({
+      checkRole: () => (req, res, next) => {
+        req.uid = "different-mock-user"
+      }
+    }));
 
     const response = await request(app).get("/api/user?uid=unknown-uid").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(404);

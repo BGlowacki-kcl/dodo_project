@@ -32,7 +32,6 @@ const validateAuth = (uid) => {
  */
 const fetchUserByUid = async (uid) => {
     const user = await User.findOne({ uid });
-    if (!user) throw new Error("No user found with this ID");
     return user;
 };
 
@@ -104,6 +103,9 @@ export const userController = {
             }
 
             const user = await fetchUserByUid(uid);
+            if (!user) {
+                return res.status(404).json(createResponse(false, "User not found"));
+            }
             return res.status(200).json(createResponse(true, "User found", user));
         } catch (error) {
             if (error.message === "No user found with this ID") {
