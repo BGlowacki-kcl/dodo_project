@@ -39,26 +39,22 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md w-full">
+    <nav className="bg-white shadow-md w-full sticky top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4 py-2 flex items-center justify-between">
         
         {/* Logo */}
         <Link to="/" className="flex items-center mr-14">
-          <img src="joborithmLogo.png" className="h-15 w-14" alt="Logo" />
+          <img src="/joborithmLogo.png" className="h-15 w-14" alt="Logo" />
           <span className="text-lg font-semibold">Jobirithm</span>
         </Link>
 
-       
-
-        {/* NAVBAR FOR LOGGED-IN USERS (NON-EMPLOYERS) - RESTRUCTURED */}
+        {/* NAVBAR FOR LOGGED-IN USERS (EMPLOYERS) */}
         {isLoggedIn && isEmployer && (
           <div className="flex justify-between flex-grow">
             {/* Left side navigation links */}
             <ul className="flex space-x-4 items-center">
-            <li><Link to="/employer/posts" className={`text-base ${isActive('/employer/posts')}`}>Posts</Link></li>
-            <li><Link to="/employer-dashboard" className={`text-base ${isActive('/applicant-dashboard')}`}>Dashboard</Link></li>
-              
-              
+              <li><Link to="/employer/posts" className={`text-base ${isActive('/employer/posts')}`}>Posts</Link></li>
+              <li><Link to="/employer-dashboard" className={`text-base ${isActive('/employer-dashboard')}`}>Dashboard</Link></li>
               <li><Link to="/contact" className={`text-base ${isActive('/contact')}`}>Contact Us</Link></li>
             </ul>
             
@@ -69,7 +65,7 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* NAVBAR FOR LOGGED-IN USERS (NON-EMPLOYERS) - RESTRUCTURED */}
+        {/* NAVBAR FOR LOGGED-IN USERS (NON-EMPLOYERS) */}
         {isLoggedIn && !isEmployer && (
           <div className="flex justify-between flex-grow">
             {/* Left side navigation links */}
@@ -88,7 +84,7 @@ const Navbar = () => {
           </div>
         )}
 
-        {/* NAVBAR FOR GUESTS (NOT LOGGED IN) - RESTRUCTURED */}
+        {/* NAVBAR FOR GUESTS (NOT LOGGED IN) */}
         {!isLoggedIn && (
           <div className="flex justify-between flex-grow">
             {/* Left side navigation links */}
