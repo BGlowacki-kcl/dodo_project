@@ -1,17 +1,4 @@
-/**
- * Code submission reference solutions
- * Contains expert solutions for coding assessment problems
- * Used for validating and scoring user submissions
- * @type {Object}
- */
 export const codeAnswers = {
-    /**
-     * Reverse String problem solutions
-     * Reverses an array of characters in-place
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Reverse String": {
         python: `def reverseString(s: list) -> None:
     left, right = 0, len(s) - 1
@@ -36,14 +23,6 @@ public:
     }
 };`
     },
-    
-    /**
-     * Two Sum problem solutions
-     * Finds indices of two numbers that add up to target
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Two Sum": {
         python: `def twoSum(nums, target):
     lookup = {}
@@ -74,14 +53,6 @@ public:
     }
 };`
     },
-    
-    /**
-     * Longest Substring Without Repeating Characters solutions
-     * Finds length of longest substring without repeating characters
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Longest Substring Without Repeating Characters": {
         python: `def lengthOfLongestSubstring(s: str) -> int:
     char_index = {}
@@ -119,14 +90,6 @@ public:
     return maxLen;
 };`
     },
-    
-    /**
-     * Rotate Image problem solutions
-     * Rotates a matrix 90 degrees clockwise in-place
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Rotate Image": {
         python: `def rotate(matrix: List[List[int]]) -> None:
     n = len(matrix)
@@ -157,14 +120,6 @@ public:
     }
 };`
     },
-    
-    /**
-     * Median of Two Sorted Arrays problem solutions
-     * Finds the median of two sorted arrays in O(log min(m,n)) time
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Median of Two Sorted Arrays": {
         python: `def findMedianSortedArrays(nums1, nums2):
     A, B = nums1, nums2
@@ -241,14 +196,6 @@ public:
     }
 };`
     },
-    
-    /**
-     * Word Search II problem solutions
-     * Finds all words from a dictionary in a 2D board using trie
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Word Search II": {
         python: `def findWords(board, words):
     trie = {}
@@ -334,14 +281,6 @@ public:
     return Array.from(result);
 };`
     },
-    
-    /**
-     * Valid Parentheses problem solutions
-     * Validates if a string of parentheses is valid
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Valid Parentheses": {
         python: `def isValid(s: str) -> bool:
     stack = []
@@ -387,14 +326,6 @@ public:
     return stack.length === 0;
 };`
     },
-    
-    /**
-     * Palindrome Number problem solutions
-     * Determines if an integer is a palindrome
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Palindrome Number": {
         python: `def isPalindrome(x: int) -> bool:
     if x < 0:
@@ -419,14 +350,6 @@ public:
     return s === s.split('').reverse().join('');
 };`
     },
-    
-    /**
-     * Container With Most Water problem solutions
-     * Finds container with maximum water volume
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Container With Most Water": {
         python: `def maxArea(height: list) -> int:
     left, right = 0, len(height) - 1
@@ -465,14 +388,6 @@ public:
     return maxArea;
 };`
     },
-    
-    /**
-     * Trapping Rain Water problem solutions
-     * Calculates amount of water trapped between elevations
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "Trapping Rain Water": {
         python: `def trap(height: list) -> int:
     if not height: return 0
@@ -525,14 +440,6 @@ public:
     return water;
 };`
     },
-    
-    /**
-     * First Missing Positive problem solutions
-     * Finds the smallest missing positive integer
-     * @property {String} python - Python solution
-     * @property {String} cpp - C++ solution
-     * @property {String} javascript - JavaScript solution
-     */
     "First Missing Positive": {
         python: `def firstMissingPositive(nums: list) -> int:
     n = len(nums)

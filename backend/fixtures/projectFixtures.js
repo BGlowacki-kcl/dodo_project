@@ -1,9 +1,3 @@
-/**
- * Project description fixtures
- * Contains sample programming projects for candidate portfolios
- * Used for generating realistic project experience in CVs
- * @type {Array<String>}
- */
 export const projectList = [
     "Developed a full-stack job portal using the MERN stack, featuring user authentication, job listings, and real-time notifications.",
     "Built an AI-based resume parser with Python and natural language processing to automate candidate screening and skill extraction.",
