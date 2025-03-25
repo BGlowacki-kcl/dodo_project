@@ -73,7 +73,6 @@ export const userController = {
 
     async checkProfileCompletion(req, res) {
         try {
-            console.log("Checking profile completion");
             const { uid } = req;
             if (!uid) {
                 return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -92,15 +91,12 @@ export const userController = {
                 return res.status(200).json({ 
                     success: true,
                     message: "Profile incomplete, redirecting to addDetails",
-                    // redirect: "/addDetails",
-                    // missingFields,
                     data: {
                         status: false,
                         redirect: "/addDetails",
                     }
                 });
             }
-            console.log("User's profile is completed!");
             return res.status(200).json({ success: true, message: "User's profile is completed!", data: { status: true } });
         } catch (error) {
             console.error("Error checking profile completion:", error);

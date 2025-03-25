@@ -14,8 +14,8 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getJobById } from "../../services/jobService";
-import { getAllUserApplications, applyToJob } from "../../services/applicationService";
+import { getJobById } from "../../services/job.service.js";
+import { getAllUserApplications, applyToJob } from "../../services/application.service.js";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
 import WhiteBox from "../../components/WhiteBox";
 import {

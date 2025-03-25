@@ -18,8 +18,8 @@ import {
   getAllUserApplications,
   submitApplication,
   withdrawApplication,
-} from "../../services/applicationService";
-import { getJobQuestionsById } from "../../services/jobService";
+} from "../../services/application.service.js";
+import { getJobQuestionsById } from "../../services/job.service.js";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
 import ModalMessages from "../../components/ModalMessages";
