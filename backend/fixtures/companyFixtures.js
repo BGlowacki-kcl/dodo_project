@@ -1,3 +1,9 @@
+/**
+ * Tech company fixture data
+ * Contains sample employer accounts for testing and seeding the database
+ * Each company includes contact information and company profile data
+ * @type {Array<Object>}
+ */
 export const techCompanies = [
     {
         email: "careers@google.com",
@@ -74,6 +80,12 @@ export const techCompanies = [
     }
 ];
 
+/**
+ * Job description templates
+ * Contains standard descriptions for common tech roles
+ * Used for generating realistic job listings
+ * @type {Object}
+ */
 export const techJobDetails = {
     "Software Engineer": "Develop scalable software applications, collaborate with cross-functional teams, and maintain code quality using best practices.",
     "Frontend Developer": "Design and implement user-facing features using modern frontend frameworks such as React and Angular.",
@@ -94,6 +106,12 @@ export const techJobDetails = {
     "Research Developer": "Work with researchers and data scientists to design and develop innovative prototypes. Conduct exploratory data analysis, build proof-of-concept solutions, and contribute to research publications. Collaborate on algorithm development and stay up-to-date with emerging technologies."
 };
 
+/**
+ * Common technical skills
+ * List of in-demand technology skills for job listings
+ * Used for job requirements and candidate matching
+ * @type {Array<String>}
+ */
 export const techSkills = [
     "JavaScript",
     "Python",

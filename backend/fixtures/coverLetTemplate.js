@@ -1,3 +1,14 @@
+/**
+ * Cover letter template generator
+ * Creates a personalized cover letter using candidate and job information
+ * Used for generating sample applications in testing environments
+ * @param {String} candidateName - The name of the job applicant
+ * @param {String} jobTitle - The position being applied for
+ * @param {String} companyName - The name of the hiring company
+ * @param {Array<String>} skills - List of relevant skills to highlight
+ * @param {String} email - Contact email of the applicant
+ * @returns {String} Formatted cover letter text
+ */
 export const generateCoverLetter = (
     candidateName,
     jobTitle,
