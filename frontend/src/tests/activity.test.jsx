@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import ApplicantActivity from '../components/activity'; // Adjust path as needed
+import ApplicantActivity from '../components/Activity'; // Adjust path as needed
 import { useNavigate } from 'react-router-dom';
 import { vi } from 'vitest';
 
