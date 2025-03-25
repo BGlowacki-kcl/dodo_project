@@ -23,6 +23,7 @@ import {
 import { getApplicationsData } from "../../services/applicationService";
 import { FaChartPie, FaClipboardList } from "react-icons/fa";
 import WhiteBox from "../../components/WhiteBox";
+import StatBox from "../../components/StatBox";
 
 ChartJS.register(
   ArcElement,
@@ -33,19 +34,6 @@ ChartJS.register(
   PointElement,
   LineElement,
   Filler
-);
-
-/**
- * Reusable component for displaying statistics.
- * @param {string} title - The title of the statistic.
- * @param {string|number} value - The value of the statistic.
- * @param {string} color - The color class for the value text.
- */
-const StatBox = ({ title, value, color }) => (
-  <WhiteBox className="text-center">
-    <h2 className="text-sm font-semibold text-black">{title}</h2>
-    <p className={`text-2xl font-bold mt-2 ${color} text-black`}>{value}</p>
-  </WhiteBox>
 );
 
 const EmployerDashboard = () => {

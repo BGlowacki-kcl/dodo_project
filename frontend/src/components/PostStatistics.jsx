@@ -3,7 +3,19 @@ import { useParams } from "react-router-dom"; // Import useParams to get jobId f
 import { getApplicationsData } from "../services/applicationService";
 import { Bar } from "react-chartjs-2";
 import WhiteBox from "./WhiteBox";
-
+import StatBox from "./StatBox";
+import {
+    Chart as ChartJS,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    Tooltip,
+    Legend,
+  } from "chart.js";
+  
+  // Register required Chart.js components
+  ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+  
 const PostStatistics = () => {
   const { jobId } = useParams(); // Get the jobId from the route
   const [stats, setStats] = useState({
@@ -101,22 +113,26 @@ const PostStatistics = () => {
   return (
     <div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <WhiteBox>
-          <h2 className="text-sm font-semibold text-black">Total Applicants</h2>
-          <p className="text-2xl font-bold text-blue-600">{stats.totalApplicants || 0}</p>
-        </WhiteBox>
-        <WhiteBox>
-          <h2 className="text-sm font-semibold text-black">Acceptance Percentage</h2>
-          <p className="text-2xl font-bold text-green-600">{(stats.acceptancePercentage || 0).toFixed(2)}%</p>
-        </WhiteBox>
-        <WhiteBox>
-          <h2 className="text-sm font-semibold text-black">Completion Percentage</h2>
-          <p className="text-2xl font-bold text-purple-600">{(stats.completionPercentage || 0).toFixed(2)}%</p>
-        </WhiteBox>
-        <WhiteBox>
-          <h2 className="text-sm font-semibold text-black">Pending Applicants</h2>
-          <p className="text-2xl font-bold text-yellow-600">{stats.pendingApplicants || 0}</p>
-        </WhiteBox>
+        <StatBox
+          title="Total Applicants"
+          value={stats.totalApplicants || 0}
+          color="text-blue-600"
+        />
+        <StatBox
+          title="Acceptance Percentage"
+          value={`${(stats.acceptancePercentage || 0).toFixed(2)}%`}
+          color="text-green-600"
+        />
+        <StatBox
+          title="Completion Percentage"
+          value={`${(stats.completionPercentage || 0).toFixed(2)}%`}
+          color="text-purple-600"
+        />
+        <StatBox
+          title="Pending Applicants"
+          value={stats.pendingApplicants || 0}
+          color="text-yellow-600"
+        />
       </div>
 
       {barChartData && (
