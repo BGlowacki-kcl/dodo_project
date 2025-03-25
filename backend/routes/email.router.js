@@ -13,6 +13,6 @@ const router = express.Router();
  * @route POST /api/email
  * @access Public - Accessible by any authenticated user
  */
-router.post('/', sendEmail);
+router.post('/', checkRole(['employer', 'jobSeeker']), sendEmail);
 
 export default router;

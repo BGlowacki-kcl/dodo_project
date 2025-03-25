@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 import User from "./user.model.js";
 const { Schema } = mongoose;
 
+
+// Create a reusable date range schema
+const dateRangeSchema = {
+    startDate: Date,
+    endDate: Date
+  };
+
 /**
  * JobSeeker model extending the base User model
  * Uses mongoose discriminator pattern for user type inheritance
@@ -21,8 +28,7 @@ const jobSeeker = User.discriminator(
             institution: String,
             degree: String,
             fieldOfStudy: String,
-            startDate: Date,
-            endDate: Date
+            ...dateRangeSchema
             }
         ],
         
@@ -35,8 +41,7 @@ const jobSeeker = User.discriminator(
             {
             company: String,
             title: String,
-            startDate: Date,
-            endDate: Date,
+            ...dateRangeSchema,
             description: String
             }
         ],
@@ -45,7 +50,10 @@ const jobSeeker = User.discriminator(
          * List of professional skills
          * @type {Array<String>}
          */
-        skills: [String],
+        skills: {
+            type: [String],
+            default: []
+        },
         
         /**
          * Resume file reference
@@ -53,7 +61,8 @@ const jobSeeker = User.discriminator(
          * @type {String}
          */
         resume: {
-            type: String // or could store file references, or a Buffer
+            type: String, 
+            default: ''
         },
     })
 );

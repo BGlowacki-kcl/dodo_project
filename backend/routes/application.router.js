@@ -68,22 +68,22 @@ router.get("/dashboard", checkRole(["employer"]), applicationController.getDashb
 /**
  * Get application details by ID
  * @route GET /api/application/byId
- * @access Private - jobSeeker and employer
+ * @access Private - jobSeeker or employer
  */
-router.get("/byId", checkRole(["jobSeeker", "employer"]), applicationController.getOneApplication);
+router.get("/byId", checkRole(['jobSeeker', 'employer']),  applicationController.getOneApplication);
 
 /**
  * Withdraw an application
  * @route DELETE /api/application/withdraw
- * @access Private - jobSeeker and employer
+ * @access Private - jobSeeker only
  */
-router.delete("/withdraw", checkRole(["jobSeeker", "employer"]), applicationController.withdrawApplication);
+router.delete("/withdraw", checkRole(['jobSeeker']), applicationController.withdrawApplication);
 
 /**
  * Update application status (progress or reject)
  * @route PUT /api/application/status
- * @access Private - employer and jobSeeker
+ * @access Private - employer only
  */
-router.put("/status", checkRole(["employer", "jobSeeker"]), applicationController.updateApplicationStatus);
+router.put("/status", checkRole(["employer"]), applicationController.updateApplicationStatus);
 
 export default router;

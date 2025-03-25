@@ -103,15 +103,15 @@ router.get('/:id', getJobById);
 /**
  * Update existing job posting
  * @route PUT /api/job/:id
- * @access Private - employer only (should have checkRole middleware)
+ * @access Private - employer only
  */
-router.put('/:id', updateJob);
+router.put('/:id', checkRole(['employer']), updateJob);
 
 /**
  * Delete existing job posting
  * @route DELETE /api/job/:id
- * @access Private - employer only (should have checkRole middleware)
+ * @access Private - employer only
  */
-router.delete('/:id', deleteJob);
+router.delete('/:id', checkRole(['employer']),  deleteJob);
 
 export default router;

@@ -40,7 +40,7 @@ export const checkRole = (roles) => async (req, res, next) => {
              * Special case for signup or public routes
              * Allows token-authenticated users without specific role requirements
              */
-            if(roles.includes("signUp") || roles.length == 0 ){
+            if(roles.includes("signUp") || roles.length === 0 ){
                 req.uid = uid;
                 next();
                 return;
@@ -63,9 +63,11 @@ export const checkRole = (roles) => async (req, res, next) => {
              * Verify user has required role to access route
              */
             if (!roles.includes(userRole)) {
-                console.log('User role:', userRole, " roles: ", roles);
-                return res.status(403).json({ message: 'Forbidden' });
-            } 
+                return res.status(403).json({ 
+                    success: false,
+                    message: 'Forbidden: Insufficient permissions' 
+                });
+            }
             
             /**
              * Attach user ID to request for use in route handlers
@@ -83,7 +85,6 @@ export const checkRole = (roles) => async (req, res, next) => {
                     message: 'Token expired',
                     action: 'LOGOUT'
                 });
-                console.log("Given resp: ",resp);
                 return resp;
             }
             return res.status(403).json({ 

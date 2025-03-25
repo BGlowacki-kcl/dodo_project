@@ -21,20 +21,7 @@ const handleError = (res, error, defaultMessage = "Server error") => {
 
 export const applicationController = {
   
-    async getApplication(req, res) {
-        try {
-            const { jobId } = req.params;
-            const application = await Application.findOne({ job: jobId, applicant: req.uid });
-
-            if (!application) {
-                return res.status(404).json(createResponse(false, "Application not found"));
-            }
-
-            return res.status(200).json(createResponse(true, "Application retrieved successfully", application));
-        } catch (error) {
-            return handleError(res, error, "Error retrieving application");
-        }
-    },
+    
 
     async updateApplicationStatus(req, res) {
         try {
