@@ -21,7 +21,7 @@ const createResponse = (success, message, data = null) => ({
  * @returns {void}
  * @throws {Error} If UID is missing
  */
-const validateAuth = (uid) => {
+export const validateAuth = (uid) => {
     if (!uid) throw new Error("Unauthorized");
 };
 
@@ -40,10 +40,14 @@ export const fetchUserByUid = async (uid) => {
  * @param {string} userId - MongoDB user ID
  * @returns {Promise<Object>} User document
  */
-const fetchUserById = async (userId) => {
-    const user = await User.findById(userId).select('name email skills education experience resume');
-    if (!user) throw new Error("No user found with this ID");
-    return user;
+export const fetchUserById = async (userId) => {
+    try{
+        const user = await User.findById(userId);
+        if (!user) throw new Error("No user found with this ID");
+        return user;
+    } catch (err) {
+        throw err;
+    }
 };
 
 /**
@@ -51,7 +55,7 @@ const fetchUserById = async (userId) => {
  * @param {Object} user - User document
  * @returns {Array<string>} Array of missing fields
  */
-const getMissingFields = (user) => {
+export const getMissingFields = (user) => {
     const requiredFields = ["name", "phoneNumber", "location"];
     return requiredFields.filter(field => !user[field]);
 };
@@ -63,7 +67,7 @@ const getMissingFields = (user) => {
  * @param {string} role - User role
  * @returns {Promise<Object>} Created user document
  */
-const createNewUser = async (uid, email, role) => {
+export const createNewUser = async (uid, email, role) => {
     let newUser;
     if (role === 'jobSeeker') {
         newUser = new JobSeeker({ uid, email, role });
