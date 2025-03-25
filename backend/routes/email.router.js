@@ -1,5 +1,6 @@
 import express from 'express';
 import { sendEmail } from '../controllers/email.controller.js';
+import { checkRole } from '../middlewares/auth.middleware.js';
 
 /**
  * Email routes configuration
