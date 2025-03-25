@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth.service';
 
 const Navbar = () => {
   const [isEmployer, setIsEmployer] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // Get current location
+
+  // Function to check if link is active - now returns button styles
+  const isActive = (path) => {
+    return location.pathname === path 
+      ? "bg-blue-100 text-blue-600 rounded-lg px-3 py-3" 
+      : "text-gray-600 hover:bg-blue-100 hover:text-blue-600 rounded-lg px-3 py-3 transition-all";
+  };
 
   // Function to check auth status
   const checkAuthStatus = () => {
@@ -32,48 +40,71 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-md w-full">
-      <div className="container mx-auto px-4 py-2 flex items-center">
+      <div className="container mx-auto px-4 py-2 flex items-center justify-between">
         
         {/* Logo */}
-        <Link to="/" className="flex flex-grow">
-          <img src="joborithmLogo.png" className="h-10 w-10" alt="Logo" />
+        <Link to="/" className="flex items-center mr-14">
+          <img src="joborithmLogo.png" className="h-15 w-14" alt="Logo" />
+          <span className="text-lg font-semibold">Jobirithm</span>
         </Link>
 
-        {/* Centered Navbar Items */}
-        <div className="flex justify-center flex-grow">
-          {/* NAVBAR FOR EMPLOYERS */}
-          {isEmployer && (
-            <ul className="flex space-x-12 items-center">
-              <li><Link to="/employer/posts" className="">Posts</Link></li>
-              <li><Link to="/contact" className="">Contact Us</Link></li>
-              <li><Link to="/employer-dashboard" className="">Dashboard</Link></li>
-              <li><button onClick={handleSignOut} className="">Log Out</button></li>
-            </ul>
-          )}
+       
 
-          {/* NAVBAR FOR LOGGED-IN USERS (NON-EMPLOYERS) */}
-          {isLoggedIn && !isEmployer && (
-            <ul className="flex space-x-12 items-center">
-              <li><Link to="/" className="">Home</Link></li>
-              <li><Link to="/search-results" className="">All Jobs</Link></li>
-              <li><Link to="/swipe" className="">Swipe Jobs</Link></li>
-              <li><Link to="/contact" className="">Contact Us</Link></li>
-              <li><Link to="/applicant-dashboard" className="">Dashboard</Link></li>
-              <li><button onClick={handleSignOut} className="">Log Out</button></li>
+        {/* NAVBAR FOR LOGGED-IN USERS (NON-EMPLOYERS) - RESTRUCTURED */}
+        {isLoggedIn && isEmployer && (
+          <div className="flex justify-between flex-grow">
+            {/* Left side navigation links */}
+            <ul className="flex space-x-4 items-center">
+            <li><Link to="/employer/posts" className={`text-base ${isActive('/employer/posts')}`}>Posts</Link></li>
+            <li><Link to="/employer-dashboard" className={`text-base ${isActive('/applicant-dashboard')}`}>Dashboard</Link></li>
+              
+              
+              <li><Link to="/contact" className={`text-base ${isActive('/contact')}`}>Contact Us</Link></li>
             </ul>
-          )}
+            
+            {/* Right side user menu */}
+            <ul className="flex space-x-4 items-center">
+              <li><button onClick={handleSignOut} className={`text-base px-4 py-2 rounded-lg border border-blue-600 ${location.pathname === '/signin' ? 'bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200'} text-blue-600 transition-all`}>Log Out</button></li>
+            </ul>
+          </div>
+        )}
 
-          {/* NAVBAR FOR GUESTS (NOT LOGGED IN) */}
-          {!isLoggedIn && (
-            <ul className="flex space-x-12 items-center">
-              <li><Link to="/" className="">Home</Link></li>
-              <li><Link to="/search-results" className="">All Jobs</Link></li>
-              <li><Link to="/contact" className="">Contact Us</Link></li>
-              <li><Link to="/signup" className="">Sign Up</Link></li>
-              <li><Link to="/signin" className="">Login</Link></li>
+        {/* NAVBAR FOR LOGGED-IN USERS (NON-EMPLOYERS) - RESTRUCTURED */}
+        {isLoggedIn && !isEmployer && (
+          <div className="flex justify-between flex-grow">
+            {/* Left side navigation links */}
+            <ul className="flex space-x-4 items-center">
+              <li><Link to="/" className={`text-base ${isActive('/')}`}>Home</Link></li>
+              <li><Link to="/search-results" className={`text-base ${isActive('/search-results')}`}>All Jobs</Link></li>
+              <li><Link to="/swipe" className={`text-base ${isActive('/swipe')}`}>Swipe Jobs</Link></li>
+              <li><Link to="/contact" className={`text-base ${isActive('/contact')}`}>Contact Us</Link></li>
             </ul>
-          )}
-        </div>
+            
+            {/* Right side user menu */}
+            <ul className="flex space-x-4 items-center">
+              <li><Link to="/applicant-dashboard" className={`text-base ${isActive('/applicant-dashboard')}`}>Dashboard</Link></li>
+              <li><button onClick={handleSignOut} className={`text-base px-4 py-2 rounded-lg border border-blue-600 ${location.pathname === '/signin' ? 'bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200'} text-blue-600 transition-all`}>Log Out</button></li>
+            </ul>
+          </div>
+        )}
+
+        {/* NAVBAR FOR GUESTS (NOT LOGGED IN) - RESTRUCTURED */}
+        {!isLoggedIn && (
+          <div className="flex justify-between flex-grow">
+            {/* Left side navigation links */}
+            <ul className="flex space-x-4 items-center">
+              <li><Link to="/" className={`text-base ${isActive('/')}`}>Home</Link></li>
+              <li><Link to="/search-results" className={`text-base ${isActive('/search-results')}`}>All Jobs</Link></li>
+              <li><Link to="/contact" className={`text-base ${isActive('/contact')}`}>Contact Us</Link></li>
+            </ul>
+
+            {/* Right side authentication links */}
+            <ul className="flex space-x-4 items-center">
+              <li><Link to="/signup" className={`text-base px-4 py-2 rounded-lg border border-blue-600 ${location.pathname === '/signup' ? 'bg-blue-600 text-white' : 'text-blue-600 hover:bg-blue-50'} transition-all`}>Sign Up</Link></li>
+              <li><Link to="/signin" className={`text-base px-4 py-2 rounded-lg border border-blue-600 ${location.pathname === '/signin' ? 'bg-blue-700 text-white' : 'bg-blue-100 hover:bg-blue-200'} text-blue-600 transition-all`}>Login</Link></li>
+            </ul>
+          </div>
+        )}
       </div>
     </nav>
   );
