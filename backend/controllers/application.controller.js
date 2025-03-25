@@ -83,6 +83,7 @@ export const applicationController = {
                 name: app.applicant.name,
                 email: app.applicant.email,
                 status: app.status,
+                submittedAt: app.submittedAt,
                 applicationId: app._id
             }));
 
