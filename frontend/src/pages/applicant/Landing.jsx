@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ComboBox } from "../../components/ComboBox";
-import Box from "../../components/Box";
+import { ComboBox, Box } from "../../components/LandingComponents";
 import job from "../../assets/job.jpg";
 import intern from "../../assets/intern.jpg";
 import placement from "../../assets/placement.jpg";
@@ -76,7 +75,7 @@ const Landing = () => {
                 <ComboBox label="Location" options={locations} onSelect={setLocation} />
             </div>
             
-            <button onClick={handleSearch} className="mt-6 px-6 py-3 bg-blue-500 text-white rounded-lg shadow-md hover:bg-orange-600 transition">
+            <button onClick={handleSearch} className="mt-6 px-20 py-4 bg-blue-500 text-white rounded-lg shadow-md transition ">
                 Search Jobs
             </button>
             
