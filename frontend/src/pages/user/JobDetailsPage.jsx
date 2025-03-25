@@ -158,13 +158,13 @@ const JobDetailsPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex-1 p-10">
+      <div className="flex-1 p-4 md:p-10">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
           <div>
-            <h1 className="text-4xl font-bold text-left text-black">Job Details</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-left text-black">Job Details</h1>
           </div>
-          <div className="flex items-center space-x-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
             <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg shadow-md">
               <span className="font-semibold text-gray-700 mr-2">Deadline:</span>
               <span
@@ -177,7 +177,7 @@ const JobDetailsPage = () => {
                   : "No deadline"}
               </span>
             </div>
-            <div className="flex space-x-4">
+            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
               {applied ? (
                 applicationStatus === "Applying" ? (
                   <button
@@ -214,7 +214,7 @@ const JobDetailsPage = () => {
         </div>
 
         {/* Job Details */}
-        <div className="grid grid-cols-6 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <WhiteBox className="text-center">
             <h3 className="text-base font-bold flex items-center justify-center">
               <FaFileAlt className="mr-2" /> Job Title
@@ -257,7 +257,7 @@ const JobDetailsPage = () => {
 
         {/* Job Description */}
         <WhiteBox className="mt-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
             <FaListAlt className="mr-2" /> Job Description
           </h2>
           <p>{job.description}</p>
@@ -265,7 +265,7 @@ const JobDetailsPage = () => {
 
         {/* Requirements */}
         <WhiteBox className="mt-6">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
             <FaClipboardList className="mr-2" /> Requirements
           </h2>
           {job.requirements && job.requirements.length > 0 ? (
@@ -285,9 +285,9 @@ const JobDetailsPage = () => {
         </WhiteBox>
 
         {/* Additional Details */}
-        <div className="grid grid-cols-2 gap-4 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
           <WhiteBox>
-            <h2 className="text-xl font-semibold mb-2 flex items-center">
+            <h2 className="text-lg md:text-xl font-semibold mb-2 flex items-center">
               <FaQuestionCircle className="mr-2" /> Questions?
             </h2>
             <p className="text-gray-700">
@@ -297,7 +297,7 @@ const JobDetailsPage = () => {
             </p>
           </WhiteBox>
           <WhiteBox>
-            <h2 className="text-xl font-semibold mb-2 flex items-center">
+            <h2 className="text-lg md:text-xl font-semibold mb-2 flex items-center">
               <FaCode className="mr-2" /> Code Assessment?
             </h2>
             <p className="text-gray-700">
