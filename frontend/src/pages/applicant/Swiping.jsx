@@ -8,7 +8,7 @@ const Swiping = () => {
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [setInteractedJobIds] = useState([]); // Track interacted jobs
+  const [interactedJobIds, setInteractedJobIds] = useState([]); // Track interacted jobs
 
   useEffect(() => {
     const auth = getAuth();
