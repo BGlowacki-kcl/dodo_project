@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import PostStatistics from "../../components/PostStatistics";
 import EmployerApplicants from "../../components/EmployerApplicants";
-import PostContent from "../../components/PostContent";
+import JobDetailsContent from "../../components/JobDetailsContent";
+import { getJobById } from "../../services/jobService";
 
 const Tabs = ({ activeTab, setActiveTab }) => (
   <div className="flex space-x-2 bg-gray-100 p-2 rounded-full shadow-md">
@@ -42,15 +43,29 @@ const Tabs = ({ activeTab, setActiveTab }) => (
 const PostDetails = () => {
   const { jobId } = useParams();
   const [activeTab, setActiveTab] = useState("statistics");
+  const [job, setJob] = useState(null);
+
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const jobData = await getJobById(jobId);
+        setJob(jobData);
+      } catch (error) {
+        console.error("Error fetching job details:", error);
+      }
+    };
+
+    fetchJob();
+  }, [jobId]);
 
   const renderContent = () => {
     switch (activeTab) {
       case "statistics":
-        return <PostStatistics jobId={jobId} />; // Pass jobId here
+        return <PostStatistics jobId={jobId} />;
       case "applicants":
         return <EmployerApplicants jobId={jobId} />;
       case "post":
-        return <PostContent jobId={jobId} />;
+        return <JobDetailsContent job={job} />;
       default:
         return null;
     }

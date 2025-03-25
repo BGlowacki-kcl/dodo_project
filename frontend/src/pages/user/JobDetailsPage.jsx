@@ -17,22 +17,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getJobById } from "../../services/jobService";
 import { getAllUserApplications, applyToJob } from "../../services/applicationService";
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../services/shortlist.service";
+import JobDetailsContent from "../../components/JobDetailsContent";
 import WhiteBox from "../../components/WhiteBox";
-import {
-  FaBuilding,
-  FaMapMarkerAlt,
-  FaMoneyBillWave,
-  FaBriefcase,
-  FaUserTie,
-  FaFileAlt,
-  FaListAlt,
-  FaQuestionCircle,
-  FaCode,
-  FaClipboardList,
-} from "react-icons/fa";
+import { FaQuestionCircle, FaCode } from "react-icons/fa";
 
 const JobDetailsPage = () => {
-  // ----------------------------- State Variables -----------------------------
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
@@ -40,77 +29,24 @@ const JobDetailsPage = () => {
   const [shortlisted, setShortlisted] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState(null);
 
-  // ----------------------------- Data Fetching -----------------------------
-  /**
-   * Fetches job details by job ID and updates the state.
-   * @param {String} jobId - The ID of the job to fetch.
-   */
-  const fetchJobDetails = async (jobId) => {
+  const fetchData = async () => {
     try {
       const jobData = await getJobById(jobId);
       setJob(jobData);
-    } catch (error) {
-      console.error("Error fetching job details:", error);
-    }
-  };
 
-  /**
-   * Fetches all user applications and checks if the user has applied for the job.
-   * Updates the application status if an application exists.
-   * @param {String} jobId - The ID of the job to check applications for.
-   */
-  const fetchUserApplications = async (jobId) => {
-    try {
       const userApps = await getAllUserApplications();
       const application = userApps.find((app) => app.job?._id === jobId);
-      if (application) {
-        setApplied(true);
-        setApplicationStatus(application.status);
-      } else {
-        setApplied(false);
-        setApplicationStatus(null);
-      }
-    } catch (error) {
-      console.error("Error fetching user applications:", error);
-    }
-  };
+      setApplied(!!application);
+      setApplicationStatus(application?.status || null);
 
-  /**
-   * Fetches the user's shortlist and checks if the job is shortlisted.
-   * Updates the state accordingly.
-   * @param {String} jobId - The ID of the job to check in the shortlist.
-   */
-  const fetchShortlist = async (jobId) => {
-    try {
       const shortlist = await getShortlist();
       const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
       setShortlisted(shortlistedJobIds.includes(jobId));
-    } catch (error) {
-      console.error("Error fetching shortlist:", error);
-    }
-  };
-
-  /**
-   * Fetches all necessary data for the Job Details Page.
-   * This includes job details, user applications, and the shortlist.
-   */
-  const fetchData = async () => {
-    try {
-      await Promise.all([
-        fetchJobDetails(jobId),
-        fetchUserApplications(jobId),
-        fetchShortlist(jobId),
-      ]);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
   };
 
-  // ----------------------------- Handlers -----------------------------
-  /**
-   * Toggles the shortlist status of the job.
-   * Adds the job to the shortlist if not already shortlisted, otherwise removes it.
-   */
   const handleShortlistToggle = async () => {
     try {
       if (shortlisted) {
@@ -124,10 +60,6 @@ const JobDetailsPage = () => {
     }
   };
 
-  /**
-   * Handles the application process for the job.
-   * If the user has not applied, it creates a new application and navigates to the Apply page.
-   */
   const handleApply = async () => {
     try {
       if (!applied) {
@@ -139,15 +71,10 @@ const JobDetailsPage = () => {
     }
   };
 
-  // ----------------------------- Effects -----------------------------
-  /**
-   * Fetches data when the component mounts or when the jobId changes.
-   */
   useEffect(() => {
     fetchData();
   }, [jobId]);
 
-  // ----------------------------- Render -----------------------------
   if (!job) {
     return (
       <div className="bg-slate-900 min-h-screen flex items-center justify-center">
@@ -213,100 +140,8 @@ const JobDetailsPage = () => {
           </div>
         </div>
 
-        {/* Job Details */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <WhiteBox className="text-center">
-            <h3 className="text-base font-bold flex items-center justify-center">
-              <FaFileAlt className="mr-2" /> Job Title
-            </h3>
-            <p>{job.title}</p>
-          </WhiteBox>
-          <WhiteBox className="text-center">
-            <h3 className="text-base font-bold flex items-center justify-center">
-              <FaBuilding className="mr-2" /> Company
-            </h3>
-            <p>{job.company}</p>
-          </WhiteBox>
-          <WhiteBox className="text-center">
-            <h3 className="text-base font-bold flex items-center justify-center">
-              <FaMapMarkerAlt className="mr-2" /> Location
-            </h3>
-            <p>{job.location}</p>
-          </WhiteBox>
-          <WhiteBox className="text-center">
-            <h3 className="text-base font-bold flex items-center justify-center">
-              <FaMoneyBillWave className="mr-2" /> Salary
-            </h3>
-            <p>
-              {job.salaryRange ? `£${job.salaryRange.min} - £${job.salaryRange.max}` : "Not specified"}
-            </p>
-          </WhiteBox>
-          <WhiteBox className="text-center">
-            <h3 className="text-base font-bold flex items-center justify-center">
-              <FaBriefcase className="mr-2" /> Employment Type
-            </h3>
-            <p>{job.employmentType}</p>
-          </WhiteBox>
-          <WhiteBox className="text-center">
-            <h3 className="text-base font-bold flex items-center justify-center">
-              <FaUserTie className="mr-2" /> Experience Level
-            </h3>
-            <p>{job.experienceLevel || "Not specified"}</p>
-          </WhiteBox>
-        </div>
-
-        {/* Job Description */}
-        <WhiteBox className="mt-6">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-            <FaListAlt className="mr-2" /> Job Description
-          </h2>
-          <p>{job.description}</p>
-        </WhiteBox>
-
-        {/* Requirements */}
-        <WhiteBox className="mt-6">
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-            <FaClipboardList className="mr-2" /> Requirements
-          </h2>
-          {job.requirements && job.requirements.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {job.requirements.map((req, index) => (
-                <span
-                  key={index}
-                  className="bg-gray-200 px-4 py-2 rounded-lg text-sm text-gray-800 font-medium"
-                >
-                  {req}
-                </span>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 italic">No requirements needed</p>
-          )}
-        </WhiteBox>
-
-        {/* Additional Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          <WhiteBox>
-            <h2 className="text-lg md:text-xl font-semibold mb-2 flex items-center">
-              <FaQuestionCircle className="mr-2" /> Questions?
-            </h2>
-            <p className="text-gray-700">
-              {job.questions && job.questions.length > 0
-                ? "Yes, this job requires answering questions during the application process."
-                : "No, this job does not require answering questions during the application process."}
-            </p>
-          </WhiteBox>
-          <WhiteBox>
-            <h2 className="text-lg md:text-xl font-semibold mb-2 flex items-center">
-              <FaCode className="mr-2" /> Code Assessment?
-            </h2>
-            <p className="text-gray-700">
-              {job.assessments && job.assessments.length > 0
-                ? "Yes, this job requires taking an assessment during the application process."
-                : "No, this job does not require taking an assessment during the application process."}
-            </p>
-          </WhiteBox>
-        </div>
+        {/* Job Details Content */}
+        <JobDetailsContent job={job} />
       </div>
     </div>
   );
