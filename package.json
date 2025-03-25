@@ -19,10 +19,12 @@
     "express": "^4.21.2",
     "firebase": "^11.2.0",
     "firebase-admin": "^13.0.2",
+    "framer-motion": "^12.5.0",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.5",
     "nodemailer": "^6.10.0",
     "openai": "^4.83.0",
+    "react-icons": "^5.5.0",
     "require": "^0.4.4",
     "vite": "^6.1.0"
   },
