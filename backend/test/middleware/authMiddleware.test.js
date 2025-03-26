@@ -34,6 +34,7 @@ describe("Auth Middleware", () => {
     describe("checkRole", () => {
         it("should allow access for empty roles array", async () => {
             const middleware = checkRole([]);
+            // Mock the decoded token with a uid
             admin.auth().verifyIdToken.mockResolvedValue({ uid: 'test-uid' });
 
             await middleware(req, res, next);
@@ -64,15 +65,16 @@ describe("Auth Middleware", () => {
         });
 
         it("should deny access if no token provided", async () => {
-            const middleware = checkRole(['admin']);
             req.headers.authorization = undefined;
+            const middleware = checkRole(['admin']);
 
             await middleware(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(403);
             expect(res.json).toHaveBeenCalledWith({
                 success: false,
-                message: 'No token provided'
+                message: 'No token provided',
+                status: 403
             });
             expect(next).not.toHaveBeenCalled();
         });
@@ -86,7 +88,8 @@ describe("Auth Middleware", () => {
             expect(res.status).toHaveBeenCalledWith(403);
             expect(res.json).toHaveBeenCalledWith({
                 success: false,
-                message: 'Unauthorized'
+                message: 'Unauthorized',
+                status: 403
             });
         });
 
@@ -102,21 +105,23 @@ describe("Auth Middleware", () => {
             expect(res.json).toHaveBeenCalledWith({
                 success: false,
                 message: 'Token expired',
-                action: 'LOGOUT'
+                data: { action: 'LOGOUT' },
+                status: 403
             });
         });
 
         it("should deny access if user not found in database", async () => {
-            User.findOne.mockResolvedValue(null);
-            admin.auth().verifyIdToken.mockResolvedValue({ uid: 'test-uid' });
             const middleware = checkRole(['admin']);
+            admin.auth().verifyIdToken.mockResolvedValue({ uid: 'test-uid' });
+            User.findOne.mockResolvedValue(null);
 
             await middleware(req, res, next);
 
             expect(res.status).toHaveBeenCalledWith(403);
             expect(res.json).toHaveBeenCalledWith({
                 success: false,
-                message: 'User not found'
+                message: 'User not found',
+                status: 403
             });
         });
 
@@ -129,7 +134,8 @@ describe("Auth Middleware", () => {
 
             expect(res.status).toHaveBeenCalledWith(403);
             expect(res.json).toHaveBeenCalledWith({
-                message: 'Forbidden'
+                message: 'Forbidden',
+                status: 403
             });
         });
 
@@ -143,7 +149,8 @@ describe("Auth Middleware", () => {
             expect(res.status).toHaveBeenCalledWith(403);
             expect(res.json).toHaveBeenCalledWith({
                 success: false,
-                message: 'Unauthorized'
+                message: 'Unauthorized',
+                status: 403
             });
         });
     });

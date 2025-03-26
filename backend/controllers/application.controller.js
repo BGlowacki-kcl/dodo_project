@@ -12,7 +12,6 @@
  * The controller interacts with the Application, Job, and User models.
  */
 
-import mongoose from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
@@ -22,8 +21,6 @@ import {
     formatAnswers, 
     isValidStatus, 
     verifyJobOwnership,
-    getTotalStatus,
-    getJobsByEmployerHelper,
     getLineGraphData 
 } from "./helpers.js";
 import CodeAssessment from "../models/codeAssessment.model.js";
@@ -432,7 +429,7 @@ export const applicationController = {
 };
     
 // Helper function to group statuses by job ID
-async function groupStatusByJobId(jobIds) {
+export async function groupStatusByJobId(jobIds) {
   try {
     const groupedData = await Application.aggregate([
       { $match: { job: { $in: jobIds } } },
@@ -469,7 +466,7 @@ async function groupStatusByJobId(jobIds) {
   }
 }
 
-async function aggregateTotalStatuses(groupedStatuses) {
+export async function aggregateTotalStatuses(groupedStatuses) {
     return groupedStatuses.flatMap((job) => job.statuses).reduce((acc, status) => {
       const existing = acc.find((s) => s._id === status.status); // Ensure _id instead of status
       if (existing) {
