@@ -283,3 +283,16 @@ export async function getJobQuestionsById(jobId) {
     "Failed to fetch job questions"
   );
 }
+
+/**
+ * Fetches the minimum and maximum salary bounds from the backend
+ * @returns {Promise<Object>} - { minSalary, maxSalary }
+ */
+export async function getSalaryBounds() {
+    return await makeApiRequest(
+        `${API_BASE_URL}/salary-bounds`,
+        "GET",
+        null,
+        "Failed to fetch salary bounds"
+    );
+}

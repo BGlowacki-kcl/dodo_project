@@ -13,7 +13,8 @@ import {
     getFilteredJobs,
     getJobsByEmployer,
     getAllCompanies,
-    getJobQuestionsById
+    getJobQuestionsById,
+    getSalaryBounds
 } from '../controllers/job.controller.js';
 import { checkRole } from '../middlewares/auth.middleware.js';
 
@@ -33,14 +34,14 @@ router.get('/search', getFilteredJobs);
 
 router.get('/questions', getJobQuestionsById);
 
+// Add this route to fetch salary bounds
+router.get('/salary-bounds', getSalaryBounds);
 
 // Create a job post
 router.post('/create', checkRole(["employer"]), createJob);
 
 // Get all job posts
 router.get('/', getJobs);
-
-
 
 router.get('/employer', checkRole(['employer']), getJobsByEmployer);
 
@@ -50,12 +51,7 @@ router.get('/:id', getJobById);
 // Update a job post
 router.put('/:id', updateJob);
 
-
-
-
 // Delete a job post
 router.delete('/:id', deleteJob);
-
-
 
 export default router;

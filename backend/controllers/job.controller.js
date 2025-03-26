@@ -251,3 +251,34 @@ export const getJobsWithValidDeadlines = async (filter = {}) => {
     }
 };
 
+export const getSalaryBounds = async (req, res) => {
+    try {
+        const result = await Job.aggregate([
+            {
+                // Match only jobs with valid deadlines
+                $match: {
+                    deadline: { $gte: new Date() }, // Exclude jobs with past deadlines
+                },
+            },
+            {
+                // Group to calculate min and max salary
+                $group: {
+                    _id: null,
+                    minSalary: { $min: "$salaryRange.min" },
+                    maxSalary: { $max: "$salaryRange.max" },
+                },
+            },
+        ]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: "No salary data found for jobs with valid deadlines" });
+        }
+
+        const { minSalary, maxSalary } = result[0];
+        res.status(200).json({ minSalary, maxSalary });
+    } catch (error) {
+        console.error("Error fetching salary bounds:", error);
+        res.status(500).json({ message: "Failed to fetch salary bounds" });
+    }
+};
+
