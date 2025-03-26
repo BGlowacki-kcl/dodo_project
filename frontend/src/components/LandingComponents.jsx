@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 export const Box = ({ image, text, onClick, counter }) => (
     <div
         onClick={onClick}
-        className="relative bg-cover bg-center rounded-lg shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+        className="relative bg-cover bg-center rounded-3xl overflow-hidden shadow-lg cursor-pointer transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
         style={{ backgroundImage: `url(${image})`, height: "200px" }}
     >
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white">
@@ -53,7 +53,6 @@ export const ComboBox = ({ label, options, onSelect }) => {
 
     return (
         <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
             <input
                 ref={inputRef}
                 type="text"
@@ -81,4 +80,3 @@ export const ComboBox = ({ label, options, onSelect }) => {
         </div>
     );
 };
-

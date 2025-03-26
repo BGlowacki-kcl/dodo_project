@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getApplicationById, updateStatus } from "../../services/applicationService";
+import { getApplicationById, updateStatus } from "../../services/application.service.js";
 import ApplicationDetails from "../../components/ApplicationDetails";
 import UserDetails from "../../components/UserDetails";
 import StatusBadge from "../../components/StatusBadge";

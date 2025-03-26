@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getAllJobs, getFilteredJobs } from "../services/jobService";
+import { getAllJobs, getFilteredJobs } from "../services/job.service.js";
 import JobCard from "../components/JobCard";
 import { addJobToShortlist, getShortlist } from "../services/shortlist.service";
 import { useNotification } from "../context/notification.context";
