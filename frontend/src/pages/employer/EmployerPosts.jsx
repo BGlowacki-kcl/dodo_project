@@ -10,8 +10,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getJobsByEmployer } from "../../services/jobService";
-import { getApplicationsData } from "../../services/applicationService";
+import { getJobsByEmployer } from "../../services/job.service";
+import { getApplicationsData } from "../../services/application.service";
 import Pagination from "../../components/Pagination";
 import PostCard from "../../components/PostCard";
 import SearchBar from "../../components/SearchBar";
