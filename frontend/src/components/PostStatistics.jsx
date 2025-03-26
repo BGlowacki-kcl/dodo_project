@@ -1,22 +1,31 @@
+/**
+ * PostStatistics.jsx
+ *
+ * This component displays statistics for a specific job post.
+ * - Includes total applicants, acceptance percentage, completion percentage, and pending applicants.
+ * - Displays a bar chart showing the number of applicants by status.
+ */
+
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom"; // Import useParams to get jobId from the route
+import { useParams } from "react-router-dom";
 import { getApplicationsData } from "../services/application.service";
 import { Bar } from "react-chartjs-2";
 import WhiteBox from "./WhiteBox";
 import StatBox from "./StatBox";
 import {
-    Chart as ChartJS,
-    BarElement,
-    CategoryScale,
-    LinearScale,
-    Tooltip,
-    Legend,
-  } from "chart.js";
-  
-  // Register required Chart.js components
-  ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
-  
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+// Register required Chart.js components
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+
 const PostStatistics = () => {
+  // ----------------------------- State Variables -----------------------------
   const { jobId } = useParams(); // Get the jobId from the route
   const [stats, setStats] = useState({
     totalApplicants: 0,
@@ -26,16 +35,14 @@ const PostStatistics = () => {
   });
   const [barChartData, setBarChartData] = useState(null);
 
-  useEffect(() => {
-    if (jobId) {
-      fetchPostStatistics(jobId); // Fetch data for the specific job
-    }
-  }, [jobId]);
-
+  // ----------------------------- Data Fetching -----------------------------
+  /**
+   * Fetches statistics for the specified job post.
+   * @param {string} jobId - The ID of the job post.
+   */
   const fetchPostStatistics = async (jobId) => {
     try {
       const response = await getApplicationsData();
-      console.log("Applications data fetched:", response);
 
       if (response && response.groupedStatuses) {
         const jobData = response.groupedStatuses.find((group) => group.jobId === jobId);
@@ -110,8 +117,20 @@ const PostStatistics = () => {
     }
   };
 
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch job statistics when the component mounts or jobId changes.
+   */
+  useEffect(() => {
+    if (jobId) {
+      fetchPostStatistics(jobId);
+    }
+  }, [jobId]);
+
+  // ----------------------------- Render -----------------------------
   return (
     <div>
+      {/* Statistics Boxes */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatBox
           title="Total Applicants"
@@ -135,6 +154,7 @@ const PostStatistics = () => {
         />
       </div>
 
+      {/* Bar Chart */}
       {barChartData && (
         <WhiteBox className="p-4">
           <h2 className="text-lg font-bold mb-4">Applicants by Status</h2>
