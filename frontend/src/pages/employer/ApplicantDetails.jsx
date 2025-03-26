@@ -36,6 +36,9 @@ const ApplicantDetails = () => {
           throw new Error("No application data returned");
         }
 
+        console.log("Fetched application response:", response); // Log full response
+        console.log("Assessments data:", response.assessments); // Log assessments specifically
+
         setApplicant({
           id: response.id,
           name: response.applicant?.name || "No name provided",
@@ -53,8 +56,7 @@ const ApplicantDetails = () => {
           questions: response.job?.questions || [],
         });
 
-        setCodeChallenge(response.assessement|| null);
-
+        setCodeChallenge(response.assessments || null);
       } catch (error) {
         console.error("Error fetching application details:", error);
         setError(`Failed to load application: ${error.message || "Unknown error"}`);
@@ -186,7 +188,12 @@ const ApplicantDetails = () => {
               coverLetter={applicant.coverLetter}
               questions={applicant.questions || []}
               answers={applicant.answers || []}
-              codeAssement={codeChallenge}
+              codeAssessment={codeChallenge} // Corrected spelling
+              showCodeAssessment={
+                applicant.status === "Accepted" ||
+                applicant.status === "In Review" ||
+                applicant.status === "Rejected"
+              }
             />
             <div className="flex justify-end space-x-2">
               <button

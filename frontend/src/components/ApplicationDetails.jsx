@@ -18,19 +18,20 @@ const ApplicationDetails = ({
   codeAssessment,
   showCodeAssessment = true,
 }) => {
-  // ----------------------------- State Variables -----------------------------
+  console.log("ApplicationDetails props:", {
+    coverLetter,
+    questions,
+    answers,
+    codeAssessment,
+    showCodeAssessment,
+  }); // Log all props
+
   const [expandedQuestion, setExpandedQuestion] = useState(null);
 
-  // ----------------------------- Handlers -----------------------------
-  /**
-   * Toggles the expanded state of a question.
-   * @param {String} questionId - The ID of the question to toggle.
-   */
   const toggleQuestion = (questionId) => {
     setExpandedQuestion((prev) => (prev === questionId ? null : questionId));
   };
 
-  // ----------------------------- Render -----------------------------
   return (
     <div>
       {/* Cover Letter */}
