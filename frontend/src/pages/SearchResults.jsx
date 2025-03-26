@@ -4,8 +4,10 @@ import { getAllJobs, getFilteredJobs } from "../services/job.service.js";
 import JobCard from "../components/JobCard";
 import Pagination from "../components/Pagination";
 import SearchBar from "../components/SearchBar";
+import SearchAndShortlistFilter from "../components/filters/SearchAndShortlistFilter";
 import { addJobToShortlist, getShortlist, removeJobFromShortlist } from "../services/shortlist.service";
 import { useNotification } from "../context/notification.context";
+import { FaFilter } from "react-icons/fa";
 
 const SearchResults = () => {
     const url = useLocation();
@@ -18,6 +20,7 @@ const SearchResults = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [shortlistedJobIds, setShortlistedJobIds] = useState(new Set());
     const [searchQuery, setSearchQuery] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false); // State to toggle filter modal
     const resultsPerPage = 10;
     const showNotification = useNotification();
 
@@ -93,7 +96,7 @@ const SearchResults = () => {
     };
 
     const handleRemoveFromShortlist = async (jobId) => {
-        try{ 
+        try {
             removeJobFromShortlist(jobId);
             setShortlistedJobIds((prev) => {
                 const updated = new Set(prev);
@@ -101,11 +104,9 @@ const SearchResults = () => {
                 return updated;
             });
             showNotification("Job removed from shortlist", "success");
-
-        } catch(err) {
+        } catch (err) {
             console.error("Error updating shortlist:", err);
             showNotification("Error while removing post from the shortlist", "error");
-
         }
     };
 
@@ -115,6 +116,11 @@ const SearchResults = () => {
 
     const handleSearch = (query) => {
         setSearchQuery(query.toLowerCase());
+    };
+
+    const applyFilters = (filters) => {
+        // Logic to apply filters and fetch filtered jobs
+        console.log("Filters applied:", filters);
     };
 
     // Filter jobs based on the search query
@@ -139,12 +145,24 @@ const SearchResults = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
                     <h1 className="text-3xl md:text-4xl font-bold text-left text-black">Search Results</h1>
-                    <SearchBar
-                        placeholder="Search Results"
-                        onSearch={handleSearch}
-                        width="20%"
-                        height="40px"
-                    />
+                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                        {/* Filters Button */}
+                        <button
+                            onClick={() => setIsFilterOpen(true)}
+                            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition"
+                        >
+                            <FaFilter className="mr-2" />
+                            Filters
+                        </button>
+
+                        {/* Search Bar */}
+                        <SearchBar
+                            placeholder="Search Results"
+                            onSearch={handleSearch}
+                            width="100%" // Full width on smaller screens
+                            height="40px"
+                        />
+                    </div>
                 </div>
 
                 {/* Job Listings */}
@@ -171,6 +189,13 @@ const SearchResults = () => {
                 {/* Pagination */}
                 <Pagination pageCount={pageCount} onPageChange={handlePageChange} />
             </div>
+
+            {/* Filter Modal */}
+            <SearchAndShortlistFilter
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+                applyFilters={applyFilters}
+            />
         </div>
     );
 };
