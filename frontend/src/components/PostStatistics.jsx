@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"; // Import useParams to get jobId from the route
-import { getApplicationsData } from "../services/applicationService";
+import { getApplicationsData } from "../services/application.service";
 import { Bar } from "react-chartjs-2";
 import WhiteBox from "./WhiteBox";
 import StatBox from "./StatBox";
