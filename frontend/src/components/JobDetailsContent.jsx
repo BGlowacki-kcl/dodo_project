@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import WhiteBox from "./WhiteBox";
 import {
   FaBuilding,
@@ -11,9 +11,32 @@ import {
   FaClipboardList,
   FaQuestionCircle,
   FaCode,
+  FaEdit,
+  FaSave,
 } from "react-icons/fa";
 
+import { updateJob } from "../services/jobService";
+
 const JobDetailsContent = ({ job, isEmployer }) => {
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] = useState(job?.description || "");
+
+  const handleSaveDescription = async () => {
+    try {
+      // Call API to update the job description
+      const updatedJob = await updateJob(job._id, { description: editedDescription });
+
+      // Update the local job state with the new description
+      job.description = updatedJob.description;
+
+      // Exit edit mode
+      setIsEditingDescription(false);
+    } catch (error) {
+      console.error("Error updating job description:", error);
+      alert("Failed to save the job description. Please try again.");
+    }
+  };
+
   console.log("JobDetailsContent props:", { job, isEmployer }); // Log all props
   if (!job) {
     return <p className="text-center text-gray-500">No job details available.</p>;
@@ -64,11 +87,36 @@ const JobDetailsContent = ({ job, isEmployer }) => {
       </div>
 
       {/* Job Description */}
-      <WhiteBox className="mt-6">
-        <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-          <FaListAlt className="mr-2" /> Job Description
-        </h2>
-        <p>{job.description}</p>
+      <WhiteBox className="mt-6 relative">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl md:text-2xl font-semibold flex items-center">
+            <FaListAlt className="mr-2" /> Job Description
+          </h2>
+          {isEmployer && (
+            <button
+              className="text-black hover:text-gray-800"
+              onClick={() => {
+                if (isEditingDescription) {
+                  handleSaveDescription();
+                } else {
+                  setEditedDescription(job.description || ""); // Pre-fill the text box with the current description
+                  setIsEditingDescription(true);
+                }
+              }}
+            >
+              {isEditingDescription ? <FaSave /> : <FaEdit />}
+            </button>
+          )}
+        </div>
+        {isEditingDescription ? (
+          <textarea
+            className="w-full p-2 border border-gray-300 rounded-lg"
+            value={editedDescription}
+            onChange={(e) => setEditedDescription(e.target.value)}
+          />
+        ) : (
+          <p>{job.description}</p>
+        )}
       </WhiteBox>
 
       {/* Requirements */}
