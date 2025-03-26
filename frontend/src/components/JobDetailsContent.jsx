@@ -20,6 +20,11 @@ import { updateJob } from "../services/jobService";
 const JobDetailsContent = ({ job, isEmployer }) => {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState(job?.description || "");
+  const [isEditingSalary, setIsEditingSalary] = useState(false);
+  const [editedSalary, setEditedSalary] = useState({
+    min: job?.salaryRange?.min || "",
+    max: job?.salaryRange?.max || "",
+  });
 
   const handleSaveDescription = async () => {
     try {
@@ -34,6 +39,22 @@ const JobDetailsContent = ({ job, isEmployer }) => {
     } catch (error) {
       console.error("Error updating job description:", error);
       alert("Failed to save the job description. Please try again.");
+    }
+  };
+
+  const handleSaveSalary = async () => {
+    try {
+      // Call API to update the salary range
+      const updatedJob = await updateJob(job._id, { salaryRange: editedSalary });
+
+      // Update the local job state with the new salary range
+      job.salaryRange = updatedJob.salaryRange;
+
+      // Exit edit mode
+      setIsEditingSalary(false);
+    } catch (error) {
+      console.error("Error updating salary range:", error);
+      alert("Failed to save the salary range. Please try again.");
     }
   };
 
@@ -64,13 +85,58 @@ const JobDetailsContent = ({ job, isEmployer }) => {
           </h3>
           <p>{job.location}</p>
         </WhiteBox>
-        <WhiteBox className="text-center">
-          <h3 className="text-base font-bold flex items-center justify-center">
-            <FaMoneyBillWave className="mr-2" /> Salary
-          </h3>
-          <p>
-            {job.salaryRange ? `£${job.salaryRange.min} - £${job.salaryRange.max}` : "Not specified"}
-          </p>
+        <WhiteBox className="text-center relative">
+          <div className="flex items-center justify-center">
+            <h3 className="text-base font-bold flex items-center">
+              <FaMoneyBillWave className="mr-2" /> Salary
+            </h3>
+            {isEmployer && (
+              <button
+                className="absolute right-4 text-black hover:text-gray-800"
+                onClick={() => {
+                  if (isEditingSalary) {
+                    handleSaveSalary();
+                  } else {
+                    setEditedSalary({
+                      min: job.salaryRange?.min || "",
+                      max: job.salaryRange?.max || "",
+                    }); // Pre-fill the input fields with the current salary range
+                    setIsEditingSalary(true);
+                  }
+                }}
+              >
+                {isEditingSalary ? <FaSave /> : <FaEdit />}
+              </button>
+            )}
+          </div>
+          {isEditingSalary ? (
+            <div className="flex flex-col gap-2 mt-2">
+              <input
+                type="number"
+                className="w-full p-2 border border-gray-300 rounded-lg"
+                placeholder="Min Salary"
+                value={editedSalary.min}
+                onChange={(e) =>
+                  setEditedSalary((prev) => ({ ...prev, min: e.target.value }))
+                }
+              />
+              <input
+                type="number"
+                className="w-full p-2 border border-gray-300 rounded-lg"
+                placeholder="Max Salary"
+                value={editedSalary.max}
+                onChange={(e) =>
+                  setEditedSalary((prev) => ({ ...prev, max: e.target.value }))
+                }
+              />
+            </div>
+          ) : (
+            <p className="mt-0.5">
+              {job.salaryRange
+                ? `£${job.salaryRange.min} - £${job.salaryRange.max}`
+                : "Not specified"}
+            </p>
+          )}
         </WhiteBox>
         <WhiteBox className="text-center">
           <h3 className="text-base font-bold flex items-center justify-center">
