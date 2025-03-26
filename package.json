@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon backend/server.js",
-    "test": "jest"
+    "test:choose": "jest",
+    "test": "jest --testPathIgnorePatterns=frontend"
   },
   "type": "module",
   "keywords": [],

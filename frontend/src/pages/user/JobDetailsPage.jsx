@@ -33,7 +33,69 @@ const JobDetailsPage = () => {
 
   // ----------------------------- Data Fetching -----------------------------
   /**
+<<<<<<< HEAD
+   * Fetches job details by job ID and updates the state.
+   * @param {String} jobId - The ID of the job to fetch.
+   */
+  const fetchJobDetails = async (jobId) => {
+    try {
+      const jobData = await getJobById(jobId);
+      setJob(jobData);
+    } catch (error) {
+      console.error("Error fetching job details:", error);
+    }
+  };
+
+  /**
+   * Fetches all user applications and checks if the user has applied for the job.
+   * Updates the application status if an application exists.
+   * @param {String} jobId - The ID of the job to check applications for.
+   */
+  const fetchUserApplications = async (jobId) => {
+    try {
+      const userApps = await getAllUserApplications();
+      const application = userApps.find((app) => app.job?._id === jobId);
+      if (application) {
+        setApplied(true);
+        setApplicationStatus(application.status);
+      } else {
+        setApplied(false);
+        setApplicationStatus(null);
+      }
+    } catch (error) {
+      console.error("Error fetching user applications:", error);
+    }
+  };
+
+  /**
+   * Fetches the user's shortlist and checks if the job is shortlisted.
+   * Updates the state accordingly.
+   * @param {String} jobId - The ID of the job to check in the shortlist.
+   */
+  const fetchShortlist = async (jobId) => {
+    try {
+      const shortlist = await getShortlist();
+      const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
+      setShortlisted(shortlistedJobIds.includes(jobId));
+    } catch (error) {
+      console.error("Error fetching shortlist:", error);
+    }
+  };
+
+    // fetchJob();
+    
+    // if (sessionStorage.getItem("token")) {
+    //   fetchUserId();
+    //   checkIfApplied();
+    //   checkIfApplied();
+    //   checkIfShortlisted();
+
+  /**
+   * Fetches all necessary data for the Job Details Page.
+   * This includes job details, user applications, and the shortlist.
+=======
    * Fetches job details, user applications, and shortlist data.
+>>>>>>> dev
    */
   const fetchData = async () => {
     try {

@@ -80,8 +80,9 @@ const SearchResults = () => {
     };
 
     const handleJobClick = (jobId) => {
-        const url = `/user/jobs/details/${jobId}`;
-        window.open(url, "_blank");
+        navigate(`/user/jobs/details/${jobId}`);
+        // const url = `/user/jobs/details/${jobId}`;
+        // window.open(url, "_blank");
     };
 
     const handleAddToShortlist = async (jobId) => {

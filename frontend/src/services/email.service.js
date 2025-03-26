@@ -1,19 +1,21 @@
-// email.service.js
+/**
+ * Email Service
+ * Handles email-related API interactions
+ */
+import { makeApiRequest, handleApiError } from './helper';
+
+/**
+ * Sends an email through the API
+ * @param {Object} emailData - Data needed to send the email
+ * @returns {Promise<Object>} - Server response with confirmation
+ * @throws {Error} If the API request fails
+ */
 const sendEmail = async (emailData) => {
-  const response = await fetch('/api/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(emailData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json(); // Attempt to get server error message
-    throw new Error(errorData.message || 'Failed to send message');
+  try {
+    return await makeApiRequest('/api/email', 'POST', emailData);
+  } catch (error) {
+    throw handleApiError(error, 'Failed to send email');
   }
-
-  return await response.json(); // Return server response, e.g., { message: "Email sent!" }
 };
 
 export default sendEmail;

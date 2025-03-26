@@ -115,9 +115,8 @@ export async function checkProfileCompletion(navigate) {
   try {
     const data = await makeApiRequest('/api/user/completed', 'GET');
     const userRole = sessionStorage.getItem('role');
-
-    if (data.redirect && userRole === 'jobSeeker') {
-      navigate(data.redirect);
+    if (!data && userRole === 'jobSeeker') {
+      navigate('/addDetails');
       return;
     }
 

@@ -22,7 +22,7 @@ import CreateJobPost from './pages/employer/CreateJobPost.jsx';
 import SingleApplicationPage from './pages/user/SingleApplicationPage.jsx';
 import AddDetails from './pages/AddDetails.jsx';
 import Forbidden from './pages/Forbidden';
-import CodeAss from './pages/applicant/CodeAss';
+import CodeAss from './pages/applicant/CodeAssessment';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 import SearchResults from './pages/SearchResults';
 import EmployerApplicants from './components/EmployerApplicants';
@@ -102,7 +102,6 @@ function defineRouteConfig() {
 		// Pages for any user
 		{ path: '/', element: <LandingPage />, roles: ['unLogged', 'employer', 'jobSeeker'] },
 		{ path: '/contact', element: <Contact />, roles: ['unLogged', 'employer', 'jobSeeker'] },
-		{ path: '/search-results', element: <SearchResults />, roles: ['jobSeeker', 'employer', 'unLogged'] },
 		
 		// Completing profile page, for logged users
 		{ path: '/addDetails', element: <AddDetails />, roles: ['jobSeeker', 'employer'] },
@@ -113,7 +112,10 @@ function defineRouteConfig() {
 		{ path: '/applicant-dashboard', element: <ApplicantDashboard />, roles: ['jobSeeker'] },
 		{ path: '/user/applications/:appId', element: <SingleApplicationPage />, roles: ['jobSeeker'] },
 		{ path: '/apply/:jobId', element: <Apply />, roles: ['jobSeeker'] },
-		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker'] },
+		
+		// Pages accessible for job seekers and unLogged users
+		{ path: '/search-results', element: <SearchResults />, roles: ['jobSeeker', 'unLogged'] },
+		{ path: '/user/jobs/details/:jobId', element: <JobDetailsPage />, roles: ['jobSeeker', 'unLogged'] },
 		
 		// Employer accessible pages
 		{ path: '/applicant/:applicationId', element: <ApplicantDetails />, roles: ['employer'] },
