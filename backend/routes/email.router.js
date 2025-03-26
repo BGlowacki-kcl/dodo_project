@@ -1,19 +1,7 @@
 import express from 'express';
-import { sendEmail } from '../controllers/email.controller.js';
-import { checkRole } from '../middlewares/auth.middleware.js';
-
-/**
- * Email routes configuration
- * Handles HTTP endpoints related to email communication
- * Provides functionality for sending emails from the platform
- */
 const router = express.Router();
+import { sendEmail } from '../controllers/email.controller.js';
 
-/**
- * Send email to recipients
- * @route POST /api/email
- * @access Public - Accessible by any authenticated user
- */
-router.post('/', checkRole(['employer', 'jobSeeker']), sendEmail);
+router.post('/', sendEmail);
 
 export default router;

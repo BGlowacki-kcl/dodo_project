@@ -6,12 +6,12 @@ import admin from "firebase-admin";
 
 import User from "./backend/models/user/user.model.js";
 import {JobSeeker} from "./backend/models/user/jobSeeker.model.js";
-import {Employer} from "./backend/models/user/employer.model.js";
+import {Employer} from "./backend/models/user/Employer.model.js";
 import Job from "./backend/models/job.model.js";
 import Application from "./backend/models/application.model.js";
 import Shortlist from "./backend/models/shortlist.model.js";
-import CodeAssessment from "./backend/models/codeAssessment.model.js";
-import CodeSubmission from "./backend/models/codeSubmission.model.js";
+import CodeAssessment from "./backend/models/codeAssessment.js";
+import CodeSubmission from "./backend/models/codeSubmission.js";
 
 import {generateCV} from "./backend/fixtures/cvTemplate.js";
 import {generateCoverLetter} from "./backend/fixtures/coverLetTemplate.js";

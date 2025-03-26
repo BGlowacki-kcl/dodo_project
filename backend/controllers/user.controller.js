@@ -1,6 +1,6 @@
 import User from "../models/user/user.model.js";
 import { JobSeeker } from "../models/user/jobSeeker.model.js";
-import { Employer } from "../models/user/employer.model.js"; 
+import { Employer } from "../models/user/Employer.model.js"; 
 
 export const userController = {
 

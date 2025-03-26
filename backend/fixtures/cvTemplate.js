@@ -1,23 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { projectList } from "./projectFixtures.js";
 
-/**
- * CV template generator
- * Creates a formatted curriculum vitae from candidate information
- * Used for generating sample resumes in testing environments
- * @param {String} name - The name of the job applicant
- * @param {String} location - The geographical location of the applicant
- * @param {Array<Object>} education - Educational qualifications with institution and dates
- * @param {Array<Object>} experience - Work history with company and role details
- * @param {String} email - Contact email of the applicant
- * @param {Array<String>} skills - List of relevant technical skills
- * @returns {String} Formatted CV text
- */
 export const generateCV = (name, location, education, experience, email, skills = []) => {
-    /**
-     * Select random projects from project fixtures
-     * Adds variety to generated CVs
-     */
     const selectedProjects = faker.helpers.arrayElements(projectList, 3);
 
     return `
