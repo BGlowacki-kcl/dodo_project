@@ -100,8 +100,7 @@ describe('AuthGuard', () => {
 
   // Fix: Skip this test as it's causing issues
   test.skip('renders loading state initially', () => {
-    // This test is complex and requires component modification
-    // Skipping it for now until we can find a better approach
+    //Difficult test to implement, if needed spend time
   });
 
   test('handles multi-role authorization correctly', async () => {
@@ -135,7 +134,6 @@ describe('AuthGuard', () => {
     });
   });
 
-  // Removed the conflicting test and kept only this one
   test('redirects to forbidden with empty roles array', async () => {
     // For empty roles array, the component redirects to forbidden
     mockSessionStorage.getItem.mockReturnValue('employer');
