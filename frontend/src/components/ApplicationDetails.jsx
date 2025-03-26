@@ -24,7 +24,7 @@ const ApplicationDetails = ({
   // ----------------------------- Handlers -----------------------------
   /**
    * Toggles the expanded state of a question.
-   * @param {String} questionId - The ID of the question to toggle.
+   * @param {string} questionId - The ID of the question to toggle.
    */
   const toggleQuestion = (questionId) => {
     setExpandedQuestion((prev) => (prev === questionId ? null : questionId));

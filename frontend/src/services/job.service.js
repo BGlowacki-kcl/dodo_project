@@ -61,7 +61,7 @@ async function makeApiRequest(endpoint, method, body = null, errorMessage) {
  */
 export async function getAllJobs() {
   return await makeApiRequest(
-    `${API_BASE_URL}`,
+    `${API_BASE_URL}?deadlineValid=true`,
     "GET",
     null,
     "Failed to fetch all jobs"
@@ -282,4 +282,17 @@ export async function getJobQuestionsById(jobId) {
     null,
     "Failed to fetch job questions"
   );
+}
+
+/**
+ * Fetches the minimum and maximum salary bounds from the backend
+ * @returns {Promise<Object>} - { minSalary, maxSalary }
+ */
+export async function getSalaryBounds() {
+    return await makeApiRequest(
+        `${API_BASE_URL}/salary-bounds`,
+        "GET",
+        null,
+        "Failed to fetch salary bounds"
+    );
 }

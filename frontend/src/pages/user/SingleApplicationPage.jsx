@@ -1,37 +1,44 @@
+/**
+ * SingleApplicationPage.jsx
+ *
+ * This component displays detailed information about a single job application.
+ * - Shows application details such as job title, company, submission date, and status.
+ * - Includes modals for status updates and code assessment confirmation.
+ * - Allows navigation to the code assessment page if applicable.
+ */
+
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getApplicationById } from "../../services/application.service.js";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
-import ApplicationDetails from "../../components/ApplicationDetails"; // Updated import
+import ApplicationDetails from "../../components/ApplicationDetails";
 import ModalMessages from "../../components/ModalMessages";
 import StatusBadge from "../../components/StatusBadge";
 import useLocalStorage from "../../hooks/useLocalStorage";
 
 const SingleApplicationPage = () => {
+  // ----------------------------- State Variables -----------------------------
   const { appId } = useParams();
   const navigate = useNavigate();
   const [application, setApplication] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [showAssessmentModal, setShowAssessmentModal] = useState(false);
-  const hasFetched = useRef(false);
   const [codeChallenge, setCodeChallenge] = useState(false);
   const showNotification = useNotification();
   const [viewedStatuses, setViewedStatuses] = useLocalStorage("viewedStatuses", {});
+  const hasFetched = useRef(false);
 
-  useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
-    fetchApp();
-  }, [appId, navigate]);
-
-  const fetchApp = async () => {
+  // ----------------------------- Data Fetching -----------------------------
+  /**
+   * Fetches the application details by ID.
+   */
+  const fetchApplication = async () => {
     try {
       const response = await getApplicationById(appId);
       if (!response) {
-        showNotification("Failed to fetch application");
+        showNotification("Failed to fetch application", "error");
         navigate("/applicant-dashboard");
         return;
       }
@@ -50,11 +57,17 @@ const SingleApplicationPage = () => {
       }
     } catch (error) {
       console.error("Error fetching application:", error);
-      showNotification("Failed to fetch application");
+      showNotification("Failed to fetch application", "error");
       navigate("/applicant-dashboard");
     }
   };
 
+  // ----------------------------- Helpers -----------------------------
+  /**
+   * Returns the appropriate modal message based on the application status.
+   * @param {string} status - The current application status.
+   * @returns {string} - The modal message.
+   */
   const getModalMessage = (status) => {
     switch (status) {
       case "Applied":
@@ -74,15 +87,34 @@ const SingleApplicationPage = () => {
     }
   };
 
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Handles the code assessment button click.
+   */
   const handleAssessment = () => {
     setShowAssessmentModal(true);
   };
 
+  /**
+   * Confirms navigation to the code assessment page.
+   */
   const confirmAssessmentNavigation = () => {
     setShowAssessmentModal(false);
     navigate(`/codeassessment/${appId}`);
   };
 
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch application data when the component mounts or appId changes.
+   */
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    fetchApplication();
+  }, [appId, navigate]);
+
+  // ----------------------------- Render -----------------------------
   if (!application) {
     return (
       <div className="bg-slate-900 min-h-screen flex items-center justify-center">
@@ -92,14 +124,17 @@ const SingleApplicationPage = () => {
   }
 
   const { job, status, coverLetter, submittedAt } = application;
-  const formattedDate = new Date(submittedAt).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }) + " " + new Date(submittedAt).toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const formattedDate =
+    new Date(submittedAt).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }) +
+    " " +
+    new Date(submittedAt).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <div className="container mx-auto p-4 font-sans">

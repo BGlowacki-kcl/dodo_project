@@ -83,6 +83,7 @@ export const applicationController = {
                 name: app.applicant.name,
                 email: app.applicant.email,
                 status: app.status,
+                submittedAt: app.submittedAt,
                 applicationId: app._id
             }));
 
@@ -302,41 +303,48 @@ export const applicationController = {
         }
     },
         
-    async getDashboardData(req, res) {
+    async getApplicationsData(req, res) {
         try {
-            const { uid } = req;
+            const { uid } = req; // Employer's user ID
             const employer = await User.findOne({ uid });
-
-    
+        
             if (!uid) {
-                return res.status(400).json(createResponse(false, "Bad Request: UID is missing"));
+                return res.status(400).json({ success: false, message: "Bad Request: UID is missing" });
             }
-    
-            const jobs = await getJobsByEmployerHelper(uid); // Ensure this function is returning valid data
-            if (!jobs || jobs.length === 0) {
-                return res.status(404).json(createResponse(false, "No jobs found for this employer"));
-            }
-    
-            const totalStatus = await getTotalStatus(jobs);
-            const lineGraphData = await getLineGraphData(jobs); // Call the helper function
 
+            const employerId = employer._id;
+        
+            // Fetch all jobs posted by the employer
+            const jobs = await Job.find({ postedBy: employerId });
+            if (!jobs || jobs.length === 0) {
+                return res.status(404).json({ success: false, message: "No jobs found for this employer" });
+            }
+        
+            const jobIds = jobs.map((job) => job._id);
+        
+            // Use helper functions to fetch data
+            const groupedStatuses = await groupStatusByJobId(jobIds); // For Employer Job Posts
+            const lineGraphData = await getLineGraphData(jobIds); // For Employer Dashboard
+            const totalStatus = await aggregateTotalStatuses(groupedStatuses); // Await the result here
+        
+            // Prepare the response
             const dashboardData = {
                 totalJobs: jobs.length,
-                totalStatus,
+                totalStatus, // Resolved value
                 companyName: employer.companyName || "",
                 jobs,
-                lineGraphData, 
+                groupedStatuses, // For Employer Job Posts
+                lineGraphData,   // For Employer Dashboard
             };
-
-            console.log("Dashboard data:", dashboardData.jobs);
-           
-    
-            return res.status(200).json(createResponse(true, "Dashboard data retrieved successfully", dashboardData));
+            console.log("dashboardData: ------------------------------", dashboardData);
+        
+            return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully", data: dashboardData });
         } catch (error) {
-            console.error("Error in getDashboardData:", error);
-            return handleError(res, error, "Error fetching dashboard data");
+            console.error("Error fetching dashboard data:", error);
+            return res.status(500).json({ success: false, message: "Failed to fetch dashboard data" });
         }
     },
+    
 
     async saveApplication(req, res) {
         try {
@@ -399,70 +407,89 @@ export const applicationController = {
 };
     
     
-    // Helper function to get application status counts
-    async function getTotalStatus(jobs) {
-        try {
-            const jobIds = jobs.map(job => job._id);
-            const totalStatus = await Application.aggregate([
-                { $match: { job: { $in: jobIds } } },
-                { $group: { _id: "$status", count: { $sum: 1 } } },
-            ]);
-            return totalStatus;
-        } catch (error) {
-            console.error("Error fetching total status:", error);
-            throw new Error("Failed to fetch total status");
-        }
-    }
-
-    async function getJobsByEmployerHelper(uid) {
-        try {
-            const employer = await User.findOne({ uid  });
-            if (!employer) {
-                throw new Error("Employer not found");
-            }
-            const jobs = await Job.find({ postedBy: employer._id });
-            return jobs;
-        
-        } catch (error) {
-            console.error("Error fetching employer jobs:", error);
-            throw new Error(error.message);
-        }
-        
-    }
-
-    async function getLineGraphData(jobs) {
-    try {
-        const jobIds = jobs.map(job => job._id);
-        const lineGraphData = await Application.aggregate([
-            { 
-                $match: { 
-                    job: { $in: jobIds }, 
-                    status: { $ne: "Applying" } // Exclude applications in the "applying" state
-                } 
+   // Helper function to group statuses by job ID
+async function groupStatusByJobId(jobIds) {
+  try {
+    const groupedData = await Application.aggregate([
+      { $match: { job: { $in: jobIds } } },
+      {
+        $group: {
+          _id: { jobId: "$job", status: "$status" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.jobId",
+          statuses: {
+            $push: {
+              status: "$_id.status",
+              count: "$count",
             },
-            { 
-                $group: { 
-                    _id: { 
-                        jobId: "$job", // Include jobId in the grouping
-                        date: { $dateToString: { format: "%d-%m-%Y", date: "$submittedAt" } } // Group by date
-                    }, 
-                    count: { $sum: 1 } // Count applications for each date
-                } 
-            },
-            { $sort: { "_id.date": 1 } }, // Sort by date in ascending order
-            { 
-                $project: { 
-                    jobId: "$_id.jobId", // Include jobId in the final output
-                    date: "$_id.date",
-                    count: 1,
-                    _id: 0 // Remove the _id field
-                } 
-            }
-        ]);
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          jobId: "$_id",
+          statuses: 1,
+        },
+      },
+    ]);
 
-        return lineGraphData;
-    } catch (error) {
-        console.error("Error fetching line graph data:", error);
-        throw new Error("Failed to fetch line graph data");
-    }
+    return groupedData;
+  } catch (error) {
+    console.error("Error grouping statuses by job ID:", error);
+    throw new Error("Failed to group statuses by job ID");
+  }
 }
+
+// Helper function to generate line graph data
+async function getLineGraphData(jobIds) {
+  try {
+    const lineGraphData = await Application.aggregate([
+      {
+        $match: {
+          job: { $in: jobIds },
+          status: { $ne: "Applying" },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            jobId: "$job",
+            date: { $dateToString: { format: "%d-%m-%Y", date: "$submittedAt" } },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.date": 1 } },
+      {
+        $project: {
+          jobId: "$_id.jobId",
+          date: "$_id.date",
+          count: 1,
+          _id: 0,
+        },
+      },
+    ]);
+
+    return lineGraphData;
+  } catch (error) {
+    console.error("Error fetching line graph data:", error);
+    throw new Error("Failed to fetch line graph data");
+  }
+}
+
+async function aggregateTotalStatuses(groupedStatuses) {
+    return groupedStatuses.flatMap((job) => job.statuses).reduce((acc, status) => {
+      const existing = acc.find((s) => s._id === status.status); // Ensure _id instead of status
+      if (existing) {
+        existing.count += status.count;
+      } else {
+        acc.push({ _id: status.status, count: status.count }); // Use _id like before
+      }
+      return acc;
+    }, []);
+  }

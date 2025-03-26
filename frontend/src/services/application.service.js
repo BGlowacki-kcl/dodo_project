@@ -76,12 +76,12 @@ export async function withdrawApplication(appId) {
 }
 
 /**
- * Retrieves dashboard data for the current user
- * @returns {Promise<Object>} - Dashboard statistics and data
+ * Retrieves applications data for the current employer
+ * @returns {Promise<Object>} - Applications statistics and data
  */
-export async function getDashboardData() {
+export async function getApplicationsData() {
   try {
-    return await makeApiRequest('/api/application/dashboard', 'GET');
+    return await makeApiRequest('/api/application/data', 'GET');
   } catch (error) {
     throw error;
   }
