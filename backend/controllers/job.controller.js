@@ -268,11 +268,11 @@ export const getJobQuestionsById = async (req, res) => {
         const { jobId } = req.query;
         const job = await Job.findById(jobId);
         if (!job) {
-            return res.status(404).json({ message: 'Job not found' });
+            return res.status(404).json({ success: false, message: 'Job not found' });
         }
-        res.status(200).json(job.questions);
+        res.status(200).json({ success: true, data: job.questions });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -317,13 +317,13 @@ export const getSalaryBounds = async (req, res) => {
         ]);
 
         if (result.length === 0) {
-            return res.status(404).json({ message: "No salary data found for jobs with valid deadlines" });
+            return res.status(404).json({ success: false, message: "No salary data found for jobs with valid deadlines" });
         }
 
         const { minSalary, maxSalary } = result[0];
-        res.status(200).json({ minSalary, maxSalary });
+        res.status(200).json({ success: true, data: { minSalary, maxSalary } });
     } catch (error) {
         console.error("Error fetching salary bounds:", error);
-        res.status(500).json({ message: "Failed to fetch salary bounds" });
+        res.status(500).json({ success: false, message: "Failed to fetch salary bounds" });
     }
 };

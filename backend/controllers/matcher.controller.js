@@ -123,3 +123,13 @@ export const getUserJobRecommendations = async (req, res) => {
         return res.status(status).json({ message: error.message });
     }
 };
+
+
+export async function warmUpHuggingFace() {
+    try {
+        await query("sample cv text", "sample job description");
+        console.log("Hugging Face API warmed up");
+    } catch (error) {
+        console.error("Failed to warm up Hugging Face API:", error);
+    }
+}

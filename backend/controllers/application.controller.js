@@ -469,43 +469,6 @@ async function groupStatusByJobId(jobIds) {
   }
 }
 
-// Helper function to generate line graph data
-async function getLineGraphData(jobIds) {
-  try {
-    const lineGraphData = await Application.aggregate([
-      {
-        $match: {
-          job: { $in: jobIds },
-          status: { $ne: "Applying" },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            jobId: "$job",
-            date: { $dateToString: { format: "%d-%m-%Y", date: "$submittedAt" } },
-          },
-          count: { $sum: 1 },
-        },
-      },
-      { $sort: { "_id.date": 1 } },
-      {
-        $project: {
-          jobId: "$_id.jobId",
-          date: "$_id.date",
-          count: 1,
-          _id: 0,
-        },
-      },
-    ]);
-
-    return lineGraphData;
-  } catch (error) {
-    console.error("Error fetching line graph data:", error);
-    throw new Error("Failed to fetch line graph data");
-  }
-}
-
 async function aggregateTotalStatuses(groupedStatuses) {
     return groupedStatuses.flatMap((job) => job.statuses).reduce((acc, status) => {
       const existing = acc.find((s) => s._id === status.status); // Ensure _id instead of status

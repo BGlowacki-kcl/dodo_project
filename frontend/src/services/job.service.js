@@ -22,40 +22,6 @@ function getAuthHeaders() {
 }
 
 /**
- * Makes an API request with error handling
- * @param {string} endpoint - API endpoint
- * @param {string} method - HTTP method
- * @param {Object} [body] - Request body (optional)
- * @param {string} errorMessage - Custom error message
- * @returns {Promise<Object>} - API response data
- * @throws {Error} - If request fails
- */
-async function makeApiRequest(endpoint, method, body = null, errorMessage) {
-  try {
-    const requestOptions = {
-      method,
-      headers: getAuthHeaders(),
-    };
-
-    if (body) {
-      requestOptions.body = JSON.stringify(body);
-    }
-
-    const response = await fetch(endpoint, requestOptions);
-    checkTokenExpiration(response);
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || errorMessage);
-    }
-
-    return await response.json();
-  } catch (error) {
-    throw error;
-  }
-}
-
-/**
  * Retrieves all jobs
  * @returns {Promise<Array>} - List of all jobs
  */
@@ -265,4 +231,17 @@ export async function getJobQuestionsById(jobId) {
   } catch (error) {
     throw error;
   }
+}
+
+/**
+ * Fetches the minimum and maximum salary bounds from the backend
+ * @returns {Promise<Object>} - { minSalary, maxSalary }
+ */
+export async function getSalaryBounds() {
+  return await makeApiRequest(
+      `${API_BASE_URL}/salary-bounds`,
+      "GET",
+      null,
+      "Failed to fetch salary bounds"
+  );
 }

@@ -30,6 +30,8 @@ router.get('/employmentType', getAllJobTypes);
 
 router.get('/company', getAllCompanies);
 
+router.get('/salary-bounds', getSalaryBounds);
+
 router.get('/search', getFilteredJobs);
 
 router.get('/questions', getJobQuestionsById);
