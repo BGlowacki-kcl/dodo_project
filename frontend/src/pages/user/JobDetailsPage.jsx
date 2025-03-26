@@ -87,15 +87,16 @@ const JobDetailsPage = () => {
     try {
       const jobData = await getJobById(jobId);
       setJob(jobData);
+      if(sessionStorage.getItem("token")) {
+        const userApps = await getAllUserApplications();
+        const application = userApps.find((app) => app.job?._id === jobId);
+        setApplied(!!application);
+        setApplicationStatus(application?.status || null);
 
-      const userApps = await getAllUserApplications();
-      const application = userApps.find((app) => app.job?._id === jobId);
-      setApplied(!!application);
-      setApplicationStatus(application?.status || null);
-
-      const shortlist = await getShortlist();
-      const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
-      setShortlisted(shortlistedJobIds.includes(jobId));
+        const shortlist = await getShortlist();
+        const shortlistedJobIds = shortlist.jobs.map((job) => job._id);
+        setShortlisted(shortlistedJobIds.includes(jobId));
+      }
     } catch (err) {
       console.error("Error fetching data:", err);
     }
