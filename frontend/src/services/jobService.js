@@ -61,7 +61,7 @@ async function makeApiRequest(endpoint, method, body = null, errorMessage) {
  */
 export async function getAllJobs() {
   return await makeApiRequest(
-    `${API_BASE_URL}`,
+    `${API_BASE_URL}?deadlineValid=true`,
     "GET",
     null,
     "Failed to fetch all jobs"
