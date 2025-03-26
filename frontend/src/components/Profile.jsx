@@ -176,6 +176,7 @@ const Profile = ({ editable }) => {
         onChange={handleInputChange}
         onAdd={handleAddItem}
         onRemove={handleRemoveItem}
+        onSave={handleSaveClick}
         isProfilePage={true}
       />
     </div>

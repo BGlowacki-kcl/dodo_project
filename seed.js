@@ -290,8 +290,8 @@ const generateCodeSubmissions = async (jobs, applications) => {
                 assessment: assessment._id,
                 application: application._id,
                 solutionCode: answerObj[lang],
-                score: faker.number.int({ min: 5, max: 10 }), // Realistic score range
-                language: lang.toLowerCase(), // Match schema enum
+                score: faker.number.int({ min: 5, max: 10 }),
+                language: lang.toLowerCase(),
                 submittedAt: application.submittedAt
             });
         }

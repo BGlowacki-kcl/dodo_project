@@ -16,10 +16,6 @@ dotenv.config();
 
 const app = express();
 
-app.get('/', (req, res) => {
-    res.send('Server is ready');
-});
-
 app.use(cors());
 
 app.use(express.json());
@@ -31,7 +27,7 @@ app.use('/api/shortlist', shortlistRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/email', emailRouter)
 
-app.post('/api/chat', chat); //add auth middleware
+app.post('/api/chat', checkRole(["jobSeeker"]), chat);
 
 export { app };
 

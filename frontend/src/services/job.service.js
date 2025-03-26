@@ -2,7 +2,7 @@
  * Job Service
  * Handles all API interactions related to job management
  */
-import { checkTokenExpiration } from "./auth.service.js";
+import { makeApiRequest } from "./helper.js";
 
 /**
  * API base URL for job endpoints
@@ -19,40 +19,6 @@ function getAuthHeaders() {
     "Content-Type": "application/json",
     Authorization: `Bearer ${sessionStorage.getItem("token") || ""}`,
   };
-}
-
-/**
- * Makes an API request with error handling
- * @param {string} endpoint - API endpoint
- * @param {string} method - HTTP method
- * @param {Object} [body] - Request body (optional)
- * @param {string} errorMessage - Custom error message
- * @returns {Promise<Object>} - API response data
- * @throws {Error} - If request fails
- */
-async function makeApiRequest(endpoint, method, body = null, errorMessage) {
-  try {
-    const requestOptions = {
-      method,
-      headers: getAuthHeaders(),
-    };
-
-    if (body) {
-      requestOptions.body = JSON.stringify(body);
-    }
-
-    const response = await fetch(endpoint, requestOptions);
-    checkTokenExpiration(response);
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || errorMessage);
-    }
-
-    return await response.json();
-  } catch (error) {
-    throw error;
-  }
 }
 
 /**
@@ -74,12 +40,11 @@ export async function getAllJobs() {
  * @returns {Promise<Object>} - Job details
  */
 export async function getJobById(id) {
-  return await makeApiRequest(
-    `${API_BASE_URL}/${id}`,
-    "GET",
-    null,
-    `Failed to fetch job with id ${id}`
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/${id}`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -88,12 +53,11 @@ export async function getJobById(id) {
  * @returns {Promise<Object>} - Created job data
  */
 export async function createJob(jobData) {
-  return await makeApiRequest(
-    `${API_BASE_URL}/create`,
-    "POST",
-    jobData,
-    "Failed to create job"
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/create`, "POST", jobData);
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -103,12 +67,11 @@ export async function createJob(jobData) {
  * @returns {Promise<Object>} - Updated job data
  */
 export async function updateJob(id, jobData) {
-  return await makeApiRequest(
-    `${API_BASE_URL}/${id}`,
-    "PUT",
-    jobData,
-    `Failed to update job with id ${id}`
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/${id}`, "PUT", jobData);
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -117,12 +80,11 @@ export async function updateJob(id, jobData) {
  * @returns {Promise<Object>} - Deletion confirmation
  */
 export async function deleteJob(id) {
-  return await makeApiRequest(
-    `${API_BASE_URL}/${id}`,
-    "DELETE",
-    null,
-    `Failed to delete job with id ${id}`
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/${id}`, "DELETE");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -131,13 +93,11 @@ export async function deleteJob(id) {
  * @returns {Promise<number>} - Count of jobs
  */
 export async function getJobCountByType(jobType) {
-  const data = await makeApiRequest(
-    `${API_BASE_URL}/count/type?type=${jobType}`,
-    "GET",
-    null,
-    `Failed to get job count for type: ${jobType}`
-  );
-  return data.count;
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/count/type?type=${jobType}`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -145,12 +105,11 @@ export async function getJobCountByType(jobType) {
  * @returns {Promise<Array>} - List of job roles
  */
 export async function getAllJobRoles() {
-  return await makeApiRequest(
-    `${API_BASE_URL}/roles`,
-    "GET",
-    null,
-    "Failed to get all job roles"
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/roles`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -158,12 +117,11 @@ export async function getAllJobRoles() {
  * @returns {Promise<Array>} - List of job locations
  */
 export async function getAllJobLocations() {
-  return await makeApiRequest(
-    `${API_BASE_URL}/locations`,
-    "GET",
-    null,
-    "Failed to get all job locations"
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/locations`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -171,12 +129,11 @@ export async function getAllJobLocations() {
  * @returns {Promise<Array>} - List of job types
  */
 export async function getAllJobTypes() {
-  return await makeApiRequest(
-    `${API_BASE_URL}/employmentType`,
-    "GET",
-    null,
-    "Failed to get all job types"
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/employmentType`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -184,12 +141,11 @@ export async function getAllJobTypes() {
  * @returns {Promise<Array>} - List of companies
  */
 export async function getAllCompanies() {
-  return await makeApiRequest(
-    `${API_BASE_URL}/company`,
-    "GET",
-    null,
-    "Failed to get all companies"
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/company`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -225,15 +181,12 @@ function buildFilterQueryParams(filters) {
  * @returns {Promise<Array>} - Filtered job list
  */
 export async function getFilteredJobs(filters) {
-  const queryString = buildFilterQueryParams(filters);
-  const url = `${API_BASE_URL}/search?${queryString}`;
-  
-  return await makeApiRequest(
-    url,
-    "GET",
-    null,
-    "Failed to get filtered jobs"
-  );
+  try {
+    const queryString = buildFilterQueryParams(filters);
+    return await makeApiRequest(`${API_BASE_URL}/search?${queryString}`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -241,12 +194,11 @@ export async function getFilteredJobs(filters) {
  * @returns {Promise<Array>} - List of employer jobs
  */
 export async function getJobsByEmployer() {
-  return await makeApiRequest(
-    `${API_BASE_URL}/employer`,
-    "GET",
-    null,
-    "Failed to fetch jobs by employer"
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/employer`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -256,18 +208,16 @@ export async function getJobsByEmployer() {
  * @throws {Error} - If jobId is missing
  */
 export async function getApplicantsByJobId(jobId) {
-  if (!jobId) {
-    throw new Error("Job ID is required");
+  try {
+    if (!jobId) {
+      throw new Error("Job ID is required");
+    }
+    
+    const result = await makeApiRequest(`${API_BASE_URL}/applicants?jobId=${jobId}`, "GET");
+    return result.data || [];
+  } catch (error) {
+    throw error;
   }
-  
-  const result = await makeApiRequest(
-    `${API_BASE_URL}/applicants?jobId=${jobId}`,
-    "GET",
-    null,
-    "Failed to fetch applicants"
-  );
-  
-  return result.data || [];
 }
 
 /**
@@ -276,12 +226,11 @@ export async function getApplicantsByJobId(jobId) {
  * @returns {Promise<Array>} - List of job questions
  */
 export async function getJobQuestionsById(jobId) {
-  return await makeApiRequest(
-    `${API_BASE_URL}/questions?jobId=${jobId}`,
-    "GET",
-    null,
-    "Failed to fetch job questions"
-  );
+  try {
+    return await makeApiRequest(`${API_BASE_URL}/questions?jobId=${jobId}`, "GET");
+  } catch (error) {
+    throw error;
+  }
 }
 
 /**
@@ -289,10 +238,10 @@ export async function getJobQuestionsById(jobId) {
  * @returns {Promise<Object>} - { minSalary, maxSalary }
  */
 export async function getSalaryBounds() {
-    return await makeApiRequest(
-        `${API_BASE_URL}/salary-bounds`,
-        "GET",
-        null,
-        "Failed to fetch salary bounds"
-    );
+  return await makeApiRequest(
+      `${API_BASE_URL}/salary-bounds`,
+      "GET",
+      null,
+      "Failed to fetch salary bounds"
+  );
 }

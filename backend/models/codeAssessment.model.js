@@ -14,8 +14,6 @@ const codeAssessmentSchema = new mongoose.Schema({
             output: [mongoose.Schema.Types.Mixed]
         }
     ],
-    funcForCpp: String,
-    funcForCppTest: String,
     inputForPythonJS: String,
     input: String,
     output: String,

@@ -18,15 +18,14 @@ Rules:
     "surname": "...",
     "phoneNumber": "...",
     "portfolio website": "...",
-    "LinkedIn website": "...",
-    "GitHub website": "...",
-    "dateOfBirth": "..." (yyyy-mm-dd)
+    "skills": ["..."],
+    "LinkedInWebsite": "...",
+    "GitHubWebsite": "...",
   },
   "experience": [
     {
       "company": "...",
       "position": "...",
-      "skills": "...",
       "description": "...",
       "fieldOfWork": "..."
     }
@@ -42,7 +41,6 @@ Rules:
   "projects": [
     {
       "name": "...",
-      "skills": "...",
       "description": "..."
     }
   ]
@@ -52,29 +50,48 @@ Accuracy & Completeness:
 1. Extract all relevant information and categorize it appropriately.
 2. Do not add extra fields or modify the structure.
 3. Do not include placeholder text (e.g., "N/A" or "Unknown"). Simply omit missing fields.
+4. Skills section should be list of strings, where each string represents a single skill. Catch everything that might be a skill e.g. Java, git, Node.js, time management...
+5. Github website will be of this form "https://github.com/", and LinkedIn website will be of this form "https://www.linkedin.com/in/...".
 
 Your response should ONLY contain the formatted JSON data—no explanations, notes, or additional text.
 
 `;
 
 export default async function chat(req, res) {
-    const openai = new OpenAI({
-        baseURL: "https://openrouter.ai/api/v1",
-        apiKey: process.env.OPENROUTER_API_KEY,
-    })
-    const { query } = req.body;
     try {
+        if (!process.env.OPENROUTER_API_KEY) {
+            throw new Error("API key not configured");
+        }
+
+        const { query } = req.body;
+        if (!query) {
+            return res.status(400).json({ success: false, message: "Query is required" });
+        }
+
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_API_KEY,
+        });
+
         const completion = await openai.chat.completions.create({
             model: "meta-llama/llama-3.2-3b-instruct:free",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: query },
             ],
-        })
+        });
+
         return res.status(200).json({ success: true, data: completion });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ success: false, message: "Internal server error "+err });
+    } catch (error) {
+        if (error.message === "API key not configured") {
+            return res.status(500).json({ 
+                success: false, 
+                message: "API key not configured" 
+            });
+        }
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal server error: " + error.message
+        });
     }
-    
 }
