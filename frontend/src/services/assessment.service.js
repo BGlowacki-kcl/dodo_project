@@ -41,7 +41,6 @@ function containsOutputStatements(code, language) {
   const outputPatterns = {
     'python': 'print',
     'javascript': 'console.log',
-    'cpp': 'cout'
   };
   
   return code.includes(outputPatterns[language]);
@@ -109,32 +108,6 @@ const hiddenTestCases = ${formattedHidden};
 }
 
 /**
- * Generates test code for C++
- * @param {Array} visibleTests - Visible test cases
- * @param {Array} hiddenTests - Hidden test cases
- * @returns {string} - Generated C++ test code
- */
-function generateCppTestCode(visibleTests, hiddenTests) {
-  const visibleTestsFormatted = visibleTests
-    .map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`)
-    .join(",\n    ");
-    
-  const hiddenTestsFormatted = hiddenTests
-    .map(tc => `{{${tc.input.join(", ")}}, ${tc.output}}`)
-    .join(",\n    ");
-  
-  return ` 
-vector<vector<vector<int>, int>> testCases = {
-    ${visibleTestsFormatted}
-};
-  
-vector<vector<vector<int>, int>> hiddenTestCases = {
-    ${hiddenTestsFormatted}
-};
-  `;
-}
-
-/**
  * Generates test code based on language
  * @param {Array} testCases - All test cases
  * @param {string} language - Programming language
@@ -147,7 +120,6 @@ function generateTestCode(testCases, language) {
   const generators = {
     'python': () => generatePythonTestCode(visibleTestCases, hiddenTestCases),
     'javascript': () => generateJavaScriptTestCode(visibleTestCases, hiddenTestCases),
-    'cpp': () => generateCppTestCode(visibleTestCases, hiddenTestCases)
   };
   
   return generators[language] ? generators[language]() : "";
@@ -192,7 +164,6 @@ testCases.forEach((testCase, index) => {
     const expected_output = testCase.output;
     const actual_output = func(...args);
 
-    console.log(actual_output, expected_output[0]);
     if (JSON.stringify(actual_output) === JSON.stringify(expected_output[0])) {
         console.log(\`Test \${index + 1}: Test PASSED\`);
     } else {
@@ -215,35 +186,6 @@ hiddenTestCases.forEach((testCase, index) => {
 }
 
 /**
- * Generates C++ code to execute tests
- * @param {string} funcForCpp - Function arguments for C++ tests
- * @returns {string} - C++ code for test execution
- */
-function generateCppExecuteCode(funcForCpp) {
-  return `
-void runTests(vector<pair<vector<int>, int>> testCases, string testType) {
-    for (size_t i = 0; i < testCases.size(); i++) {
-        vector<int> args = testCases[i].first;
-        int expected_output = testCases[i].second;
-        int actual_output = func(${funcForCpp}); 
-
-        if (actual_output == expected_output) {
-            cout << "Test " << i + 1 << ": Test PASSED " << testType << endl;
-        } else {
-            cout << "Test " << i + 1 << ": Test FAILED - input: [" << args[0] << ", " << args[1] << "], expected output: " << expected_output << ", output received: " << actual_output << " " << testType << endl;
-        }
-    }
-}
-
-int main() {
-    runTests(testCases, "");
-    runTests(hiddenTestCases, "HIDDEN");
-    return 0;
-}
-  `;
-}
-
-/**
  * Generates code to execute tests based on language
  * @param {string} language - Programming language
  * @param {string} funcForCpp - Function arguments for C++ tests
@@ -253,7 +195,6 @@ function generateExecuteTestsCode(language, funcForCpp) {
   const generators = {
     'python': generatePythonExecuteCode,
     'javascript': generateJavaScriptExecuteCode,
-    'cpp': () => generateCppExecuteCode(funcForCpp)
   };
   
   return generators[language] ? generators[language]() : "";
@@ -295,6 +236,7 @@ export const assessmentService = {
     }
     
     const completeCode = code + constructCode(tests, language, funcForCppTest);
+    console.log("Code:", completeCode);
     const codeSendResponse = await sendCode(completeCode, language);
     
     if (!codeSendResponse || !codeSendResponse.id) {

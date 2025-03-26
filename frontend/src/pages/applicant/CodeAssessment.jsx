@@ -30,8 +30,6 @@ const CodeAss = () => {
     _id: "",
     description: "",
     tests: null,
-    funcForCpp: "",
-    funcForCppTest:"",
     inputForPythonJS:"",
     code: "",
     input: "",
@@ -204,23 +202,6 @@ function func(${task.inputForPythonJS}) {
   // Write your code here
 
 }`;
-    } else if (lang === "cpp") {
-      defText = `// ${task.description}
-// Input -> ${task.input}
-// Output -> ${task.output}
-
-#include <vector>
-#include <iostream>
-#include <utility>
-#include <string>
-
-using namespace std;
-
-int func(${task.funcForCpp}) {
-  // Write your code here
-
-  return 0;
-}`;
     }
     setCode(defText);
   }
@@ -345,7 +326,6 @@ int func(${task.funcForCpp}) {
           >
             <option value="python">Python</option>
             <option value="javascript">JavaScript</option>
-            <option value="cpp">C++</option>
           </select>
 
           <button onClick={runCode} className='text-black bg-slate-300 border-grey-400 border rounded-full p-5' >Run Code</button>

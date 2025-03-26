@@ -248,8 +248,8 @@ export const applicationController = {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
 
-            const deadline = application.finishAssessmentDate || -1;
-            const message = deadline === -1 ? "No assessment deadline set" : "Job deadline retrieved";
+            const deadline = application.finishAssessmentDate || null;
+            const message = deadline ? "No assessment deadline set" : "Job deadline retrieved";
             return res.json(createResponse(true, message, deadline));
         } catch (error) {
             return handleError(res, error, "Error retrieving job deadline");

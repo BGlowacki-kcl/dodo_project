@@ -303,8 +303,6 @@ const createNewAssessment = async ({
     description,
     difficulty,
     testCases,
-    funcForCpp,
-    funcForCppTest,
     inputForPythonJS,
     input,
     output
@@ -314,8 +312,6 @@ const createNewAssessment = async ({
         description,
         difficulty,
         testCases,
-        funcForCpp,
-        funcForCppTest,
         inputForPythonJS,
         input,
         output
