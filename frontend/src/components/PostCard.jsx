@@ -20,14 +20,9 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, s
 
   return (
     <WhiteBox
-      className="relative flex flex-col md:flex-row justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
+      className="flex flex-col md:flex-row justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
       onClick={handleCardClick}
     >
-      {/* Deadline Badge */}
-      <div className="absolute top-4 right-4">
-        <DeadlineBadge deadline={deadline} />
-      </div>
-
       {/* Left Section: Job Details */}
       <div className="flex-1">
         <h3 className="text-2xl font-bold text-black">{title}</h3>
@@ -59,15 +54,21 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, s
         </table>
       </div>
 
-      {/* Right Section: Statistics */}
-      <div className="flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:space-x-4 ml-auto">
-        <div className="bg-gray-100 p-4 rounded shadow text-center">
-          <p className="text-sm font-semibold text-black">Pending Applicants</p>
-          <p className="text-xl font-bold text-black">{pendingApplicants}</p>
+      {/* Right Section: Deadline Badge and Applicants */}
+      <div className="flex flex-col items-center ml-auto">
+        {/* Deadline Badge with extra bottom margin */}
+        <div className="mb-8">
+          <DeadlineBadge deadline={deadline} />
         </div>
-        <div className="bg-gray-100 p-4 rounded shadow text-center">
-          <p className="text-sm font-semibold text-black">Total Applicants</p>
-          <p className="text-xl font-bold text-black">{totalApplicants}</p>
+        <div className="flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:space-x-4">
+          <div className="bg-gray-100 p-4 rounded shadow text-center">
+            <p className="text-sm font-semibold text-black">Pending Applicants</p>
+            <p className="text-xl font-bold text-black">{pendingApplicants}</p>
+          </div>
+          <div className="bg-gray-100 p-4 rounded shadow text-center">
+            <p className="text-sm font-semibold text-black">Total Applicants</p>
+            <p className="text-xl font-bold text-black">{totalApplicants}</p>
+          </div>
         </div>
       </div>
     </WhiteBox>
