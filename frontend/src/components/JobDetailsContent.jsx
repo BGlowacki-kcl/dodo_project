@@ -1,3 +1,12 @@
+/**
+ * JobDetailsContent.jsx
+ *
+ * This component displays detailed information about a job, including:
+ * - Job title, company, location, salary, employment type, and experience level.
+ * - Editable fields for employers to update job description and salary range.
+ * - Requirements, questions, and code assessments associated with the job.
+ */
+
 import React, { useState } from "react";
 import WhiteBox from "./WhiteBox";
 import {
@@ -14,10 +23,10 @@ import {
   FaEdit,
   FaSave,
 } from "react-icons/fa";
-
 import { updateJob } from "../services/jobService";
 
 const JobDetailsContent = ({ job, isEmployer }) => {
+  // ----------------------------- State Variables -----------------------------
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState(job?.description || "");
   const [isEditingSalary, setIsEditingSalary] = useState(false);
@@ -26,39 +35,34 @@ const JobDetailsContent = ({ job, isEmployer }) => {
     max: job?.salaryRange?.max || "",
   });
 
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Handles saving the updated job description.
+   */
   const handleSaveDescription = async () => {
     try {
-      // Call API to update the job description
       const updatedJob = await updateJob(job._id, { description: editedDescription });
-
-      // Update the local job state with the new description
-      job.description = updatedJob.description;
-
-      // Exit edit mode
-      setIsEditingDescription(false);
+      job.description = updatedJob.description; // Update local state
+      setIsEditingDescription(false); // Exit edit mode
     } catch (error) {
-      console.error("Error updating job description:", error);
       alert("Failed to save the job description. Please try again.");
     }
   };
 
+  /**
+   * Handles saving the updated salary range.
+   */
   const handleSaveSalary = async () => {
     try {
-      // Call API to update the salary range
       const updatedJob = await updateJob(job._id, { salaryRange: editedSalary });
-
-      // Update the local job state with the new salary range
-      job.salaryRange = updatedJob.salaryRange;
-
-      // Exit edit mode
-      setIsEditingSalary(false);
+      job.salaryRange = updatedJob.salaryRange; // Update local state
+      setIsEditingSalary(false); // Exit edit mode
     } catch (error) {
-      console.error("Error updating salary range:", error);
       alert("Failed to save the salary range. Please try again.");
     }
   };
 
-  console.log("JobDetailsContent props:", { job, isEmployer }); // Log all props
+  // ----------------------------- Render -----------------------------
   if (!job) {
     return <p className="text-center text-gray-500">No job details available.</p>;
   }
@@ -100,7 +104,7 @@ const JobDetailsContent = ({ job, isEmployer }) => {
                     setEditedSalary({
                       min: job.salaryRange?.min || "",
                       max: job.salaryRange?.max || "",
-                    }); // Pre-fill the input fields with the current salary range
+                    });
                     setIsEditingSalary(true);
                   }
                 }}
@@ -165,7 +169,7 @@ const JobDetailsContent = ({ job, isEmployer }) => {
                 if (isEditingDescription) {
                   handleSaveDescription();
                 } else {
-                  setEditedDescription(job.description || ""); // Pre-fill the text box with the current description
+                  setEditedDescription(job.description || "");
                   setIsEditingDescription(true);
                 }
               }}
@@ -207,79 +211,36 @@ const JobDetailsContent = ({ job, isEmployer }) => {
       </WhiteBox>
 
       {/* Questions and Code Assessments */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-  <WhiteBox>
-    <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-      <FaQuestionCircle className="mr-2" /> Questions?
-    </h2>
-    {isEmployer ? (
-      job.questions && job.questions.length > 0 ? (
-        <div className="space-y-4">
-          {job.questions.map((question, index) => (
-            <div
-              key={index}
-              className="border border-gray-300 rounded-lg overflow-hidden shadow-md"
-            >
-              <div className="w-full text-left px-4 py-3 bg-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {question.questionText}
-                </h3>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-700">You did not add any questions for this job.</p>
-      )
-    ) : job.questions && job.questions.length > 0 ? (
-      <p className="text-gray-700">
-        Yes, this job requires answering questions during the application process.
-      </p>
-    ) : (
-      <p className="text-gray-700">
-        No, this job does not require answering questions during the application process.
-      </p>
-    )}
-  </WhiteBox>
-  <WhiteBox>
-    <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-      <FaCode className="mr-2" /> Code Assessment?
-    </h2>
-    {isEmployer ? (
-      job.assessments && job.assessments.length > 0 ? (
-        <div className="space-y-4">
-          {job.assessments.map((assessment, index) => (
-            <div
-              key={index}
-              className="border border-gray-300 rounded-lg overflow-hidden shadow-md"
-            >
-              <div className="w-full text-left px-4 py-3 bg-gray-100">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {assessment.title}
-                </h3>
-              </div>
-              <div className="p-4 bg-white">
-                <p className="text-base text-gray-700">
-                  {assessment.description || "No description provided."}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-700">You did not add any code assessments for this job.</p>
-      )
-    ) : job.assessments && job.assessments.length > 0 ? (
-      <p className="text-gray-700">
-        Yes, this job requires taking an assessment during the application process.
-      </p>
-    ) : (
-      <p className="text-gray-700">
-        No, this job does not require taking an assessment during the application process.
-      </p>
-    )}
-  </WhiteBox>
-</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <WhiteBox>
+          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
+            <FaQuestionCircle className="mr-2" /> Questions?
+          </h2>
+          {job.questions && job.questions.length > 0 ? (
+            <p className="text-gray-700">
+              Yes, this job requires answering questions during the application process.
+            </p>
+          ) : (
+            <p className="text-gray-700">
+              No, this job does not require answering questions during the application process.
+            </p>
+          )}
+        </WhiteBox>
+        <WhiteBox>
+          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
+            <FaCode className="mr-2" /> Code Assessment?
+          </h2>
+          {job.assessments && job.assessments.length > 0 ? (
+            <p className="text-gray-700">
+              Yes, this job requires taking an assessment during the application process.
+            </p>
+          ) : (
+            <p className="text-gray-700">
+              No, this job does not require taking an assessment during the application process.
+            </p>
+          )}
+        </WhiteBox>
+      </div>
     </div>
   );
 };
