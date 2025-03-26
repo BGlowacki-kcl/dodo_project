@@ -23,48 +23,8 @@ const ApplicantDetails = () => {
   const [codeChallenge, setCodeChallenge] = useState(null); 
   const navigate = useNavigate();
 
-  // ----------------------------- Data Fetching -----------------------------
-  /**
-   * Fetches applicant details by application ID and updates the state.
-   */
+  // ----------------------------- Effects -----------------------------
   useEffect(() => {
-    const fetchApplicantDetails = async () => {
-      try {
-        const response = await getApplicationById(applicationId);
-
-        if (!response) {
-          throw new Error("No application data returned");
-        }
-
-        console.log("Fetched application response:", response); // Log full response
-        console.log("Assessments data:", response.assessments); // Log assessments specifically
-
-        setApplicant({
-          id: response.id,
-          name: response.applicant?.name || "No name provided",
-          email: response.applicant?.email || "No email provided",
-          phoneNumber: response.applicant?.phoneNumber || "No phone number provided",
-          location: response.applicant?.location || "No location provided",
-          skills: response.applicant?.skills || [],
-          resume: response.applicant?.resume || "No resume available",
-          education: response.applicant?.education || [],
-          experience: response.applicant?.experience || [],
-          status: response.status || "Applied",
-          coverLetter: response.coverLetter || "No cover letter provided",
-          submittedAt: response.submittedAt || new Date().toISOString(),
-          answers: response.answers || [],
-          questions: response.job?.questions || [],
-        });
-
-        setCodeChallenge(response.assessments || null);
-      } catch (error) {
-        console.error("Error fetching application details:", error);
-        setError(`Failed to load application: ${error.message || "Unknown error"}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (applicationId) {
       fetchApplicantDetails();
     } else {
@@ -72,6 +32,47 @@ const ApplicantDetails = () => {
       setLoading(false);
     }
   }, [applicationId]);
+
+  useEffect(() => {
+    if (applicant?.status) {
+      // Removed console.log for status updates
+    }
+  }, [applicant?.status]);
+
+  // ----------------------------- Data Fetching -----------------------------
+  const fetchApplicantDetails = async () => {
+    try {
+      const response = await getApplicationById(applicationId);
+
+      if (!response) {
+        throw new Error("No application data returned");
+      }
+
+      setApplicant({
+        id: response.id,
+        name: response.applicant?.name || "No name provided",
+        email: response.applicant?.email || "No email provided",
+        phoneNumber: response.applicant?.phoneNumber || "No phone number provided",
+        location: response.applicant?.location || "No location provided",
+        skills: response.applicant?.skills || [],
+        resume: response.applicant?.resume || "No resume available",
+        education: response.applicant?.education || [],
+        experience: response.applicant?.experience || [],
+        status: response.status || "Applied",
+        coverLetter: response.coverLetter || "No cover letter provided",
+        submittedAt: response.submittedAt || new Date().toISOString(),
+        answers: response.answers || [],
+        questions: response.job?.questions || [],
+      });
+
+      setCodeChallenge(response.assessments || null);
+    } catch (error) {
+      console.error("Error fetching application details:", error);
+      setError(`Failed to load application: ${error.message || "Unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ----------------------------- Helpers -----------------------------
   /**
@@ -142,16 +143,6 @@ const ApplicantDetails = () => {
       setLoading(false);
     }
   };
-
-  // ----------------------------- Effects -----------------------------
-  /**
-   * Logs the updated application status whenever it changes.
-   */
-  useEffect(() => {
-    if (applicant?.status) {
-      console.log("Application status updated to:", applicant.status);
-    }
-  }, [applicant?.status]);
 
   // ----------------------------- Render -----------------------------
   const { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled } = getButtonState(applicant?.status);
