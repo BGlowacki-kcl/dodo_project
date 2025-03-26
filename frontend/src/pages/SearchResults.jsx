@@ -104,18 +104,21 @@ const SearchResults = () => {
             setLoading(true);
             setSearchResults([]);
 
-            console.log("Applying filters:", filters);
+            console.log("Applying filters in SearchResults:", filters);
 
             let data;
             if (Object.values(filters).some((value) => value && value.length > 0)) {
+                console.log("Fetching filtered jobs with filters:", filters);
                 data = await getFilteredJobs(filters);
             } else {
+                console.log("Fetching all jobs (no filters applied)");
                 data = await getAllJobs();
             }
 
+            console.log("Filtered jobs fetched:", data);
             setSearchResults(data);
         } catch (error) {
-            console.error("Error applying filters:", error);
+            console.error("Error applying filters in SearchResults:", error);
         } finally {
             setLoading(false);
         }
