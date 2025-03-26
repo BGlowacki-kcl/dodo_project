@@ -13,7 +13,8 @@ import {
   FaCode,
 } from "react-icons/fa";
 
-const JobDetailsContent = ({ job }) => {
+const JobDetailsContent = ({ job, isEmployer }) => {
+  console.log("JobDetailsContent props:", { job, isEmployer }); // Log all props
   if (!job) {
     return <p className="text-center text-gray-500">No job details available.</p>;
   }
@@ -92,28 +93,55 @@ const JobDetailsContent = ({ job }) => {
       </WhiteBox>
 
       {/* Questions and Code Assessments */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-        <WhiteBox>
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-            <FaQuestionCircle className="mr-2" /> Questions
-          </h2>
-          <p className="text-gray-700">
-            {job.questions && job.questions.length > 0
-              ? "Yes, this job requires answering questions during the application process."
-              : "No, this job does not require answering questions during the application process."}
-          </p>
-        </WhiteBox>
-        <WhiteBox>
-          <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
-            <FaCode className="mr-2" /> Code Assessments
-          </h2>
-          <p className="text-gray-700">
-            {job.assessments && job.assessments.length > 0
-              ? "Yes, this job requires taking an assessment during the application process."
-              : "No, this job does not require taking an assessment during the application process."}
-          </p>
-        </WhiteBox>
-      </div>
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+  <WhiteBox>
+    <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
+      <FaQuestionCircle className="mr-2" /> Questions?
+    </h2>
+    {isEmployer ? (
+      job.questions && job.questions.length > 0 ? (
+        <div className="space-y-4">
+          {job.questions.map((question, index) => (
+            <div
+              key={index}
+              className="border border-gray-300 rounded-lg overflow-hidden shadow-md"
+            >
+              <div className="w-full text-left px-4 py-3 bg-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {question.questionText}
+                </h3>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-700">You did not add any questions for this job.</p>
+      )
+    ) : job.questions && job.questions.length > 0 ? (
+      <p className="text-gray-700">
+        Yes, this job requires answering questions during the application process.
+      </p>
+    ) : (
+      <p className="text-gray-700">
+        No, this job does not require answering questions during the application process.
+      </p>
+    )}
+  </WhiteBox>
+  <WhiteBox>
+    <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
+      <FaCode className="mr-2" /> Code Assessment?
+    </h2>
+    <p className="text-gray-700">
+      {isEmployer
+        ? job.assessments && job.assessments.length > 0
+          ? "You have added a code assessment for this job."
+          : "You did not add any code assessments for this job."
+        : job.assessments && job.assessments.length > 0
+        ? "Yes, this job requires taking an assessment during the application process."
+        : "No, this job does not require taking an assessment during the application process."}
+    </p>
+  </WhiteBox>
+</div>
     </div>
   );
 };
