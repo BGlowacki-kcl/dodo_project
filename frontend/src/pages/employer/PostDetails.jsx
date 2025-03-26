@@ -65,7 +65,7 @@ const PostDetails = () => {
       case "applicants":
         return <EmployerApplicants jobId={jobId} />;
       case "post":
-        return <JobDetailsContent job={job} />;
+        return <JobDetailsContent job={job} isEmployer={true} />;
       default:
         return null;
     }
