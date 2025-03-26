@@ -6,7 +6,7 @@ import { auth } from '../../firebase.js';
 import { assessmentService } from '../../services/assessment.service';
 import { useNotification } from '../../context/notification.context';
 import AssessmentStatus from '../../components/AssessmentStatus';
-import { getApplicationById, getAssessmentDeadline, setAssessmentDeadline, updateStatus } from '../../services/applicationService.js';
+import { getApplicationById, getAssessmentDeadline, setAssessmentDeadline, updateStatus } from '../../services/application.service.js';
 
 const CodeAss = () => {
   const [code, setCode] = useState(``);

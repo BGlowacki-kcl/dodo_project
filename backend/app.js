@@ -2,14 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-import userRoutes from './routes/user.routes.js';
+import userRoutes from './routes/user.route.js';
 import jobRoutes from './routes/job.route.js';
 import applicationRoutes from './routes/application.route.js';
 import matcherRoutes from './routes/matcher.route.js';
 import shortlistRoutes from './routes/shortlist.route.js';
 import chat from "./api/chat.api.js";
 import { checkRole } from './middlewares/auth.middleware.js';
-import assessmentRoutes from "./routes/assessment.router.js"
+import assessmentRoutes from "./routes/assessment.route.js"
 import emailRouter from "./routes/email.router.js"
 
 dotenv.config();

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getApplicationById } from "../../services/applicationService";
+import { getApplicationById } from "../../services/application.service.js";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
 import ApplicationDetails from "../../components/ApplicationDetails"; // Updated import

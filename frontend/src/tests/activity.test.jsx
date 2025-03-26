@@ -95,7 +95,7 @@ describe('ApplicantActivity Component', () => {
     vi.clearAllMocks();
     mockNavigate = vi.fn();
     useNavigate.mockReturnValue(mockNavigate);
-    const module = await import('../services/applicationService');
+    const module = await import('../services/application.service.js');
     getAllUserApplications = module.getAllUserApplications;
   });
 

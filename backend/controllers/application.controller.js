@@ -2,8 +2,8 @@ import mongoose, { get } from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
-import codeAssessment from "../models/codeAssessment.js";
-import codeSubmission from "../models/codeSubmission.js";
+import codeAssessment from "../models/codeAssessment.model.js";
+import codeSubmission from "../models/codeSubmission.model.js";
 
 const createResponse = (success, message, data = null) => ({
     success,

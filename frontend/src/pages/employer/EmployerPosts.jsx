@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getJobsByEmployer } from "../../services/jobService";
-import { getDashboardData } from "../../services/applicationService";
+import { getJobsByEmployer } from "../../services/job.service.js";
+import { getDashboardData } from "../../services/application.service.js";
 import WhiteBox from "../../components/WhiteBox";
 import SearchFilters from "../../components/SearchFilters";
 import Pagination from "../../components/Pagination";

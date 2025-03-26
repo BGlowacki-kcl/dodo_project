@@ -8,34 +8,35 @@ const apiKey = process.env.HUGGING_FACE_API_KEY;
 const modelId = "TechWolf/JobBERT-v2";
 const apiUrl = `https://api-inference.huggingface.co/models/${modelId}`;
 
-export async function query(cvText, jobDescription) {
-    const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            inputs: {
-                source_sentence: jobDescription,
-                sentences: [cvText],
+export async function query(cvText, jobDescription, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    inputs: {
+                        source_sentence: jobDescription,
+                        sentences: [cvText],
+                    }
+                }),
+            });
+
+            if (!response.ok) throw new Error(`API request failed with status: ${response.status}`);
+
+            const result = await response.json();
+            if (!Array.isArray(result) || result.length === 0) {
+                throw new Error("Invalid response format");
             }
-        }),
-    });
 
-    if (!response.ok) {
-        throw new Error(`API request failed with status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    if (!Array.isArray(result) || result.length === 0) {
-        throw new Error("Error response");
-    }
-    const similarityScore = result[0];
-
-    return {
-        jobDescription,
-        similarityScore
+            return { jobDescription, similarityScore: result[0] };
+        } catch (error) {
+            if (i === retries - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+        }
     }
 }
 
@@ -72,3 +73,13 @@ export const getUserJobRecommendations = async (req, res) => {
     // Return top 5 job recommendations
     res.status(200).json({ recommendedJobs: jobMatches.slice(0, 5) });
 };
+
+export async function warmUpHuggingFace() {
+    try {
+        await query("sample cv text", "sample job description");
+        console.log("Hugging Face API warmed up");
+    } catch (error) {
+        console.error("Failed to warm up Hugging Face API:", error);
+    }
+}
+
