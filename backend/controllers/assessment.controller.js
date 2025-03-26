@@ -3,19 +3,7 @@ import CodeSubmission from "../models/codeSubmission.js";
 import Application from "../models/application.model.js";
 import User from "../models/user/user.model.js";
 import Job from "../models/job.model.js";
-
-/**
- * Creates a standardized response object
- * @param {boolean} success - Indicates operation success
- * @param {string} message - Response message
- * @param {Object} [data] - Response data (optional)
- * @returns {Object} Standardized response
- */
-const createResponse = (success, message, data = null) => ({
-    success,
-    message,
-    ...(data && { data }),
-});
+import { createResponse } from "./helpers.js";
 
 /**
  * Assessment controller handling code assessment-related operations

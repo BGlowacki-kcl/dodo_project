@@ -1,11 +1,6 @@
 import Job from '../models/job.model.js';
 import { Employer } from '../models/user/Employer.model.js';
-
-export const createResponse = (success, message, data = null) => ({
-    success,
-    message,
-    ...(data && { data })
-});
+import { createResponse } from './helpers.js';
 
 /**
  * Validates required job fields
