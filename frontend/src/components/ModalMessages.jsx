@@ -1,6 +1,15 @@
+/**
+ * ModalMessages.jsx
+ *
+ * This component displays a modal with a message and optional confirm and cancel buttons.
+ * - The modal is shown or hidden based on the `show` prop.
+ * - Includes customizable confirm and cancel button text and actions.
+ */
+
 import React from "react";
 
 const ModalMessages = ({ show, onClose, message, onConfirm, confirmText, cancelText }) => {
+  // ----------------------------- Render -----------------------------
   if (!show) return null;
 
   return (
