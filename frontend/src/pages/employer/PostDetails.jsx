@@ -49,6 +49,8 @@ const PostDetails = () => {
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [newDeadline, setNewDeadline] = useState("");
 
+  const isDeadlinePassed = job?.deadline && new Date(job.deadline) < new Date();
+
   const handleEditDeadline = () => {
     setIsEditingDeadline(true);
     setNewDeadline(job?.deadline?.split("T")[0] || ""); // Pre-fill with the current deadline (formatted as YYYY-MM-DD)
@@ -84,7 +86,7 @@ const PostDetails = () => {
       case "applicants":
         return <EmployerApplicants jobId={jobId} />;
       case "post":
-        return <JobDetailsContent job={job} isEmployer={true} />;
+        return <JobDetailsContent job={job} isEmployer={!isDeadlinePassed} />;
       default:
         return null;
     }
@@ -109,11 +111,13 @@ const PostDetails = () => {
                       onChange={(e) => setNewDeadline(e.target.value)}
                       min={job?.deadline?.split("T")[0]} // Restrict to dates after the current deadline
                       className="border border-gray-300 rounded px-2 py-1 text-sm"
+                      disabled={isDeadlinePassed} // Disable input if deadline has passed
                     />
                     <button
                       onClick={handleSaveDeadline}
                       className="text-black hover:text-gray-700 ml-2"
                       title="Save Deadline"
+                      disabled={isDeadlinePassed} // Disable save button if deadline has passed
                     >
                       <FaSave />
                     </button>
@@ -121,7 +125,7 @@ const PostDetails = () => {
                 ) : (
                   <>
                     <DeadlineBadge deadline={job?.deadline} />
-                    {activeTab === "post" && ( // Only show edit button if "post" tab is active
+                    {activeTab === "post" && !isDeadlinePassed && ( // Only show edit button if "post" tab is active and deadline has not passed
                       <button
                         onClick={handleEditDeadline}
                         className="text-black hover:text-gray-700"
@@ -132,7 +136,7 @@ const PostDetails = () => {
                     )}
                   </>
                 )}
-              </div>
+              </div>       
             </div>
           </div>
           {/* Tabs */}
