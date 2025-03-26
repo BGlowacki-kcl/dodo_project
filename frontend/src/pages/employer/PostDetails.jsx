@@ -1,11 +1,20 @@
+/**
+ * PostDetails.jsx
+ *
+ * This component represents the Post Details page in the application. It provides:
+ * - Tabs to view statistics, applicants, and job post details.
+ * - The ability to edit and save the job post deadline.
+ * - Displays job-specific data such as applicants and statistics.
+ */
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import PostStatistics from "../../components/PostStatistics";
 import EmployerApplicants from "../../components/EmployerApplicants";
 import JobDetailsContent from "../../components/JobDetailsContent";
-import { getJobById, updateJob } from "../../services/jobService"; // Use updateJob
+import { getJobById, updateJob } from "../../services/job.service.js";
 import DeadlineBadge from "../../components/DeadlineBadge";
-import { FaEdit, FaSave } from "react-icons/fa"; // Import edit and save icons
+import { FaEdit, FaSave } from "react-icons/fa";
 
 const Tabs = ({ activeTab, setActiveTab }) => (
   <div className="flex space-x-2 bg-gray-100 p-2 rounded-full shadow-md">
@@ -43,6 +52,7 @@ const Tabs = ({ activeTab, setActiveTab }) => (
 );
 
 const PostDetails = () => {
+  // ----------------------------- State Variables -----------------------------
   const { jobId } = useParams();
   const [activeTab, setActiveTab] = useState("statistics");
   const [job, setJob] = useState(null);
@@ -51,34 +61,53 @@ const PostDetails = () => {
 
   const isDeadlinePassed = job?.deadline && new Date(job.deadline) < new Date();
 
-  const handleEditDeadline = () => {
-    setIsEditingDeadline(true);
-    setNewDeadline(job?.deadline?.split("T")[0] || ""); // Pre-fill with the current deadline (formatted as YYYY-MM-DD)
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch job details when the component mounts or jobId changes.
+   */
+  useEffect(() => {
+    fetchJobDetails();
+  }, [jobId]);
+
+  // ----------------------------- Data Fetching -----------------------------
+  /**
+   * Fetches job details by job ID.
+   */
+  const fetchJobDetails = async () => {
+    try {
+      const jobData = await getJobById(jobId);
+      setJob(jobData);
+    } catch (error) {
+      console.error("Error fetching job details:", error);
+    }
   };
 
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Enables editing mode for the job deadline.
+   */
+  const handleEditDeadline = () => {
+    setIsEditingDeadline(true);
+    setNewDeadline(job?.deadline?.split("T")[0] || "");
+  };
+
+  /**
+   * Saves the updated job deadline.
+   */
   const handleSaveDeadline = async () => {
     try {
-      const updatedJob = await updateJob(jobId, { deadline: newDeadline }); // Use updateJob service
-      setJob(updatedJob); // Update the job with the new deadline
+      const updatedJob = await updateJob(jobId, { deadline: newDeadline });
+      setJob(updatedJob);
       setIsEditingDeadline(false);
     } catch (error) {
       console.error("Error updating deadline:", error);
     }
   };
 
-  useEffect(() => {
-    const fetchJob = async () => {
-      try {
-        const jobData = await getJobById(jobId);
-        setJob(jobData);
-      } catch (error) {
-        console.error("Error fetching job details:", error);
-      }
-    };
-
-    fetchJob();
-  }, [jobId]);
-
+  // ----------------------------- Render Helpers -----------------------------
+  /**
+   * Renders the content for the active tab.
+   */
   const renderContent = () => {
     switch (activeTab) {
       case "statistics":
@@ -92,6 +121,7 @@ const PostDetails = () => {
     }
   };
 
+  // ----------------------------- Render -----------------------------
   return (
     <div className="container mx-auto p-4">
       <div className="flex-1 p-10">
@@ -109,15 +139,15 @@ const PostDetails = () => {
                       type="date"
                       value={newDeadline}
                       onChange={(e) => setNewDeadline(e.target.value)}
-                      min={job?.deadline?.split("T")[0]} // Restrict to dates after the current deadline
+                      min={job?.deadline?.split("T")[0]}
                       className="border border-gray-300 rounded px-2 py-1 text-sm"
-                      disabled={isDeadlinePassed} // Disable input if deadline has passed
+                      disabled={isDeadlinePassed}
                     />
                     <button
                       onClick={handleSaveDeadline}
                       className="text-black hover:text-gray-700 ml-2"
                       title="Save Deadline"
-                      disabled={isDeadlinePassed} // Disable save button if deadline has passed
+                      disabled={isDeadlinePassed}
                     >
                       <FaSave />
                     </button>
@@ -125,7 +155,7 @@ const PostDetails = () => {
                 ) : (
                   <>
                     <DeadlineBadge deadline={job?.deadline} />
-                    {activeTab === "post" && !isDeadlinePassed && ( // Only show edit button if "post" tab is active and deadline has not passed
+                    {activeTab === "post" && !isDeadlinePassed && (
                       <button
                         onClick={handleEditDeadline}
                         className="text-black hover:text-gray-700"
@@ -136,7 +166,7 @@ const PostDetails = () => {
                     )}
                   </>
                 )}
-              </div>       
+              </div>
             </div>
           </div>
           {/* Tabs */}
