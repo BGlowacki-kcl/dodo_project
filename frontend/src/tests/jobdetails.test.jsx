@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useParams, useNavigate } from 'react-router-dom';
-import JobDetailsPage from '../pages/user/JobDetailsPage.jsx'; // Removed .jsx extension
+import JobDetailsPage from '../pages/user/JobDetailsPage';
 import { getJobById } from '../services/job.service';
 import { getAllUserApplications, applyToJob } from '../services/application.service';
 import { getShortlist, addJobToShortlist, removeJobFromShortlist } from '../services/shortlist.service';
@@ -72,5 +72,148 @@ describe('JobDetailsPage', () => {
         });
     });
 
-    // ... rest of the tests remain the same ...
+    it('handles error when fetching job details fails', async () => {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        getJobById.mockRejectedValue(new Error('Failed to fetch job'));
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching data:', expect.any(Error));
+        });
+
+        consoleErrorSpy.mockRestore();
+    });
+
+    it('displays "Apply Now" button when user has not applied', async () => {
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Apply Now')).toBeInTheDocument();
+        });
+    });
+
+    it('displays "Continue Application" button when application is in progress', async () => {
+        getAllUserApplications.mockResolvedValue([{
+            job: { _id: mockJobId },
+            status: 'Applying'
+        }]);
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Continue Application')).toBeInTheDocument();
+        });
+    });
+
+    it('displays "Application Submitted" when application is complete', async () => {
+        getAllUserApplications.mockResolvedValue([{
+            job: { _id: mockJobId },
+            status: 'Submitted'
+        }]);
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Application Submitted')).toBeInTheDocument();
+        });
+    });
+
+    it('displays "Add to Shortlist" button when job is not shortlisted', async () => {
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Add to Shortlist')).toBeInTheDocument();
+        });
+    });
+
+    it('displays "Remove from Shortlist" button when job is shortlisted', async () => {
+        getShortlist.mockResolvedValue({ jobs: [{ _id: mockJobId }] });
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            expect(screen.getByText('Remove from Shortlist')).toBeInTheDocument();
+        });
+    });
+
+    it('calls applyToJob and navigates when "Apply Now" is clicked', async () => {
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            fireEvent.click(screen.getByText('Apply Now'));
+        });
+
+        expect(applyToJob).toHaveBeenCalledWith({
+            jobId: mockJobId,
+            coverLetter: "",
+            answers: []
+        });
+        expect(mockNavigate).toHaveBeenCalledWith(`/apply/${mockJobId}`);
+    });
+
+    it('navigates to application page when "Continue Application" is clicked', async () => {
+        getAllUserApplications.mockResolvedValue([{
+            job: { _id: mockJobId },
+            status: 'Applying'
+        }]);
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            fireEvent.click(screen.getByText('Continue Application'));
+        });
+
+        expect(mockNavigate).toHaveBeenCalledWith(`/apply/${mockJobId}`);
+    });
+
+    it('adds job to shortlist when "Add to Shortlist" is clicked', async () => {
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            fireEvent.click(screen.getByText('Add to Shortlist'));
+        });
+
+        expect(addJobToShortlist).toHaveBeenCalledWith(mockJobId);
+    });
+
+    it('removes job from shortlist when "Remove from Shortlist" is clicked', async () => {
+        getShortlist.mockResolvedValue({ jobs: [{ _id: mockJobId }] });
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            fireEvent.click(screen.getByText('Remove from Shortlist'));
+        });
+
+        expect(removeJobFromShortlist).toHaveBeenCalledWith(mockJobId);
+    });
+
+    it('handles errors when shortlist toggle fails', async () => {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        addJobToShortlist.mockRejectedValue(new Error('Shortlist error'));
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            fireEvent.click(screen.getByText('Add to Shortlist'));
+        });
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error updating shortlist:', expect.any(Error));
+        consoleErrorSpy.mockRestore();
+    });
+
+    it('handles errors when applying fails', async () => {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        applyToJob.mockRejectedValue(new Error('Application error'));
+
+        render(<JobDetailsPage />);
+
+        await waitFor(() => {
+            fireEvent.click(screen.getByText('Apply Now'));
+        });
+
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error applying to job:', expect.any(Error));
+        consoleErrorSpy.mockRestore();
+    });
 });
