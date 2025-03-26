@@ -27,7 +27,7 @@ app.use('/api/shortlist', shortlistRoutes);
 app.use('/api/assessment', assessmentRoutes);
 app.use('/api/email', emailRouter)
 
-app.post('/api/chat', chat); //add auth middleware
+app.post('/api/chat', checkRole(["jobSeeker"]), chat);
 
 export { app };
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import WhiteBox from "./WhiteBox";
 import { FaEdit, FaSave, FaTrash, FaPlus, FaGraduationCap, FaBriefcase, FaTools, FaUser, FaLink } from "react-icons/fa";
 import { useNotification } from "../context/notification.context"; // Import useNotification
+import { userService } from "../services/user.service";
 
 const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, isProfilePage, editable = false, onSave }) => {
   const [dateError, setDateError] = useState("");
@@ -27,6 +28,20 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
       });
     }
   }, [editable]);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userData = await userService.getUserProfile();
+        console.log("User data", userData);
+        user.email = userData.email;
+      } catch (error) {
+        showNotification(error.message || "Failed to fetch user data", "error");
+      }
+    };
+
+    fetchUserProfile();
+  });
 
   // Get the effective editing state (either from props or internal state)
   const effectiveEditing = editable ? editingSections : isEditing;
@@ -168,10 +183,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
               <strong>Email:</strong>{" "}
               {effectiveEditing.personal ? (
                 <input
+                  readOnly
                   type="text"
                   name="email"
-                  value={user.email || ""}
-                  onChange={handleNestedChange}
+                  value={user.email}
                   className="border p-1 w-full text-base"
                 />
               ) : (

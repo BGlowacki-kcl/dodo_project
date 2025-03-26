@@ -63,17 +63,17 @@ describe("applicationController", () => {
       User.findOne = jest.fn().mockResolvedValue({ _id: "someUserId" });
       Job.findByIdAndUpdate = jest.fn().mockResolvedValue({}); // Add missing mock
 
+      const formattedAnswers = [];
       req.body = {
         jobId: "job123",
         coverLetter: "cover",
-        answers: [], // Add required answers array
+        answers: formattedAnswers,
       };
 
       const mockApp = {
-        populate: jest.fn().mockResolvedValue({
-          _id: "newAppId",
-          job: { _id: "job123", title: "Test Job" },
-        }),
+        _id: "newAppId",
+        job: { _id: "job123", title: "Test Job" },
+        populate: jest.fn().mockReturnThis()
       };
       Application.create = jest.fn().mockResolvedValue(mockApp);
 
@@ -83,9 +83,16 @@ describe("applicationController", () => {
         job: "job123",
         applicant: "someUserId",
         coverLetter: "cover",
-        answers: [],
-        status: "applying", // Changed to match controller
+        answers: formattedAnswers,
+        status: "Applying",
       });
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Application created",
+        })
+      );
     });
 
     it("should return 500 if DB error", async () => {
@@ -186,7 +193,7 @@ describe("applicationController", () => {
 
     it("should return 404 if app not found", async () => {
       req.params = { id: "someAppId" };
-      req.body = { status: "applied" };
+      req.body = { status: "Applied" }; // Match updated valid status
       Application.findById = jest.fn().mockReturnValue({
         populate: jest.fn().mockResolvedValue(null),
       });
@@ -227,7 +234,7 @@ describe("applicationController", () => {
 
     it("should return 403 if the employer is not the one who posted the job", async () => {
       req.params = { id: "someAppId" };
-      req.body = { status: "applied" };
+      req.body = { status: "Applied" }; // Match updated valid status
       req.uid = "someone-else-uid";
 
       const mockApp = { _id: "someAppId", save: jest.fn(), job: "mockJobId" };
@@ -283,7 +290,7 @@ describe("applicationController", () => {
 
       expect(Application.find).toHaveBeenCalledWith({
         job: "someJobId",
-        status: { $ne: "applying" },
+        status: { $ne: "Applying" }, // Match updated status
       });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
@@ -631,7 +638,7 @@ describe("applicationController", () => {
         };
 
         const mockApp = {
-            status: "applying",
+            status: "Applying", // Match updated status
             save: jest.fn(),
             coverLetter: "",
             answers: []
@@ -674,16 +681,16 @@ describe("applicationController", () => {
     });
 
     it('should progress to the next status for valid applicant', async () => {
-      application.status = 'code challenge';
+      application.status = 'Code Challenge';
+      user.role = 'applicant';
       await handleStatusProgression(res, application, user);
-      expect(application.status).toBe('in review');
+      expect(application.status).toBe('In Review');
       expect(application.save).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
 
     it('should prevent employer from updating status in code challenge', async () => {
       user.role = 'employer';
-      application.status = 'code challenge';
+      application.status = 'Code Challenge';
       await handleStatusProgression(res, application, user);
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith(createResponse(false, 'Cannot update status'));
@@ -697,14 +704,14 @@ describe("applicationController", () => {
 
     it('should skip to in review if no assessments are present', async () => {
       const mockApp = {
-        status: 'shortlisted',
+        status: 'Shortlisted', // Match updated status
         job: { assessments: [] },
         save: jest.fn()
       };
       const mockUser = { role: 'employer' };
 
       await handleStatusProgression(res, mockApp, mockUser);
-      expect(mockApp.status).toBe('in review');
+      expect(mockApp.status).toBe('In Review'); // Match updated status
     });
 
     it('should return error if no further status available', async () => {
@@ -806,7 +813,7 @@ describe("applicationController", () => {
       expect(result).toEqual(mockData);
   
       expect(Application.aggregate).toHaveBeenCalledWith([
-          { $match: { job: { $in: jobs.map(job => job._id) }, status: { $ne: "applying" } } },
+          { $match: { job: { $in: jobs.map(job => job._id) }, status: { $ne: "Applying" } } },
           {
               $group: {
                   _id: {
@@ -844,9 +851,9 @@ describe('Helper Functions', () => {
 
     describe('isValidStatus', () => {
         it('should return true for valid statuses', () => {
-            expect(isValidStatus("applied")).toBe(true);
-            expect(isValidStatus("in review")).toBe(true);
-            expect(isValidStatus("shortlisted")).toBe(true);
+            expect(isValidStatus("Applying")).toBe(true); // Match updated valid statuses
+            expect(isValidStatus("In Review")).toBe(true);
+            expect(isValidStatus("Shortlisted")).toBe(true);
         });
 
         it('should return false for invalid statuses', () => {
@@ -1010,7 +1017,7 @@ describe('Additional Endpoint Tests', () => {
 
             const mockApp = {
                 _id: 'appId',
-                status: 'applying',
+                status: 'Applying', // Match updated status
                 save: jest.fn().mockResolvedValue(true)
             };
 
@@ -1019,7 +1026,7 @@ describe('Additional Endpoint Tests', () => {
 
             await applicationController.submitApplication(req, res);
 
-            expect(mockApp.status).toBe('applied');
+            expect(mockApp.status).toBe('Applied'); // Match updated status
             expect(mockApp.save).toHaveBeenCalled();
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(

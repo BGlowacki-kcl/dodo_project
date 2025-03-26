@@ -18,9 +18,9 @@ Rules:
     "surname": "...",
     "phoneNumber": "...",
     "portfolio website": "...",
-    "skills": "...",
-    "LinkedIn website": "...",
-    "GitHub website": "...",
+    "skills": ["..."],
+    "LinkedInWebsite": "...",
+    "GitHubWebsite": "...",
   },
   "experience": [
     {
@@ -50,7 +50,8 @@ Accuracy & Completeness:
 1. Extract all relevant information and categorize it appropriately.
 2. Do not add extra fields or modify the structure.
 3. Do not include placeholder text (e.g., "N/A" or "Unknown"). Simply omit missing fields.
-4. Skills section should be a comma-separated list of skills, with only one skill between commas.
+4. Skills section should be list of strings, where each string represents a single skill. Catch everything that might be a skill e.g. Java, git, Node.js, time management...
+5. Github website will be of this form "https://github.com/", and LinkedIn website will be of this form "https://www.linkedin.com/in/...".
 
 Your response should ONLY contain the formatted JSON data—no explanations, notes, or additional text.
 

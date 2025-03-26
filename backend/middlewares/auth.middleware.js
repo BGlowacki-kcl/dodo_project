@@ -19,6 +19,7 @@ const createResponse = (success, message, data = null, status = 200) => ({
 export const checkRole = (roles) => async (req, res, next) => {
     try {
         const idToken = req.headers.authorization?.split('Bearer ')[1];
+        console.log('idToken:', idToken);
         if (!idToken) {
             return res.status(403).json(createResponse(false, 'No token provided', null, 403));
         }

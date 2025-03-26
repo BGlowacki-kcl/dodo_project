@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { userService } from "../services/user.service";
 import { useNavigate } from "react-router-dom";
 import getParsedResume from "../services/resume.service";
@@ -29,10 +29,10 @@ const AddDetails = () => {
     location: "",
     phoneNumber: "",
     dob: "",
-    skills: "",
+    skills: [],
     education: [],
     experience: [],
-    skills: [],
+    projects: [],
   });
 
   const [skillInput, setSkillInput] = useState("");
@@ -64,13 +64,16 @@ const AddDetails = () => {
   };
 
   const handleAutoFill = (data) => {
+    console.log(data);
     setUserData((prev) => ({
       ...prev,
       name: `${data?.personal?.name || ""} ${data?.personal?.surname || ""}`.trim(),
       location: data?.personal?.location || "",
       phoneNumber: data?.personal?.phoneNumber || "",
       dob: data?.personal?.dateOfBirth || "",
-      skills: data?.personal?.skills?.split(",").map(skill => skill.trim()) || [],
+      skills: data?.personal?.skills?.map(skill => skill.trim()) || [],
+      github: data?.personal?.GitHubWebsite || "",
+      linkedin: data?.personal?.LinkedInWebsite || "",
       education: data?.education?.map((edu) => ({
         institution: edu?.University || "",
         degree: edu?.Degree || "",
@@ -87,10 +90,9 @@ const AddDetails = () => {
         startDate: "",
         endDate: "",
       })) || [],
-      projects: data?.projects?.reduce((acc, project) => {
-        const projectSkills = project?.skills?.split(",").map(skill => skill.trim()) || [];
-        return [...new Set([...acc, ...projectSkills])];
-      }, []) || [],
+      projects: data?.projects?.map((pro) => ({
+        description: pro?.description || "",
+      })) || [],
     }));
   };
 
