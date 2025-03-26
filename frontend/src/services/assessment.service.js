@@ -124,11 +124,11 @@ function generateCppTestCode(visibleTests, hiddenTests) {
     .join(",\n    ");
   
   return ` 
-vector<pair<vector<int>, int>> testCases = {
+vector<vector<vector<int>, int>> testCases = {
     ${visibleTestsFormatted}
 };
   
-vector<pair<vector<int>, int>> hiddenTestCases = {
+vector<vector<vector<int>, int>> hiddenTestCases = {
     ${hiddenTestsFormatted}
 };
   `;

@@ -11,6 +11,7 @@ import { getApplicationById, getAssessmentDeadline, setAssessmentDeadline, updat
 const CodeAss = () => {
   const [code, setCode] = useState(``);
   const [language, setLanguage] = useState("python");
+  const [pageLoading, setPageLoading] = useState(true);
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,6 +43,7 @@ const CodeAss = () => {
   const [timeLeft, setTimeLeft] = useState(3600);
 
   useEffect(() => {
+    setPageLoading(true);
     
     const fetchTimer = async () => {
       const application = await getApplicationById(appId);
@@ -52,14 +54,20 @@ const CodeAss = () => {
       }
       const deadlineFetched = await getAssessmentDeadline(appId);
       console.log("Deadline fetched: ", deadlineFetched);
-      if(deadlineFetched && deadlineFetched !== -1) {
-        const deadlineInMs = isNaN(deadlineFetched) 
-              ? new Date(deadlineFetched).getTime() 
-              : Number(deadlineFetched);
-        const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
-        console.log("Remaining time: ", remainingTime);
-        setTimeLeft(remainingTime);
-        localStorage.setItem('assessmentDeadline', deadlineFetched);
+      if(deadlineFetched) {
+        console.log("Deadline: ", new Date(deadlineFetched).getTime(), "Deadline fetched: ", deadlineFetched);
+        if(Date.parse(deadlineFetched) > Date.now()){
+          setPageLoading(false);
+          const deadlineInMs = isNaN(deadlineFetched) 
+                ? new Date(deadlineFetched).getTime() 
+                : Number(deadlineFetched);
+          const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
+          console.log("Remaining time: ", remainingTime);
+          setTimeLeft(remainingTime);
+          localStorage.setItem('assessmentDeadline', deadlineFetched);
+        } else {
+          submitAll(false);
+        }
       } else {
         const newDeadline = Date.now() + 3600 * 1000;
         localStorage.setItem('assessmentDeadline', newDeadline);
@@ -235,8 +243,10 @@ int func(${task.funcForCpp}) {
     setLanguage(e.target.value);
   }
 
-  const submitAll = async () => {
-    showNotification("Tank you for taking the assessment", "success");
+  const submitAll = async (gotAccess = true) => {
+    const notification = gotAccess ? "Thank you for taking the assessment!" : "Assessment time is up!";
+    const notificationStatus = gotAccess ? "success" : "error";
+    showNotification(notification, notificationStatus);
     navigate("/applicant-dashboard");
     setAssessmentDeadline(appId, -1);
     // Change status of application
@@ -319,6 +329,10 @@ int func(${task.funcForCpp}) {
     }));
 };
 
+  if (pageLoading) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <div className='bg-[#1B2A41] h-fit'>
       <p className="fixed top-4 left-4 bg-black text-white p-2 rounded-lg border-white border-2">Time Left: {formatTime(timeLeft)}</p>
@@ -358,7 +372,7 @@ int func(${task.funcForCpp}) {
           </div>
         </div>
       </div>
-      <div className='relative p-4 min-h-80 m-10 bg-slate-400 border-gray-600 border-2 rounded-md h-1/3'>
+      <div className='relative p-4 min-h-80 m-10 bg-slate-400 border-gray-600 border-2 rounded-md h-1/3 overflow-x-auto overflow-y-auto'>
         { loading && 
           <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'>
             <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32 animate-ping"></div>
