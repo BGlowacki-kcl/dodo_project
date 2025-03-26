@@ -1,35 +1,52 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { getAllJobRoles, getAllJobLocations, getAllJobTypes, getAllCompanies, getSalaryBounds } from "../../services/jobService";
+import useLocalStorage from "../../hooks/useLocalStorage";
 import { FaFilter, FaBuilding, FaMapMarkerAlt, FaDollarSign, FaClock, FaBriefcase, FaClipboardList } from "react-icons/fa";
 
 const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
+    const url = useLocation();
+    const searchParams = new URLSearchParams(url.search);
+
+    // Use local storage for selected filters
+    const [selectedTitles, setSelectedTitles] = useLocalStorage("selectedTitles", searchParams.getAll("titles") || []);
+    const [selectedLocations, setSelectedLocations] = useLocalStorage("selectedLocations", searchParams.getAll("locations") || []);
+    const [selectedJobTypes, setSelectedJobTypes] = useLocalStorage("selectedJobTypes", searchParams.getAll("jobTypes") || []);
+    const [selectedCompanies, setSelectedCompanies] = useLocalStorage("selectedCompanies", searchParams.getAll("companies") || []);
+    const [salaryRange, setSalaryRange] = useLocalStorage("salaryRange", [0, 100000]); // Default range
+    const [deadlineRange, setDeadlineRange] = useLocalStorage("deadlineRange", 7); // Default: 7 days
+
     const [titles, setTitles] = useState([]);
     const [locations, setLocations] = useState([]);
     const [jobTypes, setJobTypes] = useState([]);
     const [companies, setCompanies] = useState([]);
-
-    const [selectedTitles, setSelectedTitles] = useState([]);
-    const [selectedLocations, setSelectedLocations] = useState([]);
-    const [selectedJobTypes, setSelectedJobTypes] = useState([]);
-    const [selectedCompanies, setSelectedCompanies] = useState([]);
-    const [salaryRange, setSalaryRange] = useState([0, 100000]); // Default range
-    const [salaryBounds, setSalaryBounds] = useState({ min: 0, max: 100000 }); // Dynamic bounds
-    const [requirements, setRequirements] = useState("");
-    const [deadlineRange, setDeadlineRange] = useState(7); // Default: 7 days
+    const [salaryBounds, setSalaryBounds] = useState({ min: 0, max: 100000 });
 
     // Fetch filter data (titles, locations, job types, companies, salary bounds)
     useEffect(() => {
         const fetchFilterData = async () => {
             try {
-                setTitles(await getAllJobRoles());
-                setLocations(await getAllJobLocations());
-                setJobTypes(await getAllJobTypes());
-                setCompanies(await getAllCompanies());
-
-                // Fetch salary bounds
+                console.log("Fetching filter data...");
+                const fetchedTitles = await getAllJobRoles();
+                const fetchedLocations = await getAllJobLocations();
+                const fetchedJobTypes = await getAllJobTypes();
+                const fetchedCompanies = await getAllCompanies();
                 const { minSalary, maxSalary } = await getSalaryBounds();
+
+                setTitles(fetchedTitles);
+                setLocations(fetchedLocations);
+                setJobTypes(fetchedJobTypes);
+                setCompanies(fetchedCompanies);
                 setSalaryBounds({ min: minSalary, max: maxSalary });
-                setSalaryRange([minSalary, maxSalary]); // Set initial range to bounds
+                setSalaryRange([minSalary, maxSalary]);
+
+                console.log("Filter data fetched successfully:", {
+                    titles: fetchedTitles,
+                    locations: fetchedLocations,
+                    jobTypes: fetchedJobTypes,
+                    companies: fetchedCompanies,
+                    salaryBounds: { minSalary, maxSalary },
+                });
             } catch (error) {
                 console.error("Error fetching filter data:", error);
             }
@@ -39,16 +56,18 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
     }, []);
 
     const handleApplyFilters = () => {
-        applyFilters({
+        const filters = {
             titles: selectedTitles,
             locations: selectedLocations,
             jobTypes: selectedJobTypes,
             companies: selectedCompanies,
             salaryRange,
-            requirements,
             deadlineRange,
-        });
-        onClose();
+        };
+
+        console.log("Applying filters:", filters);
+        applyFilters(filters); // Pass filters to parent component
+        onClose(); // Close the filter pop-up
     };
 
     const toggleSelection = (value, selectedList, setSelectedList) => {
@@ -57,6 +76,7 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
         } else {
             setSelectedList([...selectedList, value]);
         }
+        console.log("Updated selection for:", value, "New list:", selectedList);
     };
 
     if (!isOpen) return null;
