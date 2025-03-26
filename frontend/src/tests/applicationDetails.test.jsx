@@ -54,4 +54,36 @@ describe("ApplicationDetails Component", () => {
     render(<ApplicationDetails {...modifiedProps} />);
     expect(screen.getByText("No Submission Available")).toBeInTheDocument();
   });
+
+  test("displays message when there are no questions", () => {
+    render(<ApplicationDetails {...mockProps} questions={[]} />);
+    expect(screen.getByText("No questions available for this job.")).toBeInTheDocument();
+  });
+  
+  test("displays message when there are no code assessments", () => {
+    const noAssessmentProps = {
+      ...mockProps,
+      codeAssessment: {
+        assessments: [],
+        submissions: [],
+      },
+    };
+    render(<ApplicationDetails {...noAssessmentProps} />);
+    expect(screen.getByText("No code challenges available.")).toBeInTheDocument();
+  });
+
+  test("renders fallback when answer is missing", () => {
+    const propsWithMissingAnswer = {
+      ...mockProps,
+      answers: [], // no answers
+    };
+  
+    render(<ApplicationDetails {...propsWithMissingAnswer} />);
+    
+    // Expand a question to see the fallback
+    const questionButton = screen.getByText("Why do you want this job?");
+    fireEvent.click(questionButton);
+  
+    expect(screen.getByText("No answer provided")).toBeInTheDocument();
+  });
 });
