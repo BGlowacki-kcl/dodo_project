@@ -36,9 +36,29 @@ describe('AuthForm Component Tests', () => {
   });
 
   it('should toggle password visibility', () => {
+    // Type a password
     cy.get('input[placeholder="Enter your password"]').type('Password123');
-    cy.contains('👁️').click();
+
+    // Debug the DOM to find the toggle element
+    cy.get('input[placeholder="Enter your password"]').parent().then(($parent) => {
+      cy.log('Password input parent:', $parent[0].outerHTML);
+    });
+
+    // Try to find the toggle button/icon near the password input
+    // Assuming the toggle is a button or span with a class like 'toggle-password' or 'eye-icon'
+    cy.get('input[placeholder="Enter your password"]').parent()
+      .find('[class*="toggle"], [class*="eye"], button, span', { timeout: 10000 })
+      .should('exist')
+      .click();
+
+    // Verify the input type changes to 'text'
     cy.get('input[placeholder="Enter your password"]').should('have.attr', 'type', 'text');
+
+    // Toggle back to password (optional, to test both directions)
+    cy.get('input[placeholder="Enter your password"]').parent()
+      .find('[class*="toggle"], [class*="eye"], button, span')
+      .click();
+    cy.get('input[placeholder="Enter your password"]').should('have.attr', 'type', 'password');
   });
 
   it('should navigate to employer login page', () => {
