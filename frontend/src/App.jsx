@@ -25,7 +25,7 @@ import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAss';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 import SearchResults from './pages/SearchResults';
-import EmployerApplicants from './pages/employer/EmployerApplicants';
+import EmployerApplicants from './components/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
 import Contact from './pages/Contact';
 import Apply from './pages/applicant/Apply';
