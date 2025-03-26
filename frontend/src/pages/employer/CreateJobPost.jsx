@@ -1,16 +1,25 @@
+/**
+ * CreateJobPost.jsx
+ *
+ * This component represents the Create Job Post page in the application. It provides:
+ * - A form to create a new job post with fields such as title, description, requirements, etc.
+ * - Options to add assessments and custom questions for applicants.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createJob } from '../../services/job.service.js';
 import { assessmentService } from '../../services/assessment.service';
 import { userService } from "../../services/user.service";
 import WhiteBox from "../../components/WhiteBox";
-import { FaTrash } from "react-icons/fa"; // Import the delete icon
+import { FaTrash } from "react-icons/fa";
 
 function CreateJobPost() {
+  // ----------------------------- State Variables -----------------------------
   const [tasks, setTasks] = useState([]);
   const [jobData, setJobData] = useState({
     title: '',
-    company: '', // Prefilled with the company name
+    company: '',
     description: '',
     location: '',
     salaryRange: { min: 0, max: 0 },
@@ -26,38 +35,59 @@ function CreateJobPost() {
   const [requirementInput, setRequirementInput] = useState('');
   const navigate = useNavigate();
 
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch tasks and employer details when the component mounts.
+   */
   useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const taskData = await assessmentService.getAllTasks();
-        setTasks(taskData);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
-
-    const fetchEmployerDetails = async () => {
-      try {
-        const employerDetails = await userService.getEmployerDetails(); // Fetch employer details
-        setJobData((prev) => ({
-          ...prev,
-          company: employerDetails.companyName || '', // Prefill the company name
-        }));
-      } catch (error) {
-        console.error('Error fetching employer details:', error);
-        setError('Failed to fetch employer details');
-      }
-    };
-
-    loadTasks();
+    fetchTasks();
     fetchEmployerDetails();
   }, []);
 
+  // ----------------------------- Data Fetching -----------------------------
+  /**
+   * Fetches all available tasks for assessments.
+   */
+  const fetchTasks = async () => {
+    try {
+      const taskData = await assessmentService.getAllTasks();
+      setTasks(taskData);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
+  /**
+   * Fetches employer details to prefill the company name.
+   */
+  const fetchEmployerDetails = async () => {
+    try {
+      const employerDetails = await userService.getEmployerDetails();
+      setJobData((prev) => ({
+        ...prev,
+        company: employerDetails.companyName || '',
+      }));
+    } catch (error) {
+      console.error('Error fetching employer details:', error);
+      setError('Failed to fetch employer details');
+    }
+  };
+
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Handles changes to input fields in the form.
+   * @param {Object} e - The event object.
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setJobData((prevData) => ({ ...prevData, [name]: value }));
   };
 
+  /**
+   * Handles changes to the salary range fields.
+   * @param {string} type - The type of salary field ('min' or 'max').
+   * @param {string} value - The new value for the salary field.
+   */
   const handleSalaryChange = (type, value) => {
     setJobData((prevData) => ({
       ...prevData,
@@ -65,6 +95,9 @@ function CreateJobPost() {
     }));
   };
 
+  /**
+   * Adds a new requirement to the requirements list.
+   */
   const handleAddRequirement = () => {
     if (requirementInput.trim() && !jobData.requirements.includes(requirementInput.trim())) {
       setJobData((prevData) => ({
@@ -75,6 +108,10 @@ function CreateJobPost() {
     }
   };
 
+  /**
+   * Removes a requirement from the requirements list.
+   * @param {number} index - The index of the requirement to remove.
+   */
   const handleRemoveRequirement = (index) => {
     setJobData((prevData) => {
       const updatedRequirements = [...prevData.requirements];
@@ -83,6 +120,10 @@ function CreateJobPost() {
     });
   };
 
+  /**
+   * Toggles the selection of a task for assessments.
+   * @param {string} taskId - The ID of the task to toggle.
+   */
   const handleAssessmentChange = (taskId) => {
     setJobData((prevData) => {
       const newAssessments = prevData.assessments.includes(taskId)
@@ -92,6 +133,11 @@ function CreateJobPost() {
     });
   };
 
+  /**
+   * Updates the text of a custom question.
+   * @param {number} index - The index of the question to update.
+   * @param {string} value - The new question text.
+   */
   const handleQuestionChange = (index, value) => {
     setJobData((prevData) => {
       const updatedQuestions = [...prevData.questions];
@@ -100,6 +146,9 @@ function CreateJobPost() {
     });
   };
 
+  /**
+   * Adds a new custom question to the questions list.
+   */
   const handleAddQuestion = () => {
     setJobData((prevData) => ({
       ...prevData,
@@ -107,6 +156,10 @@ function CreateJobPost() {
     }));
   };
 
+  /**
+   * Removes a custom question from the questions list.
+   * @param {number} index - The index of the question to remove.
+   */
   const handleRemoveQuestion = (index) => {
     setJobData((prevData) => {
       const updatedQuestions = [...prevData.questions];
@@ -115,6 +168,10 @@ function CreateJobPost() {
     });
   };
 
+  /**
+   * Submits the job post form.
+   * @param {Object} e - The event object.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -143,6 +200,7 @@ function CreateJobPost() {
     }
   };
 
+  // ----------------------------- Render -----------------------------
   return (
     <div className="container mx-auto p-4">
       <div className="flex-1 p-10">
