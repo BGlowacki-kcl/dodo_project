@@ -1,0 +1,22 @@
+{
+  "recommendedJobs": [
+    {
+      "_id": "job1",
+      "title": "Frontend Developer",
+      "company": "Tech Corp",
+      "location": "Remote",
+      "description": "Looking for an experienced frontend developer...",
+      "salaryRange": { "min": 60000, "max": 90000 },
+      "employmentType": "Full-time"
+    },
+    {
+      "_id": "job2",
+      "title": "UX Designer",
+      "company": "Design Co",
+      "location": "New York",
+      "description": "Seeking a creative UX designer...",
+      "salaryRange": { "min": 70000, "max": 95000 },
+      "employmentType": "Contract"
+    }
+  ]
+}

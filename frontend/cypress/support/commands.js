@@ -1,25 +1,42 @@
 // ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
+// Custom Commands
 // ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+Cypress.Commands.add('login', (email = 'test@example.com', password = 'test123') => {
+    cy.session([email, password], () => {
+        cy.visit('/login');
+        cy.get('[data-cy="email-input"]').type(email);
+        cy.get('[data-cy="password-input"]').type(password);
+        cy.get('[data-cy="login-button"]').click();
+        cy.url().should('include', '/dashboard');
+    });
+});
+
+// Command to mock recommended jobs
+Cypress.Commands.add('mockRecommendedJobs', (jobs = []) => {
+    cy.intercept('GET', '/api/matcher/recommend-jobs', {
+        body: { recommendedJobs: jobs }
+    }).as('getRecommendedJobs');
+});
+
+// Command to mock shortlist
+Cypress.Commands.add('mockShortlist', (shortlisted = []) => {
+    cy.intercept('GET', '/api/shortlist', {
+        body: { jobs: shortlisted }
+    }).as('getShortlist');
+});
+
+// ***********************************************
+// Overwrite existing commands
+// ***********************************************
+
+// Example of overwriting visit to always wait for React to load
+Cypress.Commands.overwrite('visit', (originalFn, url, options) => {
+    return originalFn(url, {
+        ...options,
+        onBeforeLoad: (win) => {
+            options && options.onBeforeLoad && options.onBeforeLoad(win);
+            win.addEventListener('ReactLoaded', () => {});
+        }
+    });
+});

@@ -141,7 +141,7 @@ const generateJobs = async (num, employers) => {
         const jobTitle = faker.helpers.arrayElement(Object.keys(techJobDetails));
 
         const createdAt = faker.date.between({
-            from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
+            from: new Date(Date.now() - 50 * 24 * 60 * 60 * 1000), // 1 year ago
             to: new Date() // Today
         });
 
