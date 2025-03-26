@@ -23,6 +23,7 @@ import { FaQuestionCircle, FaCode } from "react-icons/fa";
 import DeadlineBadge from "../../components/DeadlineBadge";
 
 const JobDetailsPage = () => {
+  // ----------------------------- State Variables -----------------------------
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [job, setJob] = useState(null);
@@ -30,6 +31,10 @@ const JobDetailsPage = () => {
   const [shortlisted, setShortlisted] = useState(false);
   const [applicationStatus, setApplicationStatus] = useState(null);
 
+  // ----------------------------- Data Fetching -----------------------------
+  /**
+   * Fetches job details, user applications, and shortlist data.
+   */
   const fetchData = async () => {
     try {
       const jobData = await getJobById(jobId);
@@ -48,6 +53,10 @@ const JobDetailsPage = () => {
     }
   };
 
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Toggles the job's shortlist status.
+   */
   const handleShortlistToggle = async () => {
     try {
       if (shortlisted) {
@@ -61,6 +70,9 @@ const JobDetailsPage = () => {
     }
   };
 
+  /**
+   * Handles the job application process.
+   */
   const handleApply = async () => {
     try {
       if (!applied) {
@@ -72,10 +84,15 @@ const JobDetailsPage = () => {
     }
   };
 
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch job data when the component mounts or jobId changes.
+   */
   useEffect(() => {
     fetchData();
   }, [jobId]);
 
+  // ----------------------------- Render -----------------------------
   if (!job) {
     return (
       <div className="bg-slate-900 min-h-screen flex items-center justify-center">
