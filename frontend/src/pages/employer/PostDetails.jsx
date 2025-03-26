@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 import PostStatistics from "../../components/PostStatistics";
 import EmployerApplicants from "../../components/EmployerApplicants";
 import JobDetailsContent from "../../components/JobDetailsContent";
-import { getJobById } from "../../services/jobService";
+import { getJobById, updateJob } from "../../services/jobService"; // Use updateJob
 import DeadlineBadge from "../../components/DeadlineBadge";
+import { FaEdit, FaSave } from "react-icons/fa"; // Import edit and save icons
 
 const Tabs = ({ activeTab, setActiveTab }) => (
   <div className="flex space-x-2 bg-gray-100 p-2 rounded-full shadow-md">
@@ -45,6 +46,23 @@ const PostDetails = () => {
   const { jobId } = useParams();
   const [activeTab, setActiveTab] = useState("statistics");
   const [job, setJob] = useState(null);
+  const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+  const [newDeadline, setNewDeadline] = useState("");
+
+  const handleEditDeadline = () => {
+    setIsEditingDeadline(true);
+    setNewDeadline(job?.deadline?.split("T")[0] || ""); // Pre-fill with the current deadline (formatted as YYYY-MM-DD)
+  };
+
+  const handleSaveDeadline = async () => {
+    try {
+      const updatedJob = await updateJob(jobId, { deadline: newDeadline }); // Use updateJob service
+      setJob(updatedJob); // Update the job with the new deadline
+      setIsEditingDeadline(false);
+    } catch (error) {
+      console.error("Error updating deadline:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -80,11 +98,43 @@ const PostDetails = () => {
           <div className="flex items-center space-x-6">
             {/* Title */}
             <h1 className="text-4xl font-bold">Post Details</h1>
-
-            {/* Deadline Display */}
-            <DeadlineBadge deadline={job?.deadline} />
+            {/* Deadline and Edit Button Group */}
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center space-x-2">
+                {isEditingDeadline ? (
+                  <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+                    <input
+                      type="date"
+                      value={newDeadline}
+                      onChange={(e) => setNewDeadline(e.target.value)}
+                      min={job?.deadline?.split("T")[0]} // Restrict to dates after the current deadline
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    />
+                    <button
+                      onClick={handleSaveDeadline}
+                      className="text-black hover:text-gray-700 ml-2"
+                      title="Save Deadline"
+                    >
+                      <FaSave />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <DeadlineBadge deadline={job?.deadline} />
+                    {activeTab === "post" && ( // Only show edit button if "post" tab is active
+                      <button
+                        onClick={handleEditDeadline}
+                        className="text-black hover:text-gray-700"
+                        title="Edit Deadline"
+                      >
+                        <FaEdit />
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
-
           {/* Tabs */}
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
