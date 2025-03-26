@@ -131,6 +131,7 @@ export const addJobToShortlist = async (req, res) => {
         return res.status(201).json({ success: true, data: updatedShortlist });
     } catch (error) {
         const status = error.status || 500;
+        console.log(error);
         return res.status(status).json({ success: false, message: error.message });
     }
 };
