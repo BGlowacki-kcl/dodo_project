@@ -23,7 +23,7 @@ import {
   FaEdit,
   FaSave,
 } from "react-icons/fa";
-import { updateJob } from "../services/jobService";
+import { updateJob } from "../services/job.service";
 
 const JobDetailsContent = ({ job, isEmployer }) => {
   // ----------------------------- State Variables -----------------------------
