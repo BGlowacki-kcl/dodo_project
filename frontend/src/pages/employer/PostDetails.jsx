@@ -4,6 +4,7 @@ import PostStatistics from "../../components/PostStatistics";
 import EmployerApplicants from "../../components/EmployerApplicants";
 import JobDetailsContent from "../../components/JobDetailsContent";
 import { getJobById } from "../../services/jobService";
+import DeadlineBadge from "../../components/DeadlineBadge";
 
 const Tabs = ({ activeTab, setActiveTab }) => (
   <div className="flex space-x-2 bg-gray-100 p-2 rounded-full shadow-md">
@@ -74,9 +75,17 @@ const PostDetails = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex-1 p-10">
-        {/* Title and Navigation Tabs */}
+        {/* Title, Deadline, and Navigation Tabs */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-bold">Post Details</h1>
+          <div className="flex items-center space-x-6">
+            {/* Title */}
+            <h1 className="text-4xl font-bold">Post Details</h1>
+
+            {/* Deadline Display */}
+            <DeadlineBadge deadline={job?.deadline} />
+          </div>
+
+          {/* Tabs */}
           <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
 

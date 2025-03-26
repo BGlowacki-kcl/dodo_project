@@ -1,8 +1,9 @@
 import React from "react";
 import WhiteBox from "./WhiteBox";
 import { useNavigate } from "react-router-dom";
+import DeadlineBadge from "./DeadlineBadge";
 
-const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, statusBreakdown, jobId }) => {
+const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, statusBreakdown, jobId, deadline }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
@@ -19,9 +20,14 @@ const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, s
 
   return (
     <WhiteBox
-      className="flex flex-col md:flex-row justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
+      className="relative flex flex-col md:flex-row justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
       onClick={handleCardClick}
     >
+      {/* Deadline Badge */}
+      <div className="absolute top-4 right-4">
+        <DeadlineBadge deadline={deadline} />
+      </div>
+
       {/* Left Section: Job Details */}
       <div className="flex-1">
         <h3 className="text-2xl font-bold text-black">{title}</h3>

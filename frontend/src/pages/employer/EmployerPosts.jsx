@@ -91,7 +91,8 @@ const EmployerPostsPage = () => {
                 location={job.location}
                 totalApplicants={totalApplicants}
                 pendingApplicants={pendingApplicants}
-                statusBreakdown={statusBreakdown} // Pass breakdown here
+                statusBreakdown={statusBreakdown}
+                deadline={job.deadline}
               />
             );
           })}

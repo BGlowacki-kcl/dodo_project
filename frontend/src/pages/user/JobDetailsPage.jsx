@@ -20,6 +20,7 @@ import { getShortlist, addJobToShortlist, removeJobFromShortlist } from "../../s
 import JobDetailsContent from "../../components/JobDetailsContent";
 import WhiteBox from "../../components/WhiteBox";
 import { FaQuestionCircle, FaCode } from "react-icons/fa";
+import DeadlineBadge from "../../components/DeadlineBadge";
 
 const JobDetailsPage = () => {
   const { jobId } = useParams();
@@ -92,18 +93,7 @@ const JobDetailsPage = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-left text-black">Job Details</h1>
           </div>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
-            <div className="flex items-center bg-gray-100 px-4 py-2 rounded-lg shadow-md">
-              <span className="font-semibold text-gray-700 mr-2">Deadline:</span>
-              <span
-                className={`px-3 py-1 text-sm font-medium rounded-full ${
-                  job.deadline ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
-                }`}
-              >
-                {job.deadline
-                  ? new Date(job.deadline).toLocaleDateString("en-GB")
-                  : "No deadline"}
-              </span>
-            </div>
+            <DeadlineBadge deadline={job.deadline} />
             <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
               {applied ? (
                 applicationStatus === "Applying" ? (
