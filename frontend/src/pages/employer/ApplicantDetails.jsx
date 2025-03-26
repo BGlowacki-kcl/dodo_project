@@ -195,26 +195,28 @@ const ApplicantDetails = () => {
                 applicant.status === "Rejected"
               }
             />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => handleStatusUpdate("shortlisted")}
-                disabled={isShortlistDisabled}
-                className={`px-4 py-2 ${
-                  isShortlistDisabled ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-                } text-white rounded-lg`}
-              >
-                {shortlistCaption}
-              </button>
-              <button
-                onClick={() => handleStatusUpdate("rejected")}
-                disabled={isRejectDisabled}
-                className={`px-4 py-2 ${
-                  isRejectDisabled ? "bg-gray-400" : "bg-red-600 hover:bg-red-700"
-                } text-white rounded-lg`}
-              >
-                {rejectCaption}
-              </button>
-            </div>
+            {applicant.status !== "Accepted" && applicant.status !== "Rejected" && (
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => handleStatusUpdate("shortlisted")}
+                  disabled={isShortlistDisabled}
+                  className={`px-4 py-2 ${
+                    isShortlistDisabled ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+                  } text-white rounded-lg`}
+                >
+                  {shortlistCaption}
+                </button>
+                <button
+                  onClick={() => handleStatusUpdate("rejected")}
+                  disabled={isRejectDisabled}
+                  className={`px-4 py-2 ${
+                    isRejectDisabled ? "bg-gray-400" : "bg-red-600 hover:bg-red-700"
+                  } text-white rounded-lg`}
+                >
+                  {rejectCaption}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center text-gray-600">
