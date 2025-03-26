@@ -1,8 +1,4 @@
-import { faker } from "@faker-js/faker";
-import { projectList } from "./projectFixtures.js";
-
-export const generateCV = (name, location, education, experience, email, skills = []) => {
-    const selectedProjects = faker.helpers.arrayElements(projectList, 3);
+export const generateCV = (name, location, education, experience, email, skills = [], projects = []) => {
 
     return `
 ${name.toUpperCase()}
@@ -29,7 +25,7 @@ Skills
 ${skills.map(skill => `- ${skill}`).join("\n")}
 
 Projects
-${selectedProjects.map(project => `- ${project}`).join("\n")}
+${projects.map(project => `- ${project}`).join("\n")}
 
 Contact: [${email}] | LinkedIn: [linkedin.com/in/example] | GitHub: [github.com/example]
 `;

@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import UserApplicationsPage from "../pages/user/UserApplicationsPage"; 
-import { getAllUserApplications } from "../services/applicationService";
+import { getAllUserApplications } from "../services/application.service.js";
 
 // Mock the method used in UserApplicationsPage
 vi.mock("../services/applicationService", () => ({

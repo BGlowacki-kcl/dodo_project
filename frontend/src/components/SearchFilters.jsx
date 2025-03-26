@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { getAllJobRoles, getAllJobLocations, getAllJobTypes, getAllCompanies } from "../services/job.service";
+import { getAllJobRoles, getAllJobLocations, getAllJobTypes, getAllCompanies } from "../services/job.service.js";
 
 const FilterDropdown = ({ title, options, selectedOptions, setSelectedOptions, category }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -179,6 +179,15 @@ export const userController = {
             }
 
             return res.status(200).json(createResponse(true, "Profile is completed", true));
+
+            //         message: "Profile incomplete, redirecting to addDetails",
+            //         data: {
+            //             status: false,
+            //             redirect: "/addDetails",
+            //         }
+            //     });
+            // }
+            // return res.status(200).json({ success: true, message: "User's profile is completed!", data: { status: true } });
         } catch (error) {
             return res.status(500).json(createResponse(false, "Server error"));
         }

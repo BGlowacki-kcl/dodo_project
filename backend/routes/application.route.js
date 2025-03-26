@@ -16,7 +16,7 @@ router.put("/status", checkRole(["employer", "jobSeeker"]), applicationControlle
 router.put("/deadline", checkRole(["jobSeeker"]), applicationController.setAssessmentDeadline);
 router.get("/deadline", checkRole(["jobSeeker"]), applicationController.getAssessmentDeadline);
 router.get("/byJobId", checkRole(["employer"]), applicationController.getApplicants);
-router.get("/dashboard", checkRole(["employer"]), applicationController.getDashboardData);
+router.get("/data", checkRole(["employer"]), applicationController.getApplicationsData);
 router.put("/save", checkRole(["jobSeeker"]), applicationController.saveApplication);
 router.put("/submit", checkRole(["jobSeeker"]), applicationController.submitApplication);
 

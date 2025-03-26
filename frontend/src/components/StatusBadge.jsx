@@ -1,6 +1,27 @@
+/**
+ * StatusBadge.jsx
+ *
+ * This component displays a badge with a status label.
+ * - The badge color changes based on the status.
+ * - Supports optional click functionality and customizable styles.
+ */
+
 import React from "react";
 
-const StatusBadge = ({ status, onClick, className = "", size = "w-24 h-8", fontSize = "text-lg", padding = "px-4 py-2" }) => {
+const StatusBadge = ({
+  status,
+  onClick,
+  className = "",
+  size = "w-24 h-8",
+  fontSize = "text-lg",
+  padding = "px-4 py-2",
+}) => {
+  // ----------------------------- Helpers -----------------------------
+  /**
+   * Returns the appropriate CSS class for the badge based on the status.
+   * @param {string} status - The status to determine the badge color.
+   * @returns {string} - The CSS class for the badge color.
+   */
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case "Applied":
@@ -20,6 +41,7 @@ const StatusBadge = ({ status, onClick, className = "", size = "w-24 h-8", fontS
     }
   };
 
+  // ----------------------------- Render -----------------------------
   return (
     <span
       className={`${size} ${padding} ${fontSize} flex items-center justify-center font-semibold rounded-lg ${getStatusBadgeClass(status)} ${className} ${

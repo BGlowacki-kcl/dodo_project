@@ -25,7 +25,7 @@ import Forbidden from './pages/Forbidden';
 import CodeAss from './pages/applicant/CodeAssessment';
 import EmployerLogin from './pages/employer/EmployerLogin.jsx';
 import SearchResults from './pages/SearchResults';
-import EmployerApplicants from './pages/employer/EmployerApplicants';
+import EmployerApplicants from './components/EmployerApplicants';
 import ApplicantDetails from './pages/employer/ApplicantDetails';
 import Contact from './pages/Contact';
 import Apply from './pages/applicant/Apply';
@@ -123,8 +123,8 @@ function defineRouteConfig() {
 		{ path: '/employer/applicants/:jobId', element: <EmployerApplicants />, roles: ['employer'] },
 		{ path: '/employer/posts', element: <EmployerPosts />, roles: ['employer'] },
 		{ path: 'employer-dashboard', element: <EmployerDashboard />, roles: ['employer'] },
-		{ path: '/applicant/:applicantId', element: <ApplicantDetails />, roles: ['employer'] },
-		{ path: '/employer/posts/:jobId', element: <PostDetails />, roles: ['employer'] },
+		{ path: '/applicant/:applicationId', element: <ApplicantDetails />, roles: ['employer'] },
+		{ path: '/employer/post/:jobId', element: <PostDetails />, roles: ['employer'] },
 
 		{ path: '/forbidden', element: <Forbidden />, dontCheck: true }
 	];

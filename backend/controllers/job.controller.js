@@ -45,7 +45,14 @@ export const createJob = async (req, res) => {
  */
 export const getJobs = async (req, res) => {
     try {
-        const jobs = await Job.find();
+        const { deadlineValid } = req.query;
+
+        const filter = {};
+        if (deadlineValid === "true") {
+            filter.deadline = { $gte: new Date() }; // Ensure valid deadlines
+        }
+
+        const jobs = await Job.find(filter);
         return res.status(200).json(createResponse(true, 'Jobs retrieved successfully', jobs));
     } catch (error) {
         return res.status(500).json(createResponse(false, error.message));
@@ -82,7 +89,9 @@ export const getJobsByEmployer = async (req, res) => {
  */
 export const getJobById = async (req, res) => {
     try {
-        const job = await Job.findById(req.params.id);
+        const job = await Job.findById(req.params.id)
+            .populate('assessments');
+
         if (!job) {
             return res.status(404).json(createResponse(false, 'Job not found'));
         }
@@ -229,8 +238,19 @@ export const buildJobFilter = ({ jobType, location, role }) => {
  */
 export const getFilteredJobs = async (req, res) => {
     try {
-        const filter = buildJobFilter(req.query);
-        const jobs = await Job.find(filter);
+        const { jobType, location, role, company } = req.query;
+
+        const filter = {};
+
+        // Apply filters based on query parameters
+        if (jobType) filter.employmentType = Array.isArray(jobType) ? { $in: jobType } : jobType;
+        if (location) filter.location = Array.isArray(location) ? { $in: location } : location;
+        if (role) filter.title = Array.isArray(role) ? { $in: role } : role;
+        if (company) filter.company = Array.isArray(company) ? { $in: company } : company;
+
+        // Use the reusable function to get jobs with valid deadlines
+        const jobs = await getJobsWithValidDeadlines(filter);
+
         return res.status(200).json(createResponse(true, 'Jobs retrieved successfully', jobs));
     } catch (error) {
         return res.status(500).json(createResponse(false, "Failed to fetch jobs", error.message));
@@ -247,12 +267,63 @@ export const getJobQuestionsById = async (req, res) => {
     try {
         const { jobId } = req.query;
         const job = await Job.findById(jobId);
-
         if (!job) {
-            return res.status(404).json(createResponse(false, 'Job not found'));
+            return res.status(404).json({ message: 'Job not found' });
         }
-        return res.status(200).json(createResponse(true, 'Job questions retrieved successfully', job.questions));
+        res.status(200).json(job.questions);
     } catch (error) {
-        return res.status(500).json(createResponse(false, error.message));
+        res.status(500).json({ message: error.message });
+    }
+};
+
+
+
+/**
+ * Filters jobs to exclude those with passed deadlines.
+ * @param {Object} filter - Additional filters to apply (e.g., jobType, location).
+ * @returns {Promise<Array>} - List of jobs with valid deadlines.
+ */
+export const getJobsWithValidDeadlines = async (filter = {}) => {
+    try {
+        // Add a filter to exclude jobs where the deadline has passed
+        filter.deadline = { $gte: new Date() };
+
+        // Fetch jobs with the provided filter
+        const jobs = await Job.find(filter);
+        return jobs;
+    } catch (error) {
+        console.error("Error fetching jobs with valid deadlines:", error);
+        throw new Error("Failed to fetch jobs with valid deadlines");
+    }
+};
+
+export const getSalaryBounds = async (req, res) => {
+    try {
+        const result = await Job.aggregate([
+            {
+                // Match only jobs with valid deadlines
+                $match: {
+                    deadline: { $gte: new Date() }, // Exclude jobs with past deadlines
+                },
+            },
+            {
+                // Group to calculate min and max salary
+                $group: {
+                    _id: null,
+                    minSalary: { $min: "$salaryRange.min" },
+                    maxSalary: { $max: "$salaryRange.max" },
+                },
+            },
+        ]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: "No salary data found for jobs with valid deadlines" });
+        }
+
+        const { minSalary, maxSalary } = result[0];
+        res.status(200).json({ minSalary, maxSalary });
+    } catch (error) {
+        console.error("Error fetching salary bounds:", error);
+        res.status(500).json({ message: "Failed to fetch salary bounds" });
     }
 };

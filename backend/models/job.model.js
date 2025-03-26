@@ -56,7 +56,7 @@ const jobSchema = new Schema({
 
     assessments: [{
         type: Schema.Types.ObjectId,
-        ref: 'Assessment'
+        ref: 'CodeAssessment'
     }],
                              
     questions: [

@@ -1,5 +1,5 @@
-import CodeAssessment from "../models/codeAssessment.js";
-import CodeSubmission from "../models/codeSubmission.js";
+import CodeAssessment from "../models/codeAssessment.model.js";
+import CodeSubmission from "../models/codeSubmission.model.js";
 import Application from "../models/application.model.js";
 import User from "../models/user/user.model.js";
 import Job from "../models/job.model.js";

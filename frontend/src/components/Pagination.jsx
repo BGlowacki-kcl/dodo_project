@@ -1,7 +1,16 @@
+/**
+ * Pagination.jsx
+ *
+ * This component provides pagination functionality using the `ReactPaginate` library.
+ * - Displays pagination controls for navigating between pages.
+ * - Automatically hides if there is only one page.
+ */
+
 import React from "react";
 import ReactPaginate from "react-paginate";
 
 const Pagination = ({ pageCount, onPageChange }) => {
+  // ----------------------------- Render -----------------------------
   if (pageCount <= 1) return null; // Hide pagination if only one page
 
   return (

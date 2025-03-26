@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import SingleApplicationPage from "../pages/user/SingleApplicationPage";
-import { getApplicationById, withdrawApplication } from "../services/applicationService";
+import { getApplicationById, withdrawApplication } from "../services/application.service.js";
 import { useParams, useNavigate } from "react-router-dom";
 
 vi.mock("react-router-dom", () => ({

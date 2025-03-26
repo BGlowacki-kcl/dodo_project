@@ -41,9 +41,8 @@ export async function query(cvText, jobDescription) {
                 source_sentence: jobDescription,
                 sentences: [cvText],
             }
-        }),
+        })
     });
-
     if (!response.ok) {
         throw new Error(`API request failed with status: ${response.status}`);
     }
