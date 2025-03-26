@@ -65,7 +65,7 @@ const Landing = () => {
     return (
         <div className="flex flex-col items-center bg-gray-50 min-h-screen p-10">
             <div className="text-center">
-                <h1 className="text-5xl font-bold text-gray-800">Track Your <span className="text-blue-500">Career Progress</span></h1>
+                <h1 className="text-5xl font-bold text-gray-800">Level Up Your <span className="text-blue-500">Tech Career</span></h1>
                 <p className="text-gray-600 mt-2 text-lg">Find the perfect opportunity tailored for you</p>
             </div>
 

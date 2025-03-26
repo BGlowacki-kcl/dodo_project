@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { authService } from '../services/auth.service';
-import { useNotification } from '../context/notification.context'; // Import the notification context
+import { useNotification } from '../context/notification.context'; 
 
 const Navbar = () => {
   const [isEmployer, setIsEmployer] = useState(false);
