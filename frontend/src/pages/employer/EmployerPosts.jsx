@@ -5,6 +5,7 @@ import { getApplicationsData } from "../../services/applicationService";
 import Pagination from "../../components/Pagination";
 import PostCard from "../../components/PostCard";
 import SearchBar from "../../components/SearchBar"; // Import the SearchBar component
+import { FaPlus } from "react-icons/fa"; // Import the plus icon
 
 const EmployerPostsPage = () => {
   const [jobs, setJobs] = useState([]);
@@ -86,8 +87,15 @@ const EmployerPostsPage = () => {
       <div className="flex-1 p-4 md:p-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
-          <div>
+          <div className="flex items-center space-x-4">
             <h1 className="text-3xl md:text-4xl font-bold text-left text-black">My Posts</h1>
+            <button
+              onClick={() => navigate("/posts/new")} // Navigate to the Create Job Post page
+              className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 transition-all"
+              title="Add New Post"
+            >
+              <FaPlus />
+            </button>
           </div>
           <SearchBar
             placeholder="Search Posts"
