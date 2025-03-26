@@ -4,11 +4,13 @@ import { getJobsByEmployer } from "../../services/jobService";
 import { getApplicationsData } from "../../services/applicationService";
 import Pagination from "../../components/Pagination";
 import PostCard from "../../components/PostCard";
+import SearchBar from "../../components/SearchBar"; // Import the SearchBar component
 
 const EmployerPostsPage = () => {
   const [jobs, setJobs] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState(""); // State for search query
   const jobsPerPage = 4;
   const navigate = useNavigate();
 
@@ -39,14 +41,18 @@ const EmployerPostsPage = () => {
     setCurrentPage(selected);
   };
 
+  const handleSearch = (query) => {
+    setSearchQuery(query.toLowerCase()); // Update the search query
+  };
+
   const calculateApplicants = (jobId) => {
     const jobApplicants = applicants.find((group) => group.jobId === jobId);
     if (!jobApplicants) return { totalApplicants: 0, pendingApplicants: 0, statusBreakdown: [] };
-  
+
     const totalApplicants = jobApplicants.statuses
       .filter((status) => status.status !== "Applying")
       .reduce((sum, status) => sum + status.count, 0);
-  
+
     const pendingApplicants = jobApplicants.statuses
       .filter(
         (status) =>
@@ -55,32 +61,45 @@ const EmployerPostsPage = () => {
           status.status !== "Applying"
       )
       .reduce((sum, status) => sum + status.count, 0);
-  
+
     const statusBreakdown = jobApplicants.statuses.map((status) => ({
       status: status.status,
       count: status.count,
     }));
-  
+
     return { totalApplicants, pendingApplicants, statusBreakdown };
   };
 
+  // Filter jobs based on the search query
+  const filteredJobs = jobs.filter((job) =>
+    job.title.toLowerCase().includes(searchQuery) ||
+    job.location.toLowerCase().includes(searchQuery) ||
+    job.employmentType.toLowerCase().includes(searchQuery) // Include job type in the search
+  );
+
   const offset = currentPage * jobsPerPage;
-  const currentJobs = jobs.slice(offset, offset + jobsPerPage);
-  const pageCount = Math.ceil(jobs.length / jobsPerPage);
+  const currentJobs = filteredJobs.slice(offset, offset + jobsPerPage);
+  const pageCount = Math.ceil(filteredJobs.length / jobsPerPage);
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex-1 p-4 md:p-10">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-left text-black">My Posts</h1>
           </div>
+          <SearchBar
+            placeholder="Search Posts"
+            onSearch={handleSearch}
+            width="20%" // Even shorter width
+            height="40px" // Increased height remains the same
+          />
         </div>
 
         {/* Job Posts */}
         <div className="flex flex-col space-y-4">
-        {currentJobs.map((job) => {
+          {currentJobs.map((job) => {
             const { totalApplicants, pendingApplicants, statusBreakdown } = calculateApplicants(job._id);
             return (
               <PostCard
@@ -96,7 +115,7 @@ const EmployerPostsPage = () => {
               />
             );
           })}
-          {jobs.length === 0 && <p className="text-black text-center">No job posts found.</p>}
+          {filteredJobs.length === 0 && <p className="text-black text-center">No job posts found.</p>}
         </div>
 
         {/* Pagination */}
@@ -107,5 +126,3 @@ const EmployerPostsPage = () => {
 };
 
 export default EmployerPostsPage;
-
-
