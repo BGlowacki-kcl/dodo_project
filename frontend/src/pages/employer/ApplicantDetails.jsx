@@ -100,7 +100,10 @@ const ApplicantDetails = () => {
         break;
 
       case "Shortlisted":
-        shortlistCaption = "Move to Code Challenge";
+        if (codeChallenge?.assessments?.length > 0) {
+          shortlistCaption = "Move to Code Challenge";
+        }
+        shortlistCaption = "Move to In Review";
         break;
 
       case "In Review":
