@@ -20,7 +20,7 @@ import {
   LineElement,
   Filler,
 } from "chart.js";
-import { getApplicationsData } from "../../services/applicationService";
+import { getApplicationsData } from "../../services/application.service";
 import { FaChartPie, FaClipboardList } from "react-icons/fa";
 import WhiteBox from "../../components/WhiteBox";
 import StatBox from "../../components/StatBox";
