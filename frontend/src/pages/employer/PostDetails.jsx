@@ -16,6 +16,14 @@ import { getJobById, updateJob } from "../../services/job.service.js";
 import DeadlineBadge from "../../components/DeadlineBadge";
 import { FaEdit, FaSave } from "react-icons/fa";
 
+/**
+ * Tabs Component
+ *
+ * Provides navigation between different sections of the Post Details page:
+ * - **Statistics Tab**: Displays job-related statistics such as total applicants and status breakdown.
+ * - **Applicants Tab**: Shows a list of applicants for the job.
+ * - **Post Tab**: Displays detailed job post information and allows editing (if applicable).
+ */
 const Tabs = ({ activeTab, setActiveTab }) => (
   <div className="flex space-x-2 bg-gray-100 p-2 rounded-full shadow-md">
     <button
