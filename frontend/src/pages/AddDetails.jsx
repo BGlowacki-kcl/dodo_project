@@ -29,6 +29,7 @@ const AddDetails = () => {
     location: "",
     phoneNumber: "",
     dob: "",
+    skills: "",
     education: [],
     experience: [],
     skills: [],
@@ -69,6 +70,7 @@ const AddDetails = () => {
       location: data?.personal?.location || "",
       phoneNumber: data?.personal?.phoneNumber || "",
       dob: data?.personal?.dateOfBirth || "",
+      skills: data?.personal?.skills?.split(",").map(skill => skill.trim()) || [],
       education: data?.education?.map((edu) => ({
         institution: edu?.University || "",
         degree: edu?.Degree || "",
@@ -85,7 +87,7 @@ const AddDetails = () => {
         startDate: "",
         endDate: "",
       })) || [],
-      skills: data?.projects?.reduce((acc, project) => {
+      projects: data?.projects?.reduce((acc, project) => {
         const projectSkills = project?.skills?.split(",").map(skill => skill.trim()) || [];
         return [...new Set([...acc, ...projectSkills])];
       }, []) || [],
@@ -145,6 +147,12 @@ const AddDetails = () => {
     setLoading(true);
     try {
       const response = await userService.updateUser(userData);
+      
+      // Update local user data state with the response data if available
+      if (response && response.data) {
+        setUserData(response.data);
+      }
+      
       const successMessage = response?.message || "Profile updated successfully!";
       showNotification(successMessage, "success");
       navigate("/");
@@ -168,6 +176,28 @@ const AddDetails = () => {
 
   const handleDoThisLater = () => {
     setShowModal(true);
+  };
+
+  // Modify the handleSaveSection function to use the existing updateUser method
+  const handleSaveSection = async (section, userData) => {
+    setLoading(true);
+    try {
+      console.log("User data: ", userData);
+      // Use the existing updateUser method which accepts the full user object
+      const response = await userService.updateUser(userData);
+      console.log("Response: ", response);
+      // Update local user data state with the response data if available
+      if (response && response.data) {
+        setUserData(response.data);
+      }
+      
+      const successMessage = response?.message || `${section.charAt(0).toUpperCase() + section.slice(1)} updated successfully!`;
+      showNotification(successMessage, "success");
+    } catch (error) {
+      showNotification(error.message || `Failed to update ${section}`, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -235,7 +265,6 @@ const AddDetails = () => {
             <UserDetails
               user={userData}
               editable={true}
-              onEdit={handleSubmit}
               onChange={(e) => {
                 const { name, value } = e.target;
                 setUserData((prev) => ({ ...prev, [name]: value }));
@@ -250,6 +279,7 @@ const AddDetails = () => {
                   [section]: prev[section].filter((_, i) => i !== index),
                 }));
               }}
+              onSave={handleSaveSection}
             />
 
             {/* Complete Profile Button at Bottom */}

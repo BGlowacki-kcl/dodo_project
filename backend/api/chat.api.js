@@ -18,15 +18,14 @@ Rules:
     "surname": "...",
     "phoneNumber": "...",
     "portfolio website": "...",
+    "skills": "...",
     "LinkedIn website": "...",
     "GitHub website": "...",
-    "dateOfBirth": "..." (yyyy-mm-dd)
   },
   "experience": [
     {
       "company": "...",
       "position": "...",
-      "skills": "...",
       "description": "...",
       "fieldOfWork": "..."
     }
@@ -42,7 +41,6 @@ Rules:
   "projects": [
     {
       "name": "...",
-      "skills": "...",
       "description": "..."
     }
   ]
@@ -52,6 +50,7 @@ Accuracy & Completeness:
 1. Extract all relevant information and categorize it appropriately.
 2. Do not add extra fields or modify the structure.
 3. Do not include placeholder text (e.g., "N/A" or "Unknown"). Simply omit missing fields.
+4. Skills section should be a comma-separated list of skills, with only one skill between commas.
 
 Your response should ONLY contain the formatted JSON data—no explanations, notes, or additional text.
 
