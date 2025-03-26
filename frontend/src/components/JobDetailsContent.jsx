@@ -131,15 +131,39 @@ const JobDetailsContent = ({ job, isEmployer }) => {
     <h2 className="text-xl md:text-2xl font-semibold mb-4 flex items-center">
       <FaCode className="mr-2" /> Code Assessment?
     </h2>
-    <p className="text-gray-700">
-      {isEmployer
-        ? job.assessments && job.assessments.length > 0
-          ? "You have added a code assessment for this job."
-          : "You did not add any code assessments for this job."
-        : job.assessments && job.assessments.length > 0
-        ? "Yes, this job requires taking an assessment during the application process."
-        : "No, this job does not require taking an assessment during the application process."}
-    </p>
+    {isEmployer ? (
+      job.assessments && job.assessments.length > 0 ? (
+        <div className="space-y-4">
+          {job.assessments.map((assessment, index) => (
+            <div
+              key={index}
+              className="border border-gray-300 rounded-lg overflow-hidden shadow-md"
+            >
+              <div className="w-full text-left px-4 py-3 bg-gray-100">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {assessment.title}
+                </h3>
+              </div>
+              <div className="p-4 bg-white">
+                <p className="text-base text-gray-700">
+                  {assessment.description || "No description provided."}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-700">You did not add any code assessments for this job.</p>
+      )
+    ) : job.assessments && job.assessments.length > 0 ? (
+      <p className="text-gray-700">
+        Yes, this job requires taking an assessment during the application process.
+      </p>
+    ) : (
+      <p className="text-gray-700">
+        No, this job does not require taking an assessment during the application process.
+      </p>
+    )}
   </WhiteBox>
 </div>
     </div>
