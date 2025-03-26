@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { getAllUserApplications } from "../services/applicationService";
+import { getAllUserApplications } from "../services/application.service.js";
 import ApplicationCards from "./ApplicationCards";
 import { FaFolderOpen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -20,52 +20,54 @@ const ApplicantActivity = ({ userId }) => {
   const [applicationsSent, setApplicationsSent] = useState(0);
   const [rejections, setRejections] = useState(0);
   const [acceptances, setAcceptances] = useState(0);
-
-    const [currentPage, setCurrentPage] = useState(0);
-    const itemsPerPage = 5;
-
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 5;
   const navigate = useNavigate();
+
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch user applications and update statistics when the component mounts.
+   */
+  useEffect(() => {
+    fetchApplications();
+  }, [userId]);
 
   // ----------------------------- Data Fetching -----------------------------
   /**
    * Fetches all user applications and updates the statistics.
    */
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const applications = await getAllUserApplications(userId);
-        setApplications(applications);
-        setApplicationsSent(applications.length);
-        setRejections(
-          applications.filter((app) => app.status === "Rejected").length
-        );
-        setAcceptances(
-          applications.filter((app) => app.status === "Accepted").length
-        );
-      } catch (error) {
-        console.error("Error fetching applications:", error);
-      }
-    };
+  const fetchApplications = async () => {
+    try {
+      const applications = await getAllUserApplications(userId);
+      setApplications(applications);
+      setApplicationsSent(applications.length);
+      setRejections(applications.filter((app) => app.status === "Rejected").length);
+      setAcceptances(applications.filter((app) => app.status === "Accepted").length);
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+    }
+  };
 
-    fetchApplications();
-  }, [userId]);
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Handles page change for pagination.
+   * @param {Object} selected - The selected page object.
+   */
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
 
-    const pageCount = Math.ceil(applications.length / itemsPerPage);
-    const offset = currentPage * itemsPerPage;
-    const currentItems = applications.slice(offset, offset + itemsPerPage);
-
-    const handlePageClick = ({ selected }) => {
-        setCurrentPage(selected);
-    };
+  // ----------------------------- Derived Data -----------------------------
+  const pageCount = Math.ceil(applications.length / itemsPerPage);
+  const offset = currentPage * itemsPerPage;
+  const currentItems = applications.slice(offset, offset + itemsPerPage);
 
   // ----------------------------- Render -----------------------------
   return (
     <div className="container mx-auto p-4">
       <div className="text-4xl font-bold mb-8 text-left text-black">
         {/* Header */}
-        <h1 className="text-4xl font-bold mb-8 text-left text-black">
-          Activity
-        </h1>
+        <h1 className="text-4xl font-bold mb-8 text-left text-black">Activity</h1>
 
         {/* Statistics */}
         <WhiteBox>
@@ -101,7 +103,6 @@ const ApplicantActivity = ({ userId }) => {
           />
           <Pagination pageCount={pageCount} onPageChange={handlePageClick} />
         </WhiteBox>
-
       </div>
     </div>
   );

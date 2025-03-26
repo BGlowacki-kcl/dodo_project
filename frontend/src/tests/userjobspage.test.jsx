@@ -3,8 +3,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import UserJobsPage from "../pages/user/UserJobsPage";
 import { userService } from "../services/user.service";
 //frontend\src\services\user.service.js
-import { getAllJobs } from "../services/jobService";
-import { getAllUserApplications } from "../services/applicationService";
+import { getAllJobs } from "../services/job.service.js";
+import { getAllUserApplications } from "../services/application.service.js";
 import { getShortlist } from "../services/shortlist.service";
 import { vi } from 'vitest';
 

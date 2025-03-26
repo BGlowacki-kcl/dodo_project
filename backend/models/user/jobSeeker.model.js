@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import User from "./user.model.js";
-const { Schema } = mongoose;
 
 const jobSeeker = User.discriminator(
     "jobSeeker",
@@ -21,15 +20,22 @@ const jobSeeker = User.discriminator(
             title: String,
             startDate: Date,
             endDate: Date,
-            description: String
+            description: String,
             }
         ],
         
         skills: [String],
-        
+
         resume: {
-            type: String // or could store file references, or a Buffer
+            type: String
         },
+
+        projects: [String],
+
+        websites: {
+            github: String,
+            linkedin: String
+        }
     })
 );
 

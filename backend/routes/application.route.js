@@ -8,15 +8,15 @@ const router = express.Router();
 // router.put("/:id/status", applicationController.updateApplicationStatus);
 
 
-router.get("/all", checkRole(["jobSeeker"]), applicationController.getAllApplications);
-router.get("/byId", checkRole(["jobSeeker", "employer"]), applicationController.getOneApplication);
+router.get("/all", checkRole([]), applicationController.getAllApplications);
+router.get("/byId", checkRole([]), applicationController.getOneApplication);
 router.post("/apply", checkRole(["jobSeeker"]), applicationController.createApplication);
 router.delete("/withdraw", checkRole(["jobSeeker", "employer"]), applicationController.withdrawApplication);
 router.put("/status", checkRole(["employer", "jobSeeker"]), applicationController.updateApplicationStatus); // to reject -> /status?id=xxx&reject=true, to progress /status?id=xxx
 router.put("/deadline", checkRole(["jobSeeker"]), applicationController.setAssessmentDeadline);
 router.get("/deadline", checkRole(["jobSeeker"]), applicationController.getAssessmentDeadline);
 router.get("/byJobId", checkRole(["employer"]), applicationController.getApplicants);
-router.get("/dashboard", checkRole(["employer"]), applicationController.getDashboardData);
+router.get("/data", checkRole(["employer"]), applicationController.getApplicationsData);
 router.put("/save", checkRole(["jobSeeker"]), applicationController.saveApplication);
 router.put("/submit", checkRole(["jobSeeker"]), applicationController.submitApplication);
 

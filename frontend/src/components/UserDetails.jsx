@@ -1,11 +1,89 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WhiteBox from "./WhiteBox";
 import { FaEdit, FaSave, FaTrash, FaPlus, FaGraduationCap, FaBriefcase, FaTools, FaUser, FaLink } from "react-icons/fa";
 import { useNotification } from "../context/notification.context"; // Import useNotification
+import { userService } from "../services/user.service";
 
-const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, isProfilePage }) => {
+const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, isProfilePage, editable = false, onSave }) => {
   const [dateError, setDateError] = useState("");
   const showNotification = useNotification(); // Initialize notification hook
+  // Track editing state internally if editable prop is true
+  const [editingSections, setEditingSections] = useState({
+    personal: false,
+    links: false,
+    education: false,
+    experience: false,
+    skills: false
+  });
+
+  // Set all sections to editable if editable prop is true
+  useEffect(() => {
+    if (editable) {
+      setEditingSections({
+        personal: true,
+        links: true,
+        education: true,
+        experience: true,
+        skills: true
+      });
+    }
+  }, [editable]);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userData = await userService.getUserProfile();
+        console.log("User data", userData);
+        user.email = userData.email;
+      } catch (error) {
+        showNotification(error.message || "Failed to fetch user data", "error");
+      }
+    };
+
+    fetchUserProfile();
+  });
+
+  // Get the effective editing state (either from props or internal state)
+  const effectiveEditing = editable ? editingSections : isEditing;
+
+  // Handle saving a specific section
+  const handleSectionSave = (section) => {
+    if (editable) return; // If globally editable, don't handle section saves individually
+    console.log("SAving section", section);
+    console.log("User", user);
+    // Call the parent's onSave handler with the section name and entire user object
+    // This allows using the existing updateUser function which expects the complete user object
+    console.log("onSave", onSave);
+    if (onSave) {
+      console.log("Calling onSave");
+      onSave(section, user);
+      showNotification(`${section.charAt(0).toUpperCase() + section.slice(1)} information updated successfully`, "success");
+    }
+    
+    // Then toggle editing mode off
+    if (onEdit) {
+      onEdit(section);
+    } else {
+      setEditingSections(prev => ({
+        ...prev,
+        [section]: false
+      }));
+    }
+  };
+
+  // Handle internal section editing toggle
+  const handleSectionEdit = (section) => {
+    if (editable) return; // If globally editable, don't toggle sections
+    
+    if (onEdit) {
+      onEdit(section);
+    } else {
+      setEditingSections(prev => ({
+        ...prev,
+        [section]: !prev[section]
+      }));
+    }
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -33,6 +111,35 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
     return true;
   };
 
+  // Handle nested field changes
+  const handleNestedChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name.includes('.')) {
+      // Handle nested fields like "education.0.institution"
+      const [section, indexStr, field] = name.split('.');
+      const index = parseInt(indexStr, 10);
+      
+      if (!isNaN(index)) {
+        const updatedItems = [...user[section]];
+        updatedItems[index] = {
+          ...updatedItems[index],
+          [field]: value
+        };
+        
+        const updatedUser = {
+          ...user,
+          [section]: updatedItems
+        };
+        
+        onChange({ target: { name: section, value: updatedItems } });
+      }
+    } else {
+      // Handle normal fields
+      onChange(e);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* First Row: Personal Information and Links */}
@@ -44,21 +151,15 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
               <FaUser className="inline-block mr-2" /> Personal Information
             </h2>
             {isProfilePage && (
-              isEditing.personal ? (
+              effectiveEditing.personal ? (
                 <FaSave
                   className="cursor-pointer"
-                  onClick={() => {
-                    console.log("Save icon clicked for personal section"); // Debug log
-                    onEdit("personal");
-                  }}
+                  onClick={() => handleSectionSave("personal")}
                 />
               ) : (
                 <FaEdit
                   className="cursor-pointer"
-                  onClick={() => {
-                    console.log("Edit icon clicked for personal section"); // Debug log
-                    onEdit("personal");
-                  }}
+                  onClick={() => handleSectionEdit("personal")}
                 />
               )
             )}
@@ -66,12 +167,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
           <div className="space-y-2">
             <p className="text-lg text-black">
               <strong>Name:</strong>{" "}
-              {isEditing.personal ? (
+              {effectiveEditing.personal ? (
                 <input
                   type="text"
                   name="name"
                   value={user.name || ""}
-                  onChange={onChange}
+                  onChange={handleNestedChange}
                   className="border p-1 w-full text-base"
                 />
               ) : (
@@ -80,12 +181,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             </p>
             <p className="text-lg text-black">
               <strong>Email:</strong>{" "}
-              {isEditing.personal ? (
+              {effectiveEditing.personal ? (
                 <input
+                  readOnly
                   type="text"
                   name="email"
-                  value={user.email || ""}
-                  onChange={onChange}
+                  value={user.email}
                   className="border p-1 w-full text-base"
                 />
               ) : (
@@ -94,12 +195,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             </p>
             <p className="text-lg text-black">
               <strong>Phone Number:</strong>{" "}
-              {isEditing.personal ? (
+              {effectiveEditing.personal ? (
                 <input
                   type="text"
                   name="phoneNumber"
                   value={user.phoneNumber || ""}
-                  onChange={onChange}
+                  onChange={handleNestedChange}
                   className="border p-1 w-full text-base"
                 />
               ) : (
@@ -108,12 +209,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             </p>
             <p className="text-lg text-black">
               <strong>Location:</strong>{" "}
-              {isEditing.personal ? (
+              {effectiveEditing.personal ? (
                 <input
                   type="text"
                   name="location"
                   value={user.location || ""}
-                  onChange={onChange}
+                  onChange={handleNestedChange}
                   className="border p-1 w-full text-base"
                 />
               ) : (
@@ -130,22 +231,22 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
               <FaLink className="inline-block mr-2" /> Links
             </h2>
             {isProfilePage && (
-              isEditing.links ? (
-                <FaSave className="cursor-pointer" onClick={() => onEdit("links")} />
+              effectiveEditing.links ? (
+                <FaSave className="cursor-pointer" onClick={() => handleSectionSave("links")} />
               ) : (
-                <FaEdit className="cursor-pointer" onClick={() => onEdit("links")} />
+                <FaEdit className="cursor-pointer" onClick={() => handleSectionEdit("links")} />
               )
             )}
           </div>
           <div className="space-y-2">
             <p className="text-lg text-black">
               <strong>GitHub:</strong>{" "}
-              {isEditing.links ? (
+              {effectiveEditing.links ? (
                 <input
                   type="text"
                   name="github"
                   value={user.github || ""}
-                  onChange={onChange}
+                  onChange={handleNestedChange}
                   className="border p-1 w-full text-base"
                 />
               ) : (
@@ -161,12 +262,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             </p>
             <p className="text-lg text-black">
               <strong>LinkedIn:</strong>{" "}
-              {isEditing.links ? (
+              {effectiveEditing.links ? (
                 <input
                   type="text"
                   name="linkedin"
                   value={user.linkedin || ""}
-                  onChange={onChange}
+                  onChange={handleNestedChange}
                   className="border p-1 w-full text-base"
                 />
               ) : (
@@ -191,10 +292,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             <FaGraduationCap className="inline-block mr-2" /> Education
           </h2>
           {isProfilePage && (
-            isEditing.education ? (
-              <FaSave className="cursor-pointer" onClick={() => onEdit("education")} />
+            effectiveEditing.education ? (
+              <FaSave className="cursor-pointer" onClick={() => handleSectionSave("education")} />
             ) : (
-              <FaEdit className="cursor-pointer" onClick={() => onEdit("education")} />
+              <FaEdit className="cursor-pointer" onClick={() => handleSectionEdit("education")} />
             )
           )}
         </div>
@@ -204,12 +305,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
               <div key={index} className="p-4 border rounded-lg relative">
                 <p className="text-lg text-black">
                   <strong>Institution:</strong>{" "}
-                  {isEditing.education ? (
+                  {effectiveEditing.education ? (
                     <input
                       type="text"
                       name={`education.${index}.institution`}
                       value={edu.institution || ""}
-                      onChange={onChange}
+                      onChange={handleNestedChange}
                       className="border p-1 w-full text-base"
                     />
                   ) : (
@@ -218,12 +319,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                 </p>
                 <p className="text-lg text-black">
                   <strong>Degree:</strong>{" "}
-                  {isEditing.education ? (
+                  {effectiveEditing.education ? (
                     <input
                       type="text"
                       name={`education.${index}.degree`}
                       value={edu.degree || ""}
-                      onChange={onChange}
+                      onChange={handleNestedChange}
                       className="border p-1 w-full text-base"
                     />
                   ) : (
@@ -232,12 +333,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                 </p>
                 <p className="text-lg text-black">
                   <strong>Field of Study:</strong>{" "}
-                  {isEditing.education ? (
+                  {effectiveEditing.education ? (
                     <input
                       type="text"
                       name={`education.${index}.fieldOfStudy`}
                       value={edu.fieldOfStudy || ""}
-                      onChange={onChange}
+                      onChange={handleNestedChange}
                       className="border p-1 w-full text-base"
                     />
                   ) : (
@@ -246,12 +347,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                 </p>
                 <p className="text-lg text-black">
                   <strong>Start Date:</strong>{" "}
-                  {isEditing.education ? (
+                  {effectiveEditing.education ? (
                     <input
                       type="date"
                       name={`education.${index}.startDate`}
                       value={formatDateForInput(edu.startDate)}
-                      onChange={onChange}
+                      onChange={handleNestedChange}
                       className="border p-1 w-full text-base"
                     />
                   ) : (
@@ -260,19 +361,19 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                 </p>
                 <p className="text-lg text-black">
                   <strong>End Date:</strong>{" "}
-                  {isEditing.education ? (
+                  {effectiveEditing.education ? (
                     <input
                       type="date"
                       name={`education.${index}.endDate`}
                       value={formatDateForInput(edu.endDate)}
-                      onChange={onChange}
+                      onChange={handleNestedChange}
                       className="border p-1 w-full text-base"
                     />
                   ) : (
                     <span className="text-base">{formatDate(edu.endDate)}</span>
                   )}
                 </p>
-                {isEditing.education && (
+                {effectiveEditing.education && (
                   <FaTrash
                     className="absolute top-2 right-2 cursor-pointer text-red-500"
                     onClick={() => onRemove("education", index)}
@@ -283,7 +384,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
           ) : (
             <p className="text-black italic">No education details available.</p>
           )}
-          {isEditing.education && (
+          {effectiveEditing.education && (
             <button
               className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
               onClick={() => onAdd("education")}
@@ -301,10 +402,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             <FaBriefcase className="inline-block mr-2" /> Experience
           </h2>
           {isProfilePage && (
-            isEditing.experience ? (
-              <FaSave className="cursor-pointer" onClick={() => onEdit("experience")} />
+            effectiveEditing.experience ? (
+              <FaSave className="cursor-pointer" onClick={() => handleSectionSave("experience")} />
             ) : (
-              <FaEdit className="cursor-pointer" onClick={() => onEdit("experience")} />
+              <FaEdit className="cursor-pointer" onClick={() => handleSectionEdit("experience")} />
             )
           )}
         </div>
@@ -317,12 +418,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                   <div className="flex-1">
                     <p className="text-lg text-black">
                       <strong>Company:</strong>{" "}
-                      {isEditing.experience ? (
+                      {effectiveEditing.experience ? (
                         <input
                           type="text"
                           name={`experience.${index}.company`}
                           value={exp.company || ""}
-                          onChange={onChange}
+                          onChange={handleNestedChange}
                           className="border p-1 w-full text-base"
                         />
                       ) : (
@@ -331,12 +432,12 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                     </p>
                     <p className="text-lg text-black">
                       <strong>Title:</strong>{" "}
-                      {isEditing.experience ? (
+                      {effectiveEditing.experience ? (
                         <input
                           type="text"
                           name={`experience.${index}.title`}
                           value={exp.title || ""}
-                          onChange={onChange}
+                          onChange={handleNestedChange}
                           className="border p-1 w-full text-base"
                         />
                       ) : (
@@ -345,7 +446,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                     </p>
                     <p className="text-lg text-black">
                       <strong>Start Date:</strong>{" "}
-                      {isEditing.experience ? (
+                      {effectiveEditing.experience ? (
                         <input
                           type="date"
                           name={`experience.${index}.startDate`}
@@ -353,7 +454,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                           onChange={(e) => {
                             const newStartDate = e.target.value;
                             const isValid = validateDates(newStartDate, exp.endDate);
-                            if (isValid) onChange(e);
+                            if (isValid) handleNestedChange(e);
                           }}
                           className="border p-1 w-full text-base"
                         />
@@ -363,7 +464,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                     </p>
                     <p className="text-lg text-black">
                       <strong>End Date:</strong>{" "}
-                      {isEditing.experience ? (
+                      {effectiveEditing.experience ? (
                         <input
                           type="date"
                           name={`experience.${index}.endDate`}
@@ -371,7 +472,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                           onChange={(e) => {
                             const newEndDate = e.target.value;
                             const isValid = validateDates(exp.startDate, newEndDate);
-                            if (isValid) onChange(e);
+                            if (isValid) handleNestedChange(e);
                           }}
                           className="border p-1 w-full text-base"
                         />
@@ -386,11 +487,11 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                     <p className="text-lg text-black">
                       <strong>Description:</strong>
                     </p>
-                    {isEditing.experience ? (
+                    {effectiveEditing.experience ? (
                       <textarea
                         name={`experience.${index}.description`}
                         value={exp.description || ""}
-                        onChange={onChange}
+                        onChange={handleNestedChange}
                         className="border p-1 w-full text-base"
                       />
                     ) : (
@@ -398,7 +499,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
                     )}
                   </div>
                 </div>
-                {isEditing.experience && (
+                {effectiveEditing.experience && (
                   <FaTrash
                     className="absolute top-2 right-2 cursor-pointer text-red-500"
                     onClick={() => onRemove("experience", index)}
@@ -410,7 +511,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             <p className="text-black italic">No experience details available.</p>
           )}
           {dateError && <p className="text-red-500 text-sm">{dateError}</p>}
-          {isEditing.experience && (
+          {effectiveEditing.experience && (
             <button
               className="flex items-center justify-center p-2 border rounded-lg text-blue-500"
               onClick={() => onAdd("experience")}
@@ -428,23 +529,27 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
             <FaTools className="inline-block mr-2" /> Skills
           </h2>
           {isProfilePage && (
-            isEditing.skills ? (
-              <FaSave className="cursor-pointer" onClick={() => onEdit("skills")} />
+            effectiveEditing.skills ? (
+              <FaSave className="cursor-pointer" onClick={() => handleSectionSave("skills")} />
             ) : (
-              <FaEdit className="cursor-pointer" onClick={() => onEdit("skills")} />
+              <FaEdit className="cursor-pointer" onClick={() => handleSectionEdit("skills")} />
             )
           )}
         </div>
         <div className="space-y-4">
-          {isEditing.skills ? (
+          {effectiveEditing.skills ? (
             <div>
               {user.skills?.map((skill, index) => (
-                <div key={index} className="flex items-center">
+                <div key={index} className="flex items-center mb-2">
                   <input
                     type="text"
                     name={`skills.${index}`}
                     value={skill || ""}
-                    onChange={onChange}
+                    onChange={(e) => {
+                      const updatedSkills = [...user.skills];
+                      updatedSkills[index] = e.target.value;
+                      onChange({ target: { name: "skills", value: updatedSkills } });
+                    }}
                     className="border p-1 flex-1 text-base"
                   />
                   <FaTrash

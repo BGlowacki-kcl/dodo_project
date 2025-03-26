@@ -1,26 +1,45 @@
-import mongoose, { get } from "mongoose";
+/**
+ * Application Controller
+ * 
+ * This module handles all job application-related operations, including:
+ * - Retrieving, updating, and deleting applications
+ * - Managing application status and progression
+ * - Handling assessment deadlines
+ * - Fetching applicants for a job
+ * - Providing employer dashboard insights
+ * - Saving and submitting applications
+ * 
+ * The controller interacts with the Application, Job, and User models.
+ */
+
+import mongoose from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
-import codeAssessment from "../models/codeAssessment.js";
-import codeSubmission from "../models/codeSubmission.js";
-
-const createResponse = (success, message, data = null) => ({
-    success,
-    message,
-    ...(data && { data }),
-});
-
-const handleError = (res, error, defaultMessage = "Server error") => {
-    console.error(error);
-    const statusCode = error.status || 500;
-    return res.status(statusCode).json(createResponse(false, error.message || defaultMessage));
-};
+import { 
+    createResponse, 
+    handleError, 
+    formatAnswers, 
+    isValidStatus, 
+    verifyJobOwnership,
+    getTotalStatus,
+    getJobsByEmployerHelper,
+    getLineGraphData 
+} from "./helpers.js";
+import CodeAssessment from "../models/codeAssessment.model.js";
+import CodeSubmission from "../models/codeSubmission.model.js";
 
 
-
+/**
+ * Application controller handling all application-related operations
+ */
 export const applicationController = {
-  
+    /**
+     * Retrieves a single application by job ID and user ID
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async getApplication(req, res) {
         try {
             const { jobId } = req.params;
@@ -36,13 +55,18 @@ export const applicationController = {
         }
     },
 
+    /**
+     * Updates the status of an application
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async updateApplicationStatus(req, res) {
         try {
             const { id } = req.params;
             const { status } = req.body;
 
-            const validStatuses = ["Applying", "Applied", "In Review", "Shortlisted", "Rejected", "Accepted"];
-            if (!validStatuses.includes(status)) {
+            if (!isValidStatus(status)) {
                 return res.status(400).json(createResponse(false, "Invalid application status"));
             }
 
@@ -51,9 +75,8 @@ export const applicationController = {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
 
-            // Ensure only the employer who posted the job can update the application status
-            const job = await Job.findById(application.job);
-            if (!job || job.postedBy.toString() !== req.uid) {
+            const isOwner = await verifyJobOwnership(application.job._id, req.uid);
+            if (!isOwner) {
                 return res.status(403).json(createResponse(false, "Unauthorized to update application status"));
             }
 
@@ -66,23 +89,30 @@ export const applicationController = {
         }
     },
 
+    /**
+     * Retrieves all applicants for a job
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async getApplicants(req, res) {
         try {
             const { jobId } = req.query;
-
             const job = await Job.findById(jobId);
             if (!job) {
                 return res.status(403).json(createResponse(false, "Unauthorized to view applicants for this job"));
             }
 
-            // Exclude applications in the "applying" stage
-            const applications = await Application.find({ job: jobId, status: { $ne: "Applying" } }).populate("applicant", "name email");
+            const applications = await Application
+                .find({ job: jobId, status: { $ne: "Applying" } })
+                .populate("applicant", "name email");
 
             const applicants = applications.map(app => ({
                 id: app.applicant._id,
                 name: app.applicant.name,
                 email: app.applicant.email,
                 status: app.status,
+                submittedAt: app.submittedAt,
                 applicationId: app._id
             }));
 
@@ -92,22 +122,33 @@ export const applicationController = {
         }
     },
 
+    /**
+     * Retrieves all applications for the authenticated user
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async getAllApplications(req, res) {
         try {
-            const { uid } = req;
-            const user = await User.findOne({ uid: uid });
-            const filter = { applicant: user._id };
-            const apps = await Application.find(filter).populate("job");
-            return res.json(createResponse(true, "Applications fetched", apps));
-        } catch (err) {
-            return handleError(res, err, "Error fetching applications");
+            const user = await User.findOne({ uid: req.uid });
+            const applications = await Application
+                .find({ applicant: user._id })
+                .populate("job");
+            return res.json(createResponse(true, "Applications fetched", applications));
+        } catch (error) {
+            return handleError(res, error, "Error fetching applications");
         }
     },
 
+    /**
+     * Retrieves detailed information about a single application
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async getOneApplication(req, res) {
         try {
             const { id } = req.query; // Application ID
-
 
             // Fetch application and populate applicant details
             const app = await Application.findById(id)
@@ -137,8 +178,8 @@ export const applicationController = {
             // Fetch assessments and submissions related to the application
             const job = await Job.findById(app.job);
             const assessmentIds = job.assessments;
-            const assessments = await codeAssessment.find({ _id: { $in: assessmentIds } });
-            const submissions = await codeSubmission.find({ application: app._id });
+            const assessments = await CodeAssessment.find({ _id: { $in: assessmentIds } });
+            const submissions = await CodeSubmission.find({ application: app._id });
             const assessmentSubmission = { assessments, submissions };
             console.log("assessmentSubmission: ", assessmentSubmission);
 
@@ -151,6 +192,12 @@ export const applicationController = {
         }
     },
 
+    /**
+     * Retrieves assessment deadline for an application
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async getAssessmentDeadline(req, res) {
         try {
             const { id } = req.query;
@@ -158,55 +205,58 @@ export const applicationController = {
             if (!application) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
-            if(!application.finishAssessmentDate){
-                return res.json(createResponse(true, "No assessment deadline set", -1));
-            }
-            return res.json(createResponse(true, "Job deadline retrieved", application.finishAssessmentDate));
-        } catch (err) {
-            return handleError(res, err, "Error retrieving job deadline");
+
+            const deadline = application.finishAssessmentDate || null;
+            const message = deadline ? "No assessment deadline set" : "Job deadline retrieved";
+            return res.json(createResponse(true, message, deadline));
+        } catch (error) {
+            return handleError(res, error, "Error retrieving job deadline");
         }
     },
 
+    /**
+     * Sets assessment deadline for an application
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async setAssessmentDeadline(req, res) {
         try {
             const { id } = req.query;
             const { deadline } = req.body;
+            console.log(id);
             const application = await Application.findById(id);
             if (!application) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
+            console.log(application);
             application.finishAssessmentDate = deadline;
             await application.save();
             return res.json(createResponse(true, "Assessment deadline set", deadline));
-        } catch (err) {
-            return handleError(res, err, "Error setting assessment deadline");
+        } catch (error) {
+            console.log(error);
+            return handleError(res, error, "Error setting assessment deadline");
         }
     },
-    
+
+    /**
+     * Creates a new job application
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async createApplication(req, res) {
         try {
-            const { jobId, coverLetter, answers } = req.body;
-            const { uid } = req;
-    
+            const { jobId, coverLetter, answers = [] } = req.body;
             if (!jobId) {
-                return res.status(400).json(createResponse(false, "Missing jobId in body"));
+                return res.status(400).json(createResponse(false, "Invalid request data"));
             }
-    
-            if (!answers || !Array.isArray(answers) || answers.some(answer => !answer.questionId || !answer.answerText)) {
-                return res.status(400).json(createResponse(false, "Invalid answers format"));
-            }
-    
-            const user = await User.findOne({ uid });
+
+            const user = await User.findOne({ uid: req.uid });
             if (!user) {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
-    
-            // Convert questionId to ObjectId
-            const formattedAnswers = answers.map((answer) => ({
-                questionId: new mongoose.Types.ObjectId(answer.questionId),
-                answerText: answer.answerText,
-            }));
-    
+
             const newApp = await Application.create({
                 job: jobId,
                 applicant: user._id,
@@ -214,136 +264,127 @@ export const applicationController = {
                 answers: formattedAnswers,
                 status: "Applying",
             });
-    
+
             await Job.findByIdAndUpdate(jobId, { $addToSet: { applicants: user._id } });
-    
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
-        } catch (err) {
-            return handleError(res, err, "Error creating application");
+        } catch (error) {
+            return res.status(500).json(createResponse(false, "Error creating application"));
         }
     },
 
+    /**
+     * Withdraws an application
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async withdrawApplication(req, res) {
         try {
-
             const { id } = req.query;
-            const { uid } = req;
-            const user = await User.findOne({ uid: uid });
+            const user = await User.findOne({ uid: req.uid });
+            const application = await Application.findById(id);
 
-            const app = await Application.findById(id);
-            if (!app) {
+            if (!application) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
 
-            if(app.applicant.equals(user._id) == false) {
+            if (!application.applicant.equals(user._id)) {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
-            await app.deleteOne();
-            res.json(createResponse(true, "Application withdrawn", null));
-        }
-        catch (err) {
-            console.error("Error withdrawing application:", err);
-            res.status(500).json(createResponse(false, err.message));
+
+            await application.deleteOne();
+            return res.json(createResponse(true, "Application withdrawn"));
+        } catch (error) {
+            return res.status(500).json(createResponse(false, "Error withdrawing application"));
         }
     },
 
-    async updateApplicationStatus(req, res) {
+    /**
+     * Updates application status with progression logic
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
+    async updateApplicationProgress(req, res) {
         try {
-            const { id } = req.query;
-            let toReject = false;
-            console.log("req.query: ", req.query);
-            if(req.query.reject){
-                toReject = true;
-            }
-            const { uid } = req;
-            const user = await User.findOne({ uid: uid });
-            if (!user) {    
-                return res.status(403).json(createResponse(false, "Unauthorized"));
-            }
-
+            const { id, reject } = req.query;
+            const user = await User.findOne({ uid: req.uid });
             const app = await Application.findById(id).populate("job");
-            if (!app) {
-                return res.status(404).json(createResponse(false, "Application not found"));
-            }
-            console.log("toReject: ", toReject);
-            if(toReject){
-                if(app.status === "Accepted"){
-                    return res.status(400).json(createResponse(false, "Cannot reject an accepted application"));
-                }
-                app.status = "Rejected";
-                await app.save();
-                return res.json(createResponse(true, "Application rejected", app));
-            }
-            if(app.status.trim() === "Code Challenge" && user.role.trim() === "employer"){
-                return res.status(400).json(createResponse(false, "Cannot update status"));
-            }
-            if(app.status !== "Code Challenge" && user.role === "applicant"){
-                return res.status(400).json(createResponse(false, "Cannot update status"));
+
+            if (!user || !app) {
+                return res.status(404).json(createResponse(false, "Application or user not found"));
             }
 
-            const hasCodeAssessment = app.job.assessments.length > 0;
-            console.log("hasCodeAssessment: ", hasCodeAssessment);
-            const statuses = ['Applied', 'Shortlisted', 'Code Challenge', 'In Review', 'Accepted'];
-            const currentIndex = statuses.indexOf(app.status);
-            if (currentIndex === -1 || currentIndex === statuses.length - 1) {
-                return res.status(400).json(createResponse(false, "No further status available"));
+            if (reject) {
+                return await handleRejection(res, app);
             }
-            app.status = statuses[currentIndex + 1];
-            console.log("app.status (chnaged): ", app.status);
-            if(app.status === 'Code Challenge' && !hasCodeAssessment) {
-                app.status = statuses[currentIndex + 2];
-            }
-            await app.save();
-            res.json(createResponse(true, "Application status updated", app));
-        } catch (err) {
-            console.error("Error updating application status:", err);
-            res.status(500).json(createResponse(false, err.message));
+
+            return await handleStatusProgression(res, app, user);
+        } catch (error) {
+            return handleError(res, error, "Error updating application status");
         }
     },
-        
-    async getDashboardData(req, res) {
+
+    /**
+     * Retrieves dashboard data for an employer
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
+    async getApplicationsData(req, res) {
         try {
-            const { uid } = req;
+            const { uid } = req; // Employer's user ID
             const employer = await User.findOne({ uid });
-
-    
+        
             if (!uid) {
-                return res.status(400).json(createResponse(false, "Bad Request: UID is missing"));
+                return res.status(400).json({ success: false, message: "Bad Request: UID is missing" });
             }
-    
-            const jobs = await getJobsByEmployerHelper(uid); // Ensure this function is returning valid data
-            if (!jobs || jobs.length === 0) {
-                return res.status(404).json(createResponse(false, "No jobs found for this employer"));
-            }
-    
-            const totalStatus = await getTotalStatus(jobs);
-            const lineGraphData = await getLineGraphData(jobs); // Call the helper function
 
+            const employerId = employer._id;
+        
+            // Fetch all jobs posted by the employer
+            const jobs = await Job.find({ postedBy: employerId });
+            if (!jobs || jobs.length === 0) {
+                return res.status(404).json({ success: false, message: "No jobs found for this employer" });
+            }
+        
+            const jobIds = jobs.map((job) => job._id);
+        
+            // Use helper functions to fetch data
+            const groupedStatuses = await groupStatusByJobId(jobIds); // For Employer Job Posts
+            const lineGraphData = await getLineGraphData(jobIds); // For Employer Dashboard
+            const totalStatus = await aggregateTotalStatuses(groupedStatuses); // Await the result here
+        
+            // Prepare the response
             const dashboardData = {
                 totalJobs: jobs.length,
-                totalStatus,
+                totalStatus, // Resolved value
                 companyName: employer.companyName || "",
                 jobs,
-                lineGraphData, 
+                groupedStatuses, // For Employer Job Posts
+                lineGraphData,   // For Employer Dashboard
             };
-
-            console.log("Dashboard data:", dashboardData.jobs);
-           
-    
-            return res.status(200).json(createResponse(true, "Dashboard data retrieved successfully", dashboardData));
+            console.log("dashboardData: ------------------------------", dashboardData);
+        
+            return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully", data: dashboardData });
         } catch (error) {
-            console.error("Error in getDashboardData:", error);
-            return handleError(res, error, "Error fetching dashboard data");
+            console.error("Error fetching dashboard data:", error);
+            return res.status(500).json({ success: false, message: "Failed to fetch dashboard data" });
         }
     },
+    
 
+    /**
+     * Saves application draft
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async saveApplication(req, res) {
         try {
             const { applicationId, coverLetter, answers } = req.body;
-            const { uid } = req;
-
-            const user = await User.findOne({ uid });
+            const user = await User.findOne({ uid: req.uid });
             const application = await Application.findOne({ _id: applicationId, applicant: user._id });
 
             if (!application || application.status !== "Applying") {
@@ -351,39 +392,31 @@ export const applicationController = {
             }
 
             application.coverLetter = coverLetter;
-            application.answers = answers.map((answer) => ({
-                questionId: new mongoose.Types.ObjectId(answer.questionId),
-                answerText: answer.answerText,
-            }));
+            application.answers = formatAnswers(answers);
             await application.save();
 
             return res.status(200).json(createResponse(true, "Application saved successfully", application));
-        } catch (err) {
-            return handleError(res, err, "Error saving application");
+        } catch (error) {
+            return handleError(res, error, "Error saving application");
         }
     },
 
-    
-
+    /**
+     * Submits an application
+     * @param {Object} req - Express request object
+     * @param {Object} res - Express response object
+     * @returns {Promise<void>}
+     */
     async submitApplication(req, res) {
         try {
             const { applicationId } = req.body;
-            const { uid } = req;
-
-            if (!applicationId) {
-                return res.status(400).json(createResponse(false, "Application ID is required"));
-            }
-
-            const user = await User.findOne({ uid });
-            if (!user) {
-                return res.status(403).json(createResponse(false, "Unauthorized"));
-            }
-
+            const user = await User.findOne({ uid: req.uid });
             const application = await Application.findOne({ _id: applicationId, applicant: user._id });
-            if (!application) {
-                return res.status(404).json(createResponse(false, "Application not found"));
-            }
 
+
+            if (!applicationId || !user || !application) {
+                return res.status(400).json(createResponse(false, "Invalid application submission"));
+            }
             if (application.status !== "Applying") {
                 return res.status(400).json(createResponse(false, "Application cannot be submitted in its current state"));
             }
@@ -398,71 +431,52 @@ export const applicationController = {
     }
 };
     
-    
-    // Helper function to get application status counts
-    async function getTotalStatus(jobs) {
-        try {
-            const jobIds = jobs.map(job => job._id);
-            const totalStatus = await Application.aggregate([
-                { $match: { job: { $in: jobIds } } },
-                { $group: { _id: "$status", count: { $sum: 1 } } },
-            ]);
-            return totalStatus;
-        } catch (error) {
-            console.error("Error fetching total status:", error);
-            throw new Error("Failed to fetch total status");
-        }
-    }
-
-    async function getJobsByEmployerHelper(uid) {
-        try {
-            const employer = await User.findOne({ uid  });
-            if (!employer) {
-                throw new Error("Employer not found");
-            }
-            const jobs = await Job.find({ postedBy: employer._id });
-            return jobs;
-        
-        } catch (error) {
-            console.error("Error fetching employer jobs:", error);
-            throw new Error(error.message);
-        }
-        
-    }
-
-    async function getLineGraphData(jobs) {
-    try {
-        const jobIds = jobs.map(job => job._id);
-        const lineGraphData = await Application.aggregate([
-            { 
-                $match: { 
-                    job: { $in: jobIds }, 
-                    status: { $ne: "Applying" } // Exclude applications in the "applying" state
-                } 
+// Helper function to group statuses by job ID
+async function groupStatusByJobId(jobIds) {
+  try {
+    const groupedData = await Application.aggregate([
+      { $match: { job: { $in: jobIds } } },
+      {
+        $group: {
+          _id: { jobId: "$job", status: "$status" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.jobId",
+          statuses: {
+            $push: {
+              status: "$_id.status",
+              count: "$count",
             },
-            { 
-                $group: { 
-                    _id: { 
-                        jobId: "$job", // Include jobId in the grouping
-                        date: { $dateToString: { format: "%d-%m-%Y", date: "$submittedAt" } } // Group by date
-                    }, 
-                    count: { $sum: 1 } // Count applications for each date
-                } 
-            },
-            { $sort: { "_id.date": 1 } }, // Sort by date in ascending order
-            { 
-                $project: { 
-                    jobId: "$_id.jobId", // Include jobId in the final output
-                    date: "$_id.date",
-                    count: 1,
-                    _id: 0 // Remove the _id field
-                } 
-            }
-        ]);
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          jobId: "$_id",
+          statuses: 1,
+        },
+      },
+    ]);
 
-        return lineGraphData;
-    } catch (error) {
-        console.error("Error fetching line graph data:", error);
-        throw new Error("Failed to fetch line graph data");
-    }
+    return groupedData;
+  } catch (error) {
+    console.error("Error grouping statuses by job ID:", error);
+    throw new Error("Failed to group statuses by job ID");
+  }
 }
+
+async function aggregateTotalStatuses(groupedStatuses) {
+    return groupedStatuses.flatMap((job) => job.statuses).reduce((acc, status) => {
+      const existing = acc.find((s) => s._id === status.status); // Ensure _id instead of status
+      if (existing) {
+        existing.count += status.count;
+      } else {
+        acc.push({ _id: status.status, count: status.count }); // Use _id like before
+      }
+      return acc;
+    }, []);
+  }

@@ -18,8 +18,8 @@ import {
   getAllUserApplications,
   submitApplication,
   withdrawApplication,
-} from "../../services/applicationService";
-import { getJobQuestionsById } from "../../services/jobService";
+} from "../../services/application.service.js";
+import { getJobQuestionsById } from "../../services/job.service.js";
 import { useNotification } from "../../context/notification.context";
 import WhiteBox from "../../components/WhiteBox";
 import ModalMessages from "../../components/ModalMessages";
@@ -38,36 +38,38 @@ const Apply = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch application data when the component mounts.
+   */
+  useEffect(() => {
+    fetchApplicationData();
+  }, [jobId]);
+
   // ----------------------------- Data Fetching -----------------------------
   /**
    * Fetches application data, including job questions and existing application details.
-   * It retrieves the questions for the job and checks if the user has an ongoing application.
-   * If an application exists, it pre-fills the form with the saved data.
    */
-  useEffect(() => {
-    const fetchApplicationData = async () => {
-      try {
-        showNotification("Fetching application details...", "info");
-        const [fetchedQuestions, allApplications] = await Promise.all([
-          fetchJobQuestions(),
-          fetchAllApplications(),
-        ]);
+  const fetchApplicationData = async () => {
+    try {
+      showNotification("Fetching application details...", "info");
+      const [fetchedQuestions, allApplications] = await Promise.all([
+        fetchJobQuestions(),
+        fetchAllApplications(),
+      ]);
 
-        setQuestions(fetchedQuestions);
+      setQuestions(fetchedQuestions);
 
-        const application = findApplication(allApplications);
-        if (application) {
-          await fetchApplicationDetails(application);
-        }
-      } catch (error) {
-        showNotification("Failed to fetch application details. Please try again.", "error");
-      } finally {
-        setLoading(false);
+      const application = findApplication(allApplications);
+      if (application) {
+        await fetchApplicationDetails(application);
       }
-    };
-
-    fetchApplicationData();
-  }, [jobId]);
+    } catch (error) {
+      showNotification("Failed to fetch application details. Please try again.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /**
    * Fetches the list of questions associated with the current job.
@@ -96,7 +98,6 @@ const Apply = () => {
 
   /**
    * Fetches the details of an existing application and updates the state with its data.
-   * Pre-fills the cover letter and answers if the application is in the "applying" stage.
    * @param {Object} application - The application object.
    */
   const fetchApplicationDetails = async (application) => {
@@ -116,7 +117,6 @@ const Apply = () => {
   // ----------------------------- Handlers -----------------------------
   /**
    * Handles changes to answers for job questions.
-   * Updates the state with the new answer for the specified question.
    * @param {String} questionId - The ID of the question being answered.
    * @param {String} value - The answer text.
    */
@@ -126,7 +126,6 @@ const Apply = () => {
 
   /**
    * Saves the current application progress to the server.
-   * Ensures that the application ID exists and sends the cover letter and answers.
    */
   const handleSaveApplication = async () => {
     try {
@@ -154,7 +153,6 @@ const Apply = () => {
 
   /**
    * Submits the application after validating all required fields.
-   * Ensures that all questions are answered before submission.
    */
   const handleSubmitApplication = async () => {
     try {
@@ -192,7 +190,6 @@ const Apply = () => {
 
   /**
    * Withdraws the application by deleting it from the server.
-   * Navigates the user back to the job details page after successful withdrawal.
    */
   const handleWithdrawApplication = async () => {
     try {
@@ -236,6 +233,7 @@ const Apply = () => {
 
         {/* Cover Letter and Questions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Cover Letter */}
           <WhiteBox className="h-[30rem] flex flex-col justify-between">
             <h2 className="text-2xl font-semibold mb-4 flex items-center">
               <FaFileAlt className="mr-2" /> Cover Letter <span className="text-sm text-gray-500 italic">- Optional</span>
@@ -248,6 +246,8 @@ const Apply = () => {
               placeholder="Type your cover letter..."
             />
           </WhiteBox>
+
+          {/* Questions */}
           <WhiteBox className="h-[30rem] flex flex-col justify-between">
             <h2 className="text-2xl font-semibold mb-4 flex items-center">
               <FaQuestionCircle className="mr-2" /> Questions

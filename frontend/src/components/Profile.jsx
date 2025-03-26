@@ -31,19 +31,23 @@ const Profile = ({ editable }) => {
   /**
    * Fetches the user's profile data from the backend.
    */
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const userData = await userService.getUserProfile();
-        setUser({ data: userData });
-        setEditableUser(userData);
-      } catch (error) {
-        setError(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchUserProfile = async () => {
+    try {
+      const userData = await userService.getUserProfile();
+      setUser({ data: userData });
+      setEditableUser(userData);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // ----------------------------- Effects -----------------------------
+  /**
+   * Effect to fetch user profile data when the component mounts.
+   */
+  useEffect(() => {
     fetchUserProfile();
   }, []);
 
@@ -172,6 +176,7 @@ const Profile = ({ editable }) => {
         onChange={handleInputChange}
         onAdd={handleAddItem}
         onRemove={handleRemoveItem}
+        onSave={handleSaveClick}
         isProfilePage={true}
       />
     </div>

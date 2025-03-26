@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getApplicationById, updateStatus } from "../../services/applicationService";
+import { getApplicationById, updateStatus } from "../../services/application.service.js";
 import ApplicationDetails from "../../components/ApplicationDetails";
 import UserDetails from "../../components/UserDetails";
 import StatusBadge from "../../components/StatusBadge";
@@ -23,46 +23,8 @@ const ApplicantDetails = () => {
   const [codeChallenge, setCodeChallenge] = useState(null); 
   const navigate = useNavigate();
 
-  // ----------------------------- Data Fetching -----------------------------
-  /**
-   * Fetches applicant details by application ID and updates the state.
-   */
+  // ----------------------------- Effects -----------------------------
   useEffect(() => {
-    const fetchApplicantDetails = async () => {
-      try {
-        const response = await getApplicationById(applicationId);
-
-        if (!response) {
-          throw new Error("No application data returned");
-        }
-
-        setApplicant({
-          id: response.id,
-          name: response.applicant?.name || "No name provided",
-          email: response.applicant?.email || "No email provided",
-          phoneNumber: response.applicant?.phoneNumber || "No phone number provided",
-          location: response.applicant?.location || "No location provided",
-          skills: response.applicant?.skills || [],
-          resume: response.applicant?.resume || "No resume available",
-          education: response.applicant?.education || [],
-          experience: response.applicant?.experience || [],
-          status: response.status || "Applied",
-          coverLetter: response.coverLetter || "No cover letter provided",
-          submittedAt: response.submittedAt || new Date().toISOString(),
-          answers: response.answers || [],
-          questions: response.job?.questions || [],
-        });
-
-        setCodeChallenge(response.assessement|| null);
-
-      } catch (error) {
-        console.error("Error fetching application details:", error);
-        setError(`Failed to load application: ${error.message || "Unknown error"}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (applicationId) {
       fetchApplicantDetails();
     } else {
@@ -70,6 +32,47 @@ const ApplicantDetails = () => {
       setLoading(false);
     }
   }, [applicationId]);
+
+  useEffect(() => {
+    if (applicant?.status) {
+      // Removed console.log for status updates
+    }
+  }, [applicant?.status]);
+
+  // ----------------------------- Data Fetching -----------------------------
+  const fetchApplicantDetails = async () => {
+    try {
+      const response = await getApplicationById(applicationId);
+
+      if (!response) {
+        throw new Error("No application data returned");
+      }
+
+      setApplicant({
+        id: response.id,
+        name: response.applicant?.name || "No name provided",
+        email: response.applicant?.email || "No email provided",
+        phoneNumber: response.applicant?.phoneNumber || "No phone number provided",
+        location: response.applicant?.location || "No location provided",
+        skills: response.applicant?.skills || [],
+        resume: response.applicant?.resume || "No resume available",
+        education: response.applicant?.education || [],
+        experience: response.applicant?.experience || [],
+        status: response.status || "Applied",
+        coverLetter: response.coverLetter || "No cover letter provided",
+        submittedAt: response.submittedAt || new Date().toISOString(),
+        answers: response.answers || [],
+        questions: response.job?.questions || [],
+      });
+
+      setCodeChallenge(response.assessments || null);
+    } catch (error) {
+      console.error("Error fetching application details:", error);
+      setError(`Failed to load application: ${error.message || "Unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ----------------------------- Helpers -----------------------------
   /**
@@ -98,7 +101,12 @@ const ApplicantDetails = () => {
         break;
 
       case "Shortlisted":
-        shortlistCaption = "Move to Code Challenge";
+        if (codeChallenge?.assessments?.length > 0) {
+          shortlistCaption = "Move to Code Challenge";
+        } else{
+          shortlistCaption = "Move to In Review";
+
+        }
         break;
 
       case "In Review":
@@ -135,16 +143,6 @@ const ApplicantDetails = () => {
       setLoading(false);
     }
   };
-
-  // ----------------------------- Effects -----------------------------
-  /**
-   * Logs the updated application status whenever it changes.
-   */
-  useEffect(() => {
-    if (applicant?.status) {
-      console.log("Application status updated to:", applicant.status);
-    }
-  }, [applicant?.status]);
 
   // ----------------------------- Render -----------------------------
   const { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled } = getButtonState(applicant?.status);
@@ -186,28 +184,35 @@ const ApplicantDetails = () => {
               coverLetter={applicant.coverLetter}
               questions={applicant.questions || []}
               answers={applicant.answers || []}
-              codeAssement={codeChallenge}
+              codeAssessment={codeChallenge} // Corrected spelling
+              showCodeAssessment={
+                applicant.status === "Accepted" ||
+                applicant.status === "In Review" ||
+                applicant.status === "Rejected"
+              }
             />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => handleStatusUpdate("shortlisted")}
-                disabled={isShortlistDisabled}
-                className={`px-4 py-2 ${
-                  isShortlistDisabled ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-                } text-white rounded-lg`}
-              >
-                {shortlistCaption}
-              </button>
-              <button
-                onClick={() => handleStatusUpdate("rejected")}
-                disabled={isRejectDisabled}
-                className={`px-4 py-2 ${
-                  isRejectDisabled ? "bg-gray-400" : "bg-red-600 hover:bg-red-700"
-                } text-white rounded-lg`}
-              >
-                {rejectCaption}
-              </button>
-            </div>
+            {applicant.status !== "Accepted" && applicant.status !== "Rejected" && (
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => handleStatusUpdate("shortlisted")}
+                  disabled={isShortlistDisabled}
+                  className={`px-4 py-2 ${
+                    isShortlistDisabled ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+                  } text-white rounded-lg`}
+                >
+                  {shortlistCaption}
+                </button>
+                <button
+                  onClick={() => handleStatusUpdate("rejected")}
+                  disabled={isRejectDisabled}
+                  className={`px-4 py-2 ${
+                    isRejectDisabled ? "bg-gray-400" : "bg-red-600 hover:bg-red-700"
+                  } text-white rounded-lg`}
+                >
+                  {rejectCaption}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center text-gray-600">

@@ -6,11 +6,12 @@ import { auth } from '../../firebase.js';
 import { assessmentService } from '../../services/assessment.service';
 import { useNotification } from '../../context/notification.context';
 import AssessmentStatus from '../../components/AssessmentStatus';
-import { getApplicationById, getAssessmentDeadline, setAssessmentDeadline, updateStatus } from '../../services/applicationService.js';
+import { getApplicationById, getAssessmentDeadline, setAssessmentDeadline, updateStatus } from '../../services/application.service.js';
 
 const CodeAss = () => {
   const [code, setCode] = useState(``);
   const [language, setLanguage] = useState("python");
+  const [pageLoading, setPageLoading] = useState(true);
   const [output, setOutput] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,8 +30,6 @@ const CodeAss = () => {
     _id: "",
     description: "",
     tests: null,
-    funcForCpp: "",
-    funcForCppTest:"",
     inputForPythonJS:"",
     code: "",
     input: "",
@@ -42,6 +41,7 @@ const CodeAss = () => {
   const [timeLeft, setTimeLeft] = useState(3600);
 
   useEffect(() => {
+    setPageLoading(true);
     
     const fetchTimer = async () => {
       const application = await getApplicationById(appId);
@@ -52,14 +52,20 @@ const CodeAss = () => {
       }
       const deadlineFetched = await getAssessmentDeadline(appId);
       console.log("Deadline fetched: ", deadlineFetched);
-      if(deadlineFetched && deadlineFetched !== -1) {
-        const deadlineInMs = isNaN(deadlineFetched) 
-              ? new Date(deadlineFetched).getTime() 
-              : Number(deadlineFetched);
-        const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
-        console.log("Remaining time: ", remainingTime);
-        setTimeLeft(remainingTime);
-        localStorage.setItem('assessmentDeadline', deadlineFetched);
+      if(deadlineFetched) {
+        console.log("Deadline: ", new Date(deadlineFetched).getTime(), "Deadline fetched: ", deadlineFetched);
+        if(Date.parse(deadlineFetched) > Date.now()){
+          setPageLoading(false);
+          const deadlineInMs = isNaN(deadlineFetched) 
+                ? new Date(deadlineFetched).getTime() 
+                : Number(deadlineFetched);
+          const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
+          console.log("Remaining time: ", remainingTime);
+          setTimeLeft(remainingTime);
+          localStorage.setItem('assessmentDeadline', deadlineFetched);
+        } else {
+          submitAll(false);
+        }
       } else {
         const newDeadline = Date.now() + 3600 * 1000;
         localStorage.setItem('assessmentDeadline', newDeadline);
@@ -129,16 +135,25 @@ const CodeAss = () => {
   const fetchAndSetFirstTask = async () => {
     try {
       const taskResponse = await assessmentService.getTasksId(appId);
-      console.log("Task Ids: ", taskResponse.data);
+      console.log("Task Ids: ", taskResponse);
       
-      if (taskResponse.data.length === 0) return; 
-      setTasksId(taskResponse.data);
+      if (taskResponse.length === 0) return; 
+      setTasksId(taskResponse);
       
-      const firstTaskResponse = await assessmentService.getTask(appId, taskResponse.data[0].id);
+      const firstTaskResponse = await assessmentService.getTask(appId, taskResponse[0].id);
       console.log("First task: ", firstTaskResponse);
-      
-      setTask(firstTaskResponse.data.assessment);
-      setCodeForLanguage(language, firstTaskResponse.data.assessment);
+      if(firstTaskResponse.submission){
+        console.log("Prev: ", firstTaskResponse.submission);
+        setPrevSubmission(firstTaskResponse.submission[0]);
+        setTestsPassed(firstTaskResponse.submission[0].score);
+        setCode(firstTaskResponse.submission[0].solutionCode);
+        setLanguage(firstTaskResponse.submission[0].language);
+      } else {
+        setPrevSubmission({ solutionCode: "", language: "", score: 0 });
+        setCodeForLanguage(language, response.assessment);
+      }
+      setOutput("");
+      setTask(firstTaskResponse.assessment);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
@@ -152,18 +167,18 @@ const CodeAss = () => {
     if (taskId === task._id) return;
 
     const response = await assessmentService.getTask(appId, taskId);
-    console.log("Task retrived: ", response);
-    setTask(response.data.assessment);
+    console.log("Task: ", response);
+    setTask(response.assessment);
     setTestsPassed(0);
-    console.log("RESSSS: ",response);
-    if(response.data.submission.length > 0){
-      setPrevSubmission(response.data.submission[0]);
-      setTestsPassed(response.data.submission[0].score);
-      setCode(response.data.submission[0].solutionCode);
-      setLanguage(response.data.submission[0].language);
+    if(response.submission){
+      console.log("Prev: ", response.submission);
+      setPrevSubmission(response.submission[0]);
+      setTestsPassed(response.submission[0].score);
+      setCode(response.submission[0].solutionCode);
+      setLanguage(response.submission[0].language);
     } else {
-      console.log("NEW RES: ", response.data.assessment);
-      setCodeForLanguage(language, response.data.assessment);
+      setPrevSubmission({ solutionCode: "", language: "", score: 0 });
+      setCodeForLanguage(language, response.assessment);
     }
     setOutput("");
     showNotification("Task Changed", "success");
@@ -187,23 +202,6 @@ function func(${task.inputForPythonJS}) {
   // Write your code here
 
 }`;
-    } else if (lang === "cpp") {
-      defText = `// ${task.description}
-// Input -> ${task.input}
-// Output -> ${task.output}
-
-#include <vector>
-#include <iostream>
-#include <utility>
-#include <string>
-
-using namespace std;
-
-int func(${task.funcForCpp}) {
-  // Write your code here
-
-  return 0;
-}`;
     }
     setCode(defText);
   }
@@ -216,6 +214,7 @@ int func(${task.funcForCpp}) {
       e.target.value = language;
       return;
     }
+    console.log("Prev: ", prevSubmission);
     if(e.target.value === prevSubmission.language){
       setCode(prevSubmission.solutionCode);
       setTestsPassed(prevSubmission.score);
@@ -225,8 +224,10 @@ int func(${task.funcForCpp}) {
     setLanguage(e.target.value);
   }
 
-  const submitAll = async () => {
-    showNotification("Tank you for taking the assessment", "success");
+  const submitAll = async (gotAccess = true) => {
+    const notification = gotAccess ? "Thank you for taking the assessment!" : "Assessment time is up!";
+    const notificationStatus = gotAccess ? "success" : "error";
+    showNotification(notification, notificationStatus);
     navigate("/applicant-dashboard");
     setAssessmentDeadline(appId, -1);
     // Change status of application
@@ -245,17 +246,20 @@ int func(${task.funcForCpp}) {
     console.log("Res: ", response);
     setLoading(false);
 
-    if(response.data.stderr && response.data.stderr != ""){
-      setError(response.data.stderr);
+    if(response.stderr && response.stderr != ""){
+      setError(response.stderr);
       return;
     }
-    console.log("Build_err: ",response.data.build_stderr);
-    if(response.data.build_stderr && response.data.build_stderr != ""){
-      setError(response.data.build_stderr);
+    if(response.build_stderr && response.build_stderr != ""){
+      setError(response.build_stderr);
       return;
     }
-
-    const lines = response.data.stdout.split("\n");
+    console.log("Stdout: ", response);
+    if(response.error){
+      setError(response.error);
+      return;
+    }
+    const lines = response.stdout.split("\n");
     let newTestsPassed = 0;
 
     const filteredLines = lines.filter((line) => {
@@ -276,6 +280,7 @@ int func(${task.funcForCpp}) {
     console.log("SUBMIT");
     const response = await assessmentService.submit(appId, testsPassed, code, language, task._id);
     const notificationStatus = response.success ? "success" : "danger";
+    if(response.success) setPrevSubmission({ solutionCode: code, language, score: testsPassed });
     changeIconAfterSubmit();
     showNotification(response.message, notificationStatus);
   }
@@ -305,6 +310,10 @@ int func(${task.funcForCpp}) {
     }));
 };
 
+  if (pageLoading) {
+    return <p>Loading...</p>;
+  }
+
   return (
     <div className='bg-[#1B2A41] h-fit'>
       <p className="fixed top-4 left-4 bg-black text-white p-2 rounded-lg border-white border-2">Time Left: {formatTime(timeLeft)}</p>
@@ -317,7 +326,6 @@ int func(${task.funcForCpp}) {
           >
             <option value="python">Python</option>
             <option value="javascript">JavaScript</option>
-            <option value="cpp">C++</option>
           </select>
 
           <button onClick={runCode} className='text-black bg-slate-300 border-grey-400 border rounded-full p-5' >Run Code</button>
@@ -344,7 +352,7 @@ int func(${task.funcForCpp}) {
           </div>
         </div>
       </div>
-      <div className='relative p-4 min-h-80 m-10 bg-slate-400 border-gray-600 border-2 rounded-md h-1/3'>
+      <div className='relative p-4 min-h-80 m-10 bg-slate-400 border-gray-600 border-2 rounded-md h-1/3 overflow-x-auto overflow-y-auto'>
         { loading && 
           <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'>
             <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32 animate-ping"></div>
@@ -363,7 +371,7 @@ int func(${task.funcForCpp}) {
           </pre>
         ))}
         { error &&
-          <pre className='text-red-700 width-1/2'>{error}</pre>
+          <pre className='text-red-700 w-1/2'>{error}</pre>
         }
         <p className='text-white p-3 rounded-md border border-grey-400 bg-black absolute right-5 top-5'>Tests Passed: {testsPassed} / 10</p>
         <button onClick={handleSubmit} className='absolute bottom-3 right-3 rounded-full p-3 bg-white' >Submit</button>
