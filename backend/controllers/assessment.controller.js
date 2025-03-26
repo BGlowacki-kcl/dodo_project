@@ -35,8 +35,10 @@ const assessmentController = {
             }
 
             const response = await executeCode(source_code, language);
+            console.log("RESSS: ", response);
             return res.status(200).json(createResponse(true, "Sent code successfully", response));
         } catch (error) {
+            console.error(error);
             return res.status(500).json(createResponse(false, "Internal server error", { error: error.message }));
         }
     },
@@ -167,7 +169,8 @@ const executeCode = async (sourceCode, language) => {
         },
         body: JSON.stringify({ source_code: sourceCode, language })
     });
-    return response.json();
+    const data = await response.json();
+    return data;
 };
 
 /**
@@ -281,7 +284,7 @@ const processSubmission = async (uid, appId, taskId, code, language, testsPassed
         return { success: true, message: "Submitted successfully! Code saved" };
     }
 
-    if (testsPassed > previousSubmission.score) {
+    if (testsPassed >= previousSubmission.score) {
         Object.assign(previousSubmission, { solutionCode: code, language, score: testsPassed });
         await previousSubmission.save();
         return { success: true, message: "Submitted successfully! Code saved" };

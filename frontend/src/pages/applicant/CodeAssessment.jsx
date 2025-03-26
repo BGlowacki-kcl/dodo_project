@@ -136,9 +136,18 @@ const CodeAss = () => {
       
       const firstTaskResponse = await assessmentService.getTask(appId, taskResponse[0].id);
       console.log("First task: ", firstTaskResponse);
-      
+      if(firstTaskResponse.submission){
+        console.log("Prev: ", firstTaskResponse.submission);
+        setPrevSubmission(firstTaskResponse.submission[0]);
+        setTestsPassed(firstTaskResponse.submission[0].score);
+        setCode(firstTaskResponse.submission[0].solutionCode);
+        setLanguage(firstTaskResponse.submission[0].language);
+      } else {
+        setPrevSubmission({ solutionCode: "", language: "", score: 0 });
+        setCodeForLanguage(language, response.assessment);
+      }
+      setOutput("");
       setTask(firstTaskResponse.assessment);
-      setCodeForLanguage(language, firstTaskResponse.assessment);
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
@@ -152,17 +161,17 @@ const CodeAss = () => {
     if (taskId === task._id) return;
 
     const response = await assessmentService.getTask(appId, taskId);
-    console.log("Task retrived: ", response);
+    console.log("Task: ", response);
     setTask(response.assessment);
     setTestsPassed(0);
-    console.log("RESSSS: ",response);
-    if(response.sumission && response.submission.length > 0){
+    if(response.submission){
+      console.log("Prev: ", response.submission);
       setPrevSubmission(response.submission[0]);
       setTestsPassed(response.submission[0].score);
       setCode(response.submission[0].solutionCode);
       setLanguage(response.submission[0].language);
     } else {
-      console.log("NEW RES: ", response.assessment);
+      setPrevSubmission({ solutionCode: "", language: "", score: 0 });
       setCodeForLanguage(language, response.assessment);
     }
     setOutput("");
@@ -216,6 +225,7 @@ int func(${task.funcForCpp}) {
       e.target.value = language;
       return;
     }
+    console.log("Prev: ", prevSubmission);
     if(e.target.value === prevSubmission.language){
       setCode(prevSubmission.solutionCode);
       setTestsPassed(prevSubmission.score);
@@ -249,12 +259,15 @@ int func(${task.funcForCpp}) {
       setError(response.stderr);
       return;
     }
-    console.log("Build_err: ",response.build_stderr);
     if(response.build_stderr && response.build_stderr != ""){
       setError(response.build_stderr);
       return;
     }
-
+    console.log("Stdout: ", response);
+    if(response.error){
+      setError(response.error);
+      return;
+    }
     const lines = response.stdout.split("\n");
     let newTestsPassed = 0;
 
@@ -276,6 +289,7 @@ int func(${task.funcForCpp}) {
     console.log("SUBMIT");
     const response = await assessmentService.submit(appId, testsPassed, code, language, task._id);
     const notificationStatus = response.success ? "success" : "danger";
+    if(response.success) setPrevSubmission({ solutionCode: code, language, score: testsPassed });
     changeIconAfterSubmit();
     showNotification(response.message, notificationStatus);
   }
@@ -363,7 +377,7 @@ int func(${task.funcForCpp}) {
           </pre>
         ))}
         { error &&
-          <pre className='text-red-700 width-1/2'>{error}</pre>
+          <pre className='text-red-700 w-1/2'>{error}</pre>
         }
         <p className='text-white p-3 rounded-md border border-grey-400 bg-black absolute right-5 top-5'>Tests Passed: {testsPassed} / 10</p>
         <button onClick={handleSubmit} className='absolute bottom-3 right-3 rounded-full p-3 bg-white' >Submit</button>

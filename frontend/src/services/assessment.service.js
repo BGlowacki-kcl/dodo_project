@@ -24,10 +24,8 @@ async function sendCode(code, language) {
  */
 async function getExecutionDetails(id) {
   try {
-    return await fetch(`/api/assessment/status?id=${id}`, {
-      method: 'GET',
-      headers: getRequestHeaders(),
-    });
+    console.log("id", id);
+    return await makeApiRequest(`/api/assessment/status?id=${id}`, "GET");
   } catch (error) {
     return { error: error.message };
   }
@@ -63,7 +61,7 @@ async function pollExecutionResults(id, maxAttempts = 7, intervalMs = 2000) {
   do {
     await new Promise(resolve => setTimeout(resolve, intervalMs));
     const response = await getExecutionDetails(id);
-    data = await response.json();
+    data = response
     
     if (data.status !== "running") {
       break;
@@ -194,7 +192,8 @@ testCases.forEach((testCase, index) => {
     const expected_output = testCase.output;
     const actual_output = func(...args);
 
-    if (actual_output === expected_output[0]) {
+    console.log(actual_output, expected_output[0]);
+    if (JSON.stringify(actual_output) === JSON.stringify(expected_output[0])) {
         console.log(\`Test \${index + 1}: Test PASSED\`);
     } else {
         console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output}\`);
@@ -206,7 +205,7 @@ hiddenTestCases.forEach((testCase, index) => {
     const expected_output = testCase.output;
     const actual_output = func(...args);
 
-    if (actual_output === expected_output[0]) {
+    if (JSON.stringify(actual_output) === JSON.stringify(expected_output[0])) {
         console.log(\`Test \${index + 1}: Test PASSED HIDDEN\`);
     } else {
         console.log(\`Test \${index + 1}: Test FAILED - input: \${JSON.stringify(testCase.input)}, expected output: \${expected_output}, output received: \${actual_output} HIDDEN\`);
@@ -271,7 +270,7 @@ function constructCode(tests, language, funcForCppTest) {
   const testCases = generateTestCode(tests, language);
   
   if (testCases === "") {
-    return { data: { stderr: "Failed to generate test cases" } };
+    return { stderr: "Failed to generate test cases" };
   }
   
   const executeTestsCode = generateExecuteTestsCode(language, funcForCppTest);
@@ -292,17 +291,17 @@ export const assessmentService = {
    */
   async runCode(code, language, tests, funcForCppTest) {
     if (containsOutputStatements(code, language)) {
-      return { data: { stderr: "You cannot use output statement in your code" } };
+      return { stderr: "You cannot use output statement in your code" };
     }
     
     const completeCode = code + constructCode(tests, language, funcForCppTest);
     const codeSendResponse = await sendCode(completeCode, language);
     
-    if (!codeSendResponse.data || !codeSendResponse.data.id) {
-      return { data: { stderr: "Failed to submit code for execution" } };
+    if (!codeSendResponse || !codeSendResponse.id) {
+      return { stderr: "Failed to submit code for execution" };
     }
     
-    const id = codeSendResponse.data.id;
+    const id = codeSendResponse.id;
     return await pollExecutionResults(id);
   },
 
