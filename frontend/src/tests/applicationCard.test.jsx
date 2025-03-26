@@ -74,4 +74,24 @@ describe("ApplicationCards", () => {
 
     expect(mockNavigate).toHaveBeenCalledWith("/user/applications/2");
   });
+
+  test("renders fallback text for missing job title and company", () => {
+    const fallbackApp = [
+      {
+        _id: "3",
+        status: "In Review",
+        submittedAt: "2024-03-22T09:00:00Z",
+        job: {}, // missing title and company
+      },
+    ];
+  
+    render(
+      <MemoryRouter>
+        <ApplicationCards applications={fallbackApp} />
+      </MemoryRouter>
+    );
+  
+    expect(screen.getByText("Untitled Job")).toBeInTheDocument();
+    expect(screen.getByText("Unknown Company")).toBeInTheDocument();
+  });  
 });
