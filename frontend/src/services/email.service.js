@@ -12,7 +12,7 @@ import { makeApiRequest, handleApiError } from './helper';
  */
 const sendEmail = async (emailData) => {
   try {
-    return await makeApiRequest('/api/email', 'POST', emailData);
+    return await makeApiRequest('/api/email', 'POST', emailData, false);
   } catch (error) {
     throw handleApiError(error, 'Failed to send email');
   }

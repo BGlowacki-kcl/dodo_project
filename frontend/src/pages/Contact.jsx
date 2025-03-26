@@ -35,13 +35,14 @@ const Contact = () => {
     try {
       setStatus('sending');
       const response = await sendEmail(formData);
+      console.log('Email response:', response);
       const successMessage = response?.message || 'Message sent successfully!';
       showNotification(successMessage, 'success');
       setFormData({ name: '', email: '', subject: '', message: '' });
       setStatus('success');
     } catch (error) {
       const errorMessage = error.message || 'Failed to send message';
-      showNotification(errorMessage, 'danger');
+      showNotification(errorMessage, 'error');
       setStatus('error');
     }
   };
