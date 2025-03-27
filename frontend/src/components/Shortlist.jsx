@@ -6,6 +6,8 @@ import SearchBar from "./SearchBar";
 import SearchAndShortlistFilter from "./filters/SearchAndShortlistFilter"; // Import the filter component
 import { useNotification } from "../context/notification.context";
 import { FaFilter } from "react-icons/fa";
+import {useNavigate} from 'react-router-dom';
+
 
 const ApplicantShortlist = () => {
     const [shortlistedJobs, setShortlistedJobs] = useState([]);
@@ -15,6 +17,7 @@ const ApplicantShortlist = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false); // State to toggle filter modal
     const jobsPerPage = 15; // Number of jobs to display per page
     const showNotification = useNotification();
+    const navigate = useNavigate();
 
     useEffect(() => {
         async function fetchShortlist() {
@@ -69,6 +72,10 @@ const ApplicantShortlist = () => {
         setCurrentPage(selected); // Update the current page
     };
 
+    const handleJobClick = (jobId) => {
+        navigate(`/apply/${jobId}`);
+    };
+
     return (
         <div className="container mx-auto p-4">
             {/* Header */}
@@ -107,7 +114,7 @@ const ApplicantShortlist = () => {
                             job={job}
                             isLoggedIn={true}
                             isShortlisted={true}
-                            handleJobClick={() => console.log(`Navigating to job ${job._id}`)} // Replace with actual navigation logic
+                            handleJobClick={handleJobClick} // Replace with actual navigation logic
                             handleRemoveFromShortlist={handleRemoveFromShortlist}
                             handleAddToShortlist={() => {}} // Not needed here
                             showNotification={showNotification}
