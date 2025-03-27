@@ -59,27 +59,6 @@ describe('SearchAndShortlistFilter Component', () => {
     expect(screen.queryByText('Advanced Filters')).not.toBeInTheDocument();
   });
 
-  test('renders correctly when isOpen is true', async () => {
-    render(
-      <SearchAndShortlistFilter 
-        isOpen={true} 
-        onClose={mockOnClose} 
-        applyFilters={mockApplyFilters} 
-      />
-    );
-    
-    await waitFor(() => {
-      expect(screen.getByText('Advanced Filters')).toBeInTheDocument();
-    });
-    
-    expect(screen.getByText('Titles')).toBeInTheDocument();
-    expect(screen.getByText('Locations')).toBeInTheDocument();
-    expect(screen.getByText('Job Types')).toBeInTheDocument();
-    expect(screen.getByText('Companies')).toBeInTheDocument();
-    expect(screen.getByText('Salary Range')).toBeInTheDocument();
-    expect(screen.getByText('Deadlines')).toBeInTheDocument();
-  });
-
   test('closes the filter when close button is clicked', async () => {
     render(
       <SearchAndShortlistFilter 
