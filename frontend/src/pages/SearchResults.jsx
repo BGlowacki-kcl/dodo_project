@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAllJobs, getFilteredJobs } from "../services/job.service.js";
 import JobCard from "../components/JobCard";
-import { addJobToShortlist, getShortlist } from "../services/shortlist.service";
-import { useNotification } from "../context/notification.context";
 import Pagination from "../components/Pagination";
+import SearchBar from "../components/SearchBar";
 import SearchAndShortlistFilter from "../components/filters/SearchAndShortlistFilter";
+import { addJobToShortlist, getShortlist, removeJobFromShortlist } from "../services/shortlist.service";
+import { useNotification } from "../context/notification.context";
+import { FaFilter } from "react-icons/fa";
 
 const SearchResults = () => {
     const url = useLocation();
@@ -17,7 +19,8 @@ const SearchResults = () => {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const [shortlistedJobIds, setShortlistedJobIds] = useState(new Set());
-    const [isFilterOpen, setIsFilterOpen] = useState(false); // State to control filter pop-up
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false); // State to toggle filter modal
     const resultsPerPage = 10;
     const showNotification = useNotification();
 
@@ -65,10 +68,8 @@ const SearchResults = () => {
             const filters = { jobType: jobTypes, location: locations, role: roles, company: companies };
 
             if (Object.values(filters).some((value) => value && value.length > 0)) {
-                console.log("Fetching filtered jobs with:", filters);
                 data = await getFilteredJobs(filters);
             } else {
-                console.log("Fetching all jobs");
                 data = await getAllJobs();
             }
             setSearchResults(data);
@@ -81,8 +82,6 @@ const SearchResults = () => {
 
     const handleJobClick = (jobId) => {
         navigate(`/user/jobs/details/${jobId}`);
-        // const url = `/user/jobs/details/${jobId}`;
-        // window.open(url, "_blank");
     };
 
     const handleAddToShortlist = async (jobId) => {
@@ -96,92 +95,107 @@ const SearchResults = () => {
         }
     };
 
+    const handleRemoveFromShortlist = async (jobId) => {
+        try {
+            removeJobFromShortlist(jobId);
+            setShortlistedJobIds((prev) => {
+                const updated = new Set(prev);
+                updated.delete(jobId);
+                return updated;
+            });
+            showNotification("Job removed from shortlist", "success");
+        } catch (err) {
+            console.error("Error updating shortlist:", err);
+            showNotification("Error while removing post from the shortlist", "error");
+        }
+    };
+
     useEffect(() => {
         fetchSearchResults();
     }, []);
 
-    const applyFilters = async (filters) => {
-        try {
-            setLoading(true);
-            setSearchResults([]);
-
-            console.log("Applying filters in SearchResults:", filters);
-
-            let data;
-            if (Object.values(filters).some((value) => value && value.length > 0)) {
-                console.log("Fetching filtered jobs with filters:", filters);
-                data = await getFilteredJobs(filters);
-            } else {
-                console.log("Fetching all jobs (no filters applied)");
-                data = await getAllJobs();
-            }
-
-            console.log("Filtered jobs fetched:", data);
-            setSearchResults(data);
-        } catch (error) {
-            console.error("Error applying filters in SearchResults:", error);
-        } finally {
-            setLoading(false);
-        }
+    const handleSearch = (query) => {
+        setSearchQuery(query.toLowerCase());
     };
 
+    const applyFilters = (filters) => {
+        // Logic to apply filters and fetch filtered jobs
+        console.log("Filters applied:", filters);
+    };
+
+    // Filter jobs based on the search query
+    const filteredJobs = searchResults.filter((job) =>
+        job.title.toLowerCase().includes(searchQuery) ||
+        job.location.toLowerCase().includes(searchQuery) ||
+        job.company.toLowerCase().includes(searchQuery)
+    );
+
     // Pagination logic
-    const pageCount = Math.ceil(searchResults.length / resultsPerPage);
-    const displayedJobs = searchResults.slice(currentPage * resultsPerPage, (currentPage + 1) * resultsPerPage);
+    const offset = currentPage * resultsPerPage;
+    const displayedJobs = filteredJobs.slice(offset, offset + resultsPerPage);
+    const pageCount = Math.ceil(filteredJobs.length / resultsPerPage);
 
     const handlePageChange = ({ selected }) => {
         setCurrentPage(selected);
     };
 
     return (
-        <div className="bg-background min-h-screen w-full flex flex-col items-center">
-            {/* PAGE HEADER */}
-            <div className="text-center mt-2 mb-2">
-                <h1 className="text-heading font-heading font-bold">Search Results</h1>
-                <p className="text-medium mt-2">
-                    {jobTypes.length > 0 || locations.length > 0 || roles.length > 0 || companies.length > 0
-                        ? `Showing results for ${[...jobTypes, ...locations, ...roles, ...companies].join(", ")}`
-                        : "Find the perfect opportunity for you"}
-                </p>
+        <div className="container mx-auto p-4">
+            <div className="flex-1 p-4 md:p-10">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
+                    <h1 className="text-3xl md:text-4xl font-bold text-left text-black">Search Results</h1>
+                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                        {/* Filters Button */}
+                        <button
+                            onClick={() => setIsFilterOpen(true)}
+                            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition"
+                        >
+                            <FaFilter className="mr-2" />
+                            Filters
+                        </button>
+
+                        {/* Search Bar */}
+                        <SearchBar
+                            placeholder="Search Results"
+                            onSearch={handleSearch}
+                            width="100%" // Full width on smaller screens
+                            height="40px"
+                        />
+                    </div>
+                </div>
+
+                {/* Job Listings */}
+                <div className="flex flex-col space-y-4">
+                    {loading ? (
+                        <p className="text-black text-center">Loading search results...</p>
+                    ) : displayedJobs.length > 0 ? (
+                        displayedJobs.map((job) => (
+                            <JobCard
+                                key={job._id}
+                                job={job}
+                                isLoggedIn={isLoggedIn}
+                                handleJobClick={handleJobClick}
+                                handleAddToShortlist={handleAddToShortlist}
+                                handleRemoveFromShortlist={handleRemoveFromShortlist}
+                                isShortlisted={checkIfShortlisted(job._id)}
+                            />
+                        ))
+                    ) : (
+                        <p className="text-black text-center">No job results found.</p>
+                    )}
+                </div>
+
+                {/* Pagination */}
+                <Pagination pageCount={pageCount} onPageChange={handlePageChange} />
             </div>
 
-            {/* FILTER BUTTON */}
-            <button
-                className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
-                onClick={() => setIsFilterOpen(true)}
-            >
-                Open Filters
-            </button>
-
-            {/* FILTER POP-UP */}
+            {/* Filter Modal */}
             <SearchAndShortlistFilter
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
                 applyFilters={applyFilters}
             />
-
-            {/* JOB LISTINGS */}
-            <div className="flex flex-col space-y-4 px-4 pb-3 items-center w-full max-w-3xl overflow-y-auto max-h-90">
-                {loading ? (
-                    <p className="text-ltext text-center">Loading search results...</p>
-                ) : displayedJobs.length > 0 ? (
-                    displayedJobs.map((job) => (
-                        <JobCard
-                            key={job._id}
-                            job={job}
-                            isLoggedIn={isLoggedIn}
-                            handleJobClick={handleJobClick}
-                            handleAddToShortlist={handleAddToShortlist}
-                            isShortlisted={checkIfShortlisted(job._id)}
-                        />
-                    ))
-                ) : (
-                    <p className="text-white text-center">No job results found.</p>
-                )}
-            </div>
-
-            {/* PAGINATION CONTROLS */}
-            <Pagination pageCount={pageCount} onPageChange={handlePageChange} />
         </div>
     );
 };
