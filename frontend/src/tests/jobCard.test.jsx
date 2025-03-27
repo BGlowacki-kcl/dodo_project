@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import JobCard from "../components/JobCard"; // adjust path if needed
+import JobCard from "../components/JobCard";
 import { vi } from "vitest";
 
 const mockJob = {
@@ -16,6 +16,8 @@ const mockJob = {
 describe("JobCard", () => {
   const handleJobClick = vi.fn();
   const handleAddToShortlist = vi.fn();
+  const handleRemoveFromShortlist = vi.fn();
+  const showNotification = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -29,15 +31,16 @@ describe("JobCard", () => {
         isShortlisted={false}
         handleJobClick={handleJobClick}
         handleAddToShortlist={handleAddToShortlist}
+        handleRemoveFromShortlist={handleRemoveFromShortlist}
+        showNotification={showNotification}
       />
     );
 
     expect(screen.getByText("Frontend Developer")).toBeInTheDocument();
-    expect(screen.getByText(/Company:/)).toBeInTheDocument("Company: Tech Co");
-    expect(screen.getByText(/Location:/)).toBeInTheDocument("Location: Remote");
-    expect(screen.getByText(/Type:/)).toBeInTheDocument("Type: Full-time");
-    expect(screen.getByText(/Requirements:/)).toBeInTheDocument("Requirements: React, JavaScript, CSS");
-    expect(screen.getByText(/We are looking for a frontend developer/i)).toBeInTheDocument();
+    expect(screen.getByText(/Company:/)).toBeInTheDocument();
+    expect(screen.getByText(/Location:/)).toBeInTheDocument();
+    expect(screen.getByText(/Type:/)).toBeInTheDocument();
+    expect(screen.getByText(/Requirements:/)).toBeInTheDocument();
   });
 
   test("calls handleJobClick when card is clicked", () => {
@@ -48,6 +51,8 @@ describe("JobCard", () => {
         isShortlisted={false}
         handleJobClick={handleJobClick}
         handleAddToShortlist={handleAddToShortlist}
+        handleRemoveFromShortlist={handleRemoveFromShortlist}
+        showNotification={showNotification}
       />
     );
 
@@ -55,7 +60,7 @@ describe("JobCard", () => {
     expect(handleJobClick).toHaveBeenCalledWith("job1");
   });
 
-  test("does not show shortlist button if not logged in", () => {
+  test("does not show shortlist buttons if not logged in", () => {
     render(
       <JobCard
         job={mockJob}
@@ -63,13 +68,16 @@ describe("JobCard", () => {
         isShortlisted={false}
         handleJobClick={handleJobClick}
         handleAddToShortlist={handleAddToShortlist}
+        handleRemoveFromShortlist={handleRemoveFromShortlist}
+        showNotification={showNotification}
       />
     );
 
     expect(screen.queryByTitle(/add to shortlist/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/remove from shortlist/i)).not.toBeInTheDocument();
   });
 
-  test("shows add-to-shortlist button if logged in and not shortlisted", () => {
+  test("shows add-to-shortlist button when logged in and not shortlisted", () => {
     render(
       <JobCard
         job={mockJob}
@@ -77,33 +85,22 @@ describe("JobCard", () => {
         isShortlisted={false}
         handleJobClick={handleJobClick}
         handleAddToShortlist={handleAddToShortlist}
-      />
-    );
-
-    const button = screen.getByTitle(/add to shortlist/i);
-    expect(button).toBeInTheDocument();
-    fireEvent.click(button);
-    expect(handleAddToShortlist).toHaveBeenCalledWith("job1");
-  });
-
-  test("clicking add-to-shortlist does not trigger card click", () => {
-    render(
-      <JobCard
-        job={mockJob}
-        isLoggedIn={true}
-        isShortlisted={false}
-        handleJobClick={handleJobClick}
-        handleAddToShortlist={handleAddToShortlist}
+        handleRemoveFromShortlist={handleRemoveFromShortlist}
+        showNotification={showNotification}
       />
     );
 
     const addButton = screen.getByTitle(/add to shortlist/i);
+    expect(addButton).toBeInTheDocument();
+
     fireEvent.click(addButton);
-    expect(handleJobClick).not.toHaveBeenCalled();
-    expect(handleAddToShortlist).toHaveBeenCalled();
+
+    expect(handleAddToShortlist).toHaveBeenCalledWith("job1");
+    expect(showNotification).toHaveBeenCalledWith("Job added to shortlist", "success");
+    expect(handleJobClick).not.toHaveBeenCalled(); // confirm click doesn't bubble
   });
 
-  test("shows tick button if already shortlisted", () => {
+  test("shows remove-from-shortlist button when already shortlisted", () => {
     render(
       <JobCard
         job={mockJob}
@@ -111,11 +108,64 @@ describe("JobCard", () => {
         isShortlisted={true}
         handleJobClick={handleJobClick}
         handleAddToShortlist={handleAddToShortlist}
+        handleRemoveFromShortlist={handleRemoveFromShortlist}
+        showNotification={showNotification}
       />
     );
 
-    const button = screen.getByTitle(/already added to shortlist/i);
-    expect(button).toBeDisabled();
-    expect(button).toHaveTextContent("✓");
+    const removeButton = screen.getByTitle(/remove from shortlist/i);
+    expect(removeButton).toBeInTheDocument();
+
+    fireEvent.click(removeButton);
+
+    expect(handleRemoveFromShortlist).toHaveBeenCalledWith("job1");
+    expect(showNotification).toHaveBeenCalledWith("Job removed from shortlist", "success");
+    expect(handleJobClick).not.toHaveBeenCalled(); // ensure click doesn't bubble
   });
+
+  test("shows joined requirements when job.requirements is an array", () => {
+    render(
+      <JobCard
+        job={{
+          ...mockJob,
+          requirements: ["React", "JavaScript", "CSS"],
+        }}
+        isLoggedIn={false}
+        isShortlisted={false}
+        handleJobClick={vi.fn()}
+        handleAddToShortlist={vi.fn()}
+        handleRemoveFromShortlist={vi.fn()}
+        showNotification={vi.fn()}
+      />
+    );
+  
+    expect(
+      screen.getByText((_, element) =>
+        element?.textContent === "Requirements: React, JavaScript, CSS"
+      )
+    ).toBeInTheDocument();
+  });
+  
+  test("shows 'Not specified' when job.requirements is not an array", () => {
+    render(
+      <JobCard
+        job={{
+          ...mockJob,
+          requirements: null,
+        }}
+        isLoggedIn={false}
+        isShortlisted={false}
+        handleJobClick={vi.fn()}
+        handleAddToShortlist={vi.fn()}
+        handleRemoveFromShortlist={vi.fn()}
+        showNotification={vi.fn()}
+      />
+    );
+  
+    expect(
+      screen.getByText((_, element) =>
+        element?.textContent === "Requirements: Not specified"
+      )
+    ).toBeInTheDocument();
+  });  
 });
