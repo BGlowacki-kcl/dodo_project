@@ -65,7 +65,6 @@ const AddDetails = () => {
   };
 
   const handleAutoFill = (data) => {
-    console.log(data);
     setUserData((prev) => ({
       ...prev,
       name: `${data?.personal?.name || ""} ${data?.personal?.surname || ""}`.trim(),
@@ -185,11 +184,9 @@ const AddDetails = () => {
   const handleSaveSection = async (section, userData) => {
     setLoading(true);
     try {
-      console.log("User data: ", userData);
-      // Use the existing updateUser method which accepts the full user object
+
       const response = await userService.updateUser(userData);
-      console.log("Response: ", response);
-      // Update local user data state with the response data if available
+
       if (response && response.data) {
         setUserData(response.data);
       }

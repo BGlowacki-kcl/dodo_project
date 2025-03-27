@@ -134,7 +134,6 @@ export const addJobToShortlist = async (req, res) => {
         return res.status(201).json({ success: true, data: updatedShortlist });
     } catch (error) {
         const status = error.status || 500;
-        console.log(error);
         return res.status(status).json({ success: false, message: error.message });
     }
 };
@@ -149,7 +148,7 @@ export const removeJobFromShortlist = async (req, res) => {
     try {
         const userId = req.uid;
         const { jobid } = req.query;
-        console.log(userId);
+
 
         const shortlist = await fetchShortlist(userId);
         const updatedShortlist = await removeJob(shortlist, jobid);

@@ -51,16 +51,14 @@ const CodeAss = () => {
         return;
       }
       const deadlineFetched = await getAssessmentDeadline(appId);
-      console.log("Deadline fetched: ", deadlineFetched);
       if(deadlineFetched) {
-        console.log("Deadline: ", new Date(deadlineFetched).getTime(), "Deadline fetched: ", deadlineFetched);
+      
         if(Date.parse(deadlineFetched) > Date.now()){
           setPageLoading(false);
           const deadlineInMs = isNaN(deadlineFetched) 
                 ? new Date(deadlineFetched).getTime() 
                 : Number(deadlineFetched);
           const remainingTime = Math.floor((Number(deadlineInMs) - Date.now()) / 1000);
-          console.log("Remaining time: ", remainingTime);
           setTimeLeft(remainingTime);
           localStorage.setItem('assessmentDeadline', deadlineFetched);
         } else {
@@ -95,7 +93,6 @@ const CodeAss = () => {
   };
 
   useEffect(() => {
-    console.log("AppId: ",appId);
     const refreshToken = async () => {
       try {
         const currentUser = auth.currentUser;
@@ -105,7 +102,6 @@ const CodeAss = () => {
           
           sessionStorage.setItem('token', newToken);
           
-          console.log('Firebase token refreshed successfully');
         }
       } catch (error) {
         console.error('Error refreshing token:', error);
@@ -135,15 +131,12 @@ const CodeAss = () => {
   const fetchAndSetFirstTask = async () => {
     try {
       const taskResponse = await assessmentService.getTasksId(appId);
-      console.log("Task Ids: ", taskResponse);
       
       if (taskResponse.length === 0) return; 
       setTasksId(taskResponse);
       
       const firstTaskResponse = await assessmentService.getTask(appId, taskResponse[0].id);
-      console.log("First task: ", firstTaskResponse);
       if(firstTaskResponse.submission){
-        console.log("Prev: ", firstTaskResponse.submission);
         setPrevSubmission(firstTaskResponse.submission[0]);
         setTestsPassed(firstTaskResponse.submission[0].score);
         setCode(firstTaskResponse.submission[0].solutionCode);
@@ -167,11 +160,9 @@ const CodeAss = () => {
     if (taskId === task._id) return;
 
     const response = await assessmentService.getTask(appId, taskId);
-    console.log("Task: ", response);
     setTask(response.assessment);
     setTestsPassed(0);
     if(response.submission){
-      console.log("Prev: ", response.submission);
       setPrevSubmission(response.submission[0]);
       setTestsPassed(response.submission[0].score);
       setCode(response.submission[0].solutionCode);
@@ -214,7 +205,6 @@ function func(${task.inputForPythonJS}) {
       e.target.value = language;
       return;
     }
-    console.log("Prev: ", prevSubmission);
     if(e.target.value === prevSubmission.language){
       setCode(prevSubmission.solutionCode);
       setTestsPassed(prevSubmission.score);
@@ -241,9 +231,7 @@ function func(${task.inputForPythonJS}) {
     setLoading(true);
     setError("");
     setOutput("");
-    console.log("TASKLLLLL: ", task);
     const response = await assessmentService.runCode(code, language, task.testCases, task.funcForCppTest);
-    console.log("Res: ", response);
     setLoading(false);
 
     if(response.stderr && response.stderr != ""){
@@ -254,7 +242,6 @@ function func(${task.inputForPythonJS}) {
       setError(response.build_stderr);
       return;
     }
-    console.log("Stdout: ", response);
     if(response.error){
       setError(response.error);
       return;
@@ -277,7 +264,6 @@ function func(${task.inputForPythonJS}) {
   }
 
   const handleSubmit = async () => {
-    console.log("SUBMIT");
     const response = await assessmentService.submit(appId, testsPassed, code, language, task._id);
     const notificationStatus = response.success ? "success" : "danger";
     if(response.success) setPrevSubmission({ solutionCode: code, language, score: testsPassed });
