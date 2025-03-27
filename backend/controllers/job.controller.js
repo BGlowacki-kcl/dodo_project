@@ -55,6 +55,7 @@ export const getJobs = async (req, res) => {
         const jobs = await Job.find(filter);
         return res.status(200).json(createResponse(true, 'Jobs retrieved successfully', jobs));
     } catch (error) {
+        console.error("Error fetching jobs:", error);
         return res.status(500).json(createResponse(false, error.message));
     }
 };
@@ -239,7 +240,7 @@ export const buildJobFilter = ({ jobType, location, role }) => {
 export const getFilteredJobs = async (req, res) => {
     try {
         const { jobType, location, role, company } = req.query;
-
+        
         const filter = {};
 
         // Apply filters based on query parameters

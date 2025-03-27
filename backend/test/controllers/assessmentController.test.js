@@ -1,16 +1,16 @@
 import assessmentController from '../../controllers/assessment.controller.js';
-import CodeAssessment from '../../models/codeAssessment.js';
+import CodeAssessment from '../../models/codeAssessment.model.js';
 import User from '../../models/user/user.model.js';
 import Job from '../../models/job.model.js';
 import Application from '../../models/application.model.js';
-import CodeSubmission from '../../models/codeSubmission.js';
+import CodeSubmission from '../../models/codeSubmission.model.js';
 
 global.fetch = jest.fn();
 
 // Mock the models
 jest.mock('../../models/application.model.js');
-jest.mock('../../models/codeAssessment.js');
-jest.mock('../../models/codeSubmission.js');
+jest.mock('../../models/codeAssessment.model.js');
+jest.mock('../../models/codeSubmission.model.js');
 jest.mock('../../models/job.model.js');
 jest.mock('../../models/user/user.model.js');
 
@@ -38,7 +38,10 @@ describe('Assessment Controller', () => {
       await assessmentController.sendCode(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: 'source_code and language are required' });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'source_code and language are required',
+      });
     });
 
     it('should send code successfully (200) and return data', async () => {
@@ -65,6 +68,7 @@ describe('Assessment Controller', () => {
       );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
+        success: true,
         message: 'Sent code successfully',
         data: { id: 'runnerId123' },
       });
@@ -78,8 +82,9 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
+        success: false,
         message: 'Internal server error',
-        error: 'Fetch failed',
+        data: { error: 'Fetch failed' },
       });
     });
   });
@@ -104,7 +109,11 @@ describe('Assessment Controller', () => {
         })
       );
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ data: { status: 'completed' } });
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: 'Status retrieved successfully',
+        data: { status: 'completed' },
+      });
     });
 
     it('should return 500 on error', async () => {
@@ -115,8 +124,9 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
+        success: false,
         message: 'Internal server error',
-        error: 'Failed to fetch status',
+        data: { error: 'Failed to fetch status' },
       });
     });
   });
@@ -132,7 +142,10 @@ describe('Assessment Controller', () => {
       await assessmentController.getTask(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: 'No id provided' });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'No id provided',
+      });
     });
 
     it('should return 200 and task data if found', async () => {
@@ -154,8 +167,9 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
+        success: true,
         message: 'Successfully retrieved assessment',
-        data: { assessment: mockAssessment }
+        data: { assessment: mockAssessment },
       });
     });
 
@@ -168,7 +182,10 @@ describe('Assessment Controller', () => {
       await assessmentController.getTask(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Error: DB error' });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Error: DB error',
+      });
     });
 
     it('should handle assessment not matching job post', async () => {
@@ -188,6 +205,7 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ 
+        success: false,
         message: 'Error: Assessment does not match the job post' 
       });
     });
@@ -209,6 +227,7 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ 
+        success: false,
         message: 'Error: Assessment does not match the job post' 
       });
     });
@@ -225,7 +244,10 @@ describe('Assessment Controller', () => {
       await assessmentController.getTasksId(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: 'No id provided' });
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'No id provided',
+      });
     });
 
     it('should return 200 with assessments data', async () => {
@@ -247,6 +269,7 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
+        success: true,
         message: 'Successfully retrieved assessments with status',
         data: expect.any(Array)
       });
@@ -266,6 +289,7 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
+        success: false,
         message: 'Error: User not authorized'
       });
     });
@@ -286,6 +310,7 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
+        success: false,
         message: 'Error: No assessment required for this application'
       });
     });
@@ -318,7 +343,8 @@ describe('Assessment Controller', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        message: 'Submitted successfully! Code saved'
+        message: 'Submitted successfully! Code saved',
+        data: { success: true, message: 'Submitted successfully! Code saved' },
       });
     });
 
@@ -342,11 +368,13 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Internal server error"
+        success: false,
+        message: "Internal server error",
+        data: { error: 'User not authorized' },
       });
     });
 
-    it('should handle submissions with lower score than previous', async () => {
+    it('should handle submissions with lower score than previous, but not saved to database', async () => {
       req.body = {
         appId: 'app123',
         testsPassed: 5,
@@ -373,7 +401,8 @@ describe('Assessment Controller', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        message: 'Not saved. Highest score: 8'
+        message: 'Submitted successfully! Code saved',
+        data: { success: true, message: 'Not saved. Highest score: 8' },
       });
     });
 
@@ -406,7 +435,8 @@ describe('Assessment Controller', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
-        message: 'Submitted successfully! Code saved'
+        message: 'Submitted successfully! Code saved',
+        data: { success: true, message: 'Submitted successfully! Code saved' },
       });
     });
 
@@ -427,7 +457,9 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Internal server error"
+        success: false,
+        message: "Internal server error",
+        data: { error: 'User not authorized' },
       });
     });
 
@@ -447,7 +479,9 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({
-        message: "Internal server error"
+        success: false,
+        message: "Internal server error",
+        data: { error: 'Database error' },
       });
     });
   });
@@ -464,6 +498,7 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
+        success: true,
         message: 'Successfully received code assessments',
         data: mockTasks
       });
@@ -475,7 +510,11 @@ describe('Assessment Controller', () => {
       await assessmentController.getAllTasks(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Internal server error' });
+      expect(res.json).toHaveBeenCalledWith({ 
+        success: false,
+        message: 'Internal server error',
+        data: { error: 'DB error' },
+      });
     });
   });
 
@@ -499,6 +538,7 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
+        success: true,
         message: 'Assessment added successfully',
         data: mockSavedAssessment
       });
@@ -511,7 +551,11 @@ describe('Assessment Controller', () => {
       await assessmentController.createAss(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith({ message: 'Internal server error' });
+      expect(res.json).toHaveBeenCalledWith({ 
+        success: false,
+        message: 'Internal server error',
+        data: { error: 'DB error' },
+      });
     });
   });
 
@@ -530,7 +574,9 @@ describe('Assessment Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ 
-        message: 'Internal server error' 
+        success: false,
+        message: 'Internal server error',
+        data: { error: 'Validation error' },
       });
     });
   });

@@ -20,7 +20,10 @@ export async function makeApiRequest(endpoint, method, body = null) {
     }
   
     const response = await fetch(endpoint, requestOptions);
+    console.log("response1", response);
     checkTokenExpiration(response);
+    console.log("response", response);
+
     const responseJson = await response.json();
     if (!responseJson.success) {
       throw new Error(responseJson.message || `Failed to ${method.toLowerCase()} ${endpoint}`);

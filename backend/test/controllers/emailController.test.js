@@ -69,7 +69,8 @@ describe('Email Controller', () => {
 
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
-                message: 'Email sent successfully'
+                message: 'Email sent successfully',
+                success: true
             });
         });
 
@@ -87,7 +88,8 @@ describe('Email Controller', () => {
 
                 expect(res.status).toHaveBeenCalledWith(400);
                 expect(res.json).toHaveBeenCalledWith({
-                    error: 'All fields are required'
+                    error: 'All fields are required',
+                    success: false
                 });
 
                 jest.clearAllMocks();
@@ -107,7 +109,8 @@ describe('Email Controller', () => {
 
             expect(res.status).toHaveBeenCalledWith(500);
             expect(res.json).toHaveBeenCalledWith({
-                error: 'Failed to send email'
+                error: 'Failed to send email',
+                success: false
             });
         });
 
@@ -125,7 +128,8 @@ describe('Email Controller', () => {
 
             expect(res.status).toHaveBeenCalledWith(500);
             expect(res.json).toHaveBeenCalledWith({
-                error: 'Failed to send email'
+                error: 'Failed to send email',
+                success: false
             });
         });
 

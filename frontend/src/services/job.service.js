@@ -27,10 +27,8 @@ function getAuthHeaders() {
  */
 export async function getAllJobs() {
   return await makeApiRequest(
-    `${API_BASE_URL}?deadlineValid=true`,
-    "GET",
-    null,
-    "Failed to fetch all jobs"
+    `${API_BASE_URL}/?deadlineValid=true`,
+    "GET"
   );
 }
 
@@ -150,26 +148,41 @@ export async function getAllCompanies() {
 
 /**
  * Builds query parameters for job filtering
- * @param {Object} filters - Filter criteria
+ * @param {Object} filters - Filter criteria object
  * @returns {string} - URL query string
  */
 function buildFilterQueryParams(filters) {
   const queryParams = new URLSearchParams();
   
-  if (filters.jobType) {
-    filters.jobType.forEach((type) => queryParams.append("jobType", type));
+  // Handle companies filter
+  if (filters.companies && filters.companies.length > 0) {
+    filters.companies.forEach((company) => queryParams.append("company", company));
   }
   
-  if (filters.location) {
-    filters.location.forEach((loc) => queryParams.append("location", loc));
+  // Handle job types filter
+  if (filters.jobTypes && filters.jobTypes.length > 0) {
+    filters.jobTypes.forEach((type) => queryParams.append("jobType", type));
   }
   
-  if (filters.role) {
-    filters.role.forEach((role) => queryParams.append("role", role));
+  // Handle locations filter
+  if (filters.locations && filters.locations.length > 0) {
+    filters.locations.forEach((location) => queryParams.append("location", location));
   }
-
-  if (filters.company) {
-    filters.company.forEach((company) => queryParams.append("company", company));
+  
+  // Handle job titles filter
+  if (filters.titles && filters.titles.length > 0) {
+    filters.titles.forEach((title) => queryParams.append("title", title));
+  }
+  
+  // Handle deadline range filter
+  if (filters.deadlineRange) {
+    queryParams.append("deadlineRange", filters.deadlineRange);
+  }
+  
+  // Handle salary range filter
+  if (filters.salaryRange && filters.salaryRange.length === 2) {
+    queryParams.append("salaryMin", filters.salaryRange[0]);
+    queryParams.append("salaryMax", filters.salaryRange[1]);
   }
   
   return queryParams.toString();
@@ -182,9 +195,20 @@ function buildFilterQueryParams(filters) {
  */
 export async function getFilteredJobs(filters) {
   try {
+    // Log the input filters for debugging
+    console.log("Applying filters:", JSON.stringify(filters, null, 2));
+    
+    // Build the query string
     const queryString = buildFilterQueryParams(filters);
+    
+    // Log the generated query string
+    console.log("Generated query string:", queryString);
+    
+    // Make the API request with the query parameters
     return await makeApiRequest(`${API_BASE_URL}/search?${queryString}`, "GET");
   } catch (error) {
+    // Log the error for debugging
+    console.error("Error fetching filtered jobs:", error);
     throw error;
   }
 }
