@@ -12,7 +12,6 @@
  * The controller interacts with the Application, Job, and User models.
  */
 
-import mongoose from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
@@ -22,8 +21,6 @@ import {
     formatAnswers, 
     isValidStatus, 
     verifyJobOwnership,
-    getTotalStatus,
-    getJobsByEmployerHelper,
     getLineGraphData 
 } from "./helpers.js";
 import CodeAssessment from "../models/codeAssessment.model.js";
@@ -223,6 +220,11 @@ export const applicationController = {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
 
+            const formattedAnswers = answers.map((answer) => ({
+                questionId: new mongoose.Types.ObjectId(answer.questionId),
+                answerText: answer.answerText,
+            }));
+
             const newApp = await Application.create({
                 job: jobId,
                 applicant: user._id,
@@ -235,6 +237,7 @@ export const applicationController = {
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
         } catch (error) {
+            console.error("Error creating application:", error);
             return res.status(500).json(createResponse(false, "Error creating application"));
         }
     },
@@ -420,7 +423,7 @@ export const applicationController = {
 };
     
 // Helper function to group statuses by job ID
-async function groupStatusByJobId(jobIds) {
+export async function groupStatusByJobId(jobIds) {
   try {
     const groupedData = await Application.aggregate([
       { $match: { job: { $in: jobIds } } },
@@ -457,7 +460,7 @@ async function groupStatusByJobId(jobIds) {
   }
 }
 
-async function aggregateTotalStatuses(groupedStatuses) {
+export async function aggregateTotalStatuses(groupedStatuses) {
     return groupedStatuses.flatMap((job) => job.statuses).reduce((acc, status) => {
       const existing = acc.find((s) => s._id === status.status); // Ensure _id instead of status
       if (existing) {

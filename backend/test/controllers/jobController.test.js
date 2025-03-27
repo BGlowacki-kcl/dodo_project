@@ -14,9 +14,9 @@ import {
     buildJobFilter,
     getJobQuestionsById,
     getJobsByEmployer,
-    areRequiredFieldsPresent,
-    createResponse
+    areRequiredFieldsPresent
 } from '../../controllers/job.controller.js';
+import { createResponse } from '../../controllers/helpers.js';
 
 jest.mock('../../models/job.model.js');
 jest.mock('../../models/user/Employer.model.js');
@@ -78,6 +78,26 @@ describe('Job Controller', () => {
         });
     });
 
+    describe('createJob input validation', () => {
+        it('should validate empty fields as false', async () => {
+            req.body = {
+                title: '',
+                company: '',
+                location: '',
+                description: '',
+                postedBy: ''
+            };
+
+            await createJob(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(400);
+            expect(res.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'All required fields must be filled.'
+            });
+        });
+    });
+
     describe('getJobs', () => {
         it('should return all jobs with 200 status', async () => {
             const mockJobs = [
@@ -98,12 +118,29 @@ describe('Job Controller', () => {
         });
     });
 
+    describe('getJobs with deadline validation', () => {
+        it('should filter by valid deadlines when specified', async () => {
+            req.query = { deadlineValid: "true" };
+            const mockJobs = [{ title: 'Valid Job' }];
+            Job.find.mockResolvedValue(mockJobs);
+
+            await getJobs(req, res);
+
+            expect(Job.find).toHaveBeenCalledWith({
+                deadline: { $gte: expect.any(Date) }
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+        });
+    });
+
     describe('getJobById', () => {
         it('should return a job by id with 200 status', async () => {
-            const job = { title: 'Software Engineer', company: 'Tech Corp' };
+            const job = { title: 'Software Engineer', company: 'Tech Corp', assessments: [] };
             req.params.id = '12345';
 
-            Job.findById.mockResolvedValue(job);
+            Job.findById.mockReturnValue({
+                populate: jest.fn().mockResolvedValue(job)
+            });
 
             await getJobById(req, res);
 
@@ -117,7 +154,10 @@ describe('Job Controller', () => {
 
         it('should return 404 status if job is not found', async () => {
             req.params.id = '12345';
-            Job.findById.mockResolvedValue(null);
+
+            Job.findById.mockReturnValue({
+                populate: jest.fn().mockResolvedValue(null)
+            });
 
             await getJobById(req, res);
 
@@ -130,7 +170,10 @@ describe('Job Controller', () => {
 
         it('should return 500 on DB error', async () => {
             req.params.id = 'errorId';
-            Job.findById.mockRejectedValue(new Error("DB error"));
+
+            Job.findById.mockReturnValue({
+                populate: jest.fn().mockRejectedValue(new Error("DB error"))
+            });
 
             await getJobById(req, res);
 
@@ -358,7 +401,7 @@ describe('Job Controller', () => {
     });
 
     describe("getFilteredJobs", () => {
-        it("should return jobs based on query filters", async () => {
+        it('should return jobs based on query filters', async () => {
             req.query = {
                 jobType: "Full-time",
                 location: "Remote",
@@ -368,6 +411,7 @@ describe('Job Controller', () => {
             const mockFilteredJobs = [
                 { title: "Software Engineer", location: "Remote", employmentType: "Full-time" }
             ];
+
             Job.find.mockResolvedValue(mockFilteredJobs);
 
             await getFilteredJobs(req, res);
@@ -375,7 +419,8 @@ describe('Job Controller', () => {
             expect(Job.find).toHaveBeenCalledWith({
                 employmentType: "Full-time",
                 location: "Remote",
-                title: "Software Engineer"
+                title: "Software Engineer",
+                deadline: { $gte: expect.any(Date) }
             });
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
@@ -385,7 +430,7 @@ describe('Job Controller', () => {
             });
         });
 
-        it("should handle multiple array filters if they exist", async () => {
+        it('should handle multiple array filters if they exist', async () => {
             req.query = {
                 jobType: ["Full-time", "Part-time"],
                 location: ["Remote", "Onsite"],
@@ -400,7 +445,8 @@ describe('Job Controller', () => {
             expect(Job.find).toHaveBeenCalledWith({
                 employmentType: { $in: ["Full-time", "Part-time"] },
                 location: { $in: ["Remote", "Onsite"] },
-                title: { $in: ["Data Scientist", "Backend Engineer"] }
+                title: { $in: ["Data Scientist", "Backend Engineer"] },
+                deadline: { $gte: expect.any(Date) }
             });
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
@@ -410,17 +456,71 @@ describe('Job Controller', () => {
             });
         });
 
-        it("should return 500 if an error occurs", async () => {
+        it('should return 500 if an error occurs', async () => {
             Job.find.mockRejectedValue(new Error("DB error"));
 
             await getFilteredJobs(req, res);
 
             expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+            expect(res.json).toHaveBeenCalledWith({
                 success: false,
                 message: "Failed to fetch jobs",
-                data: "DB error"  // Changed from error to data
-            }));
+                data: "Failed to fetch jobs with valid deadlines"
+            });
+        });
+    });
+
+    describe('getFilteredJobs advanced filters', () => {
+        it('should handle company filter', async () => {
+            req.query = {
+                company: 'Tech Corp'
+            };
+            const mockJobs = [{ company: 'Tech Corp' }];
+            Job.find.mockResolvedValue(mockJobs);
+
+            await getFilteredJobs(req, res);
+
+            expect(Job.find).toHaveBeenCalledWith({
+                company: 'Tech Corp',
+                deadline: { $gte: expect.any(Date) }
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+        });
+
+        it('should handle multiple company filters', async () => {
+            req.query = {
+                company: ['Tech Corp', 'Another Corp']
+            };
+            const mockJobs = [{ company: 'Tech Corp' }];
+            Job.find.mockResolvedValue(mockJobs);
+
+            await getFilteredJobs(req, res);
+
+            expect(Job.find).toHaveBeenCalledWith({
+                company: { $in: ['Tech Corp', 'Another Corp'] },
+                deadline: { $gte: expect.any(Date) }
+            });
+        });
+
+        it('should handle all filters combined', async () => {
+            req.query = {
+                jobType: 'Full-time',
+                location: 'Remote',
+                role: 'Developer',
+                company: 'Tech Corp'
+            };
+            const mockJobs = [{ title: 'Developer Position' }];
+            Job.find.mockResolvedValue(mockJobs);
+
+            await getFilteredJobs(req, res);
+
+            expect(Job.find).toHaveBeenCalledWith({
+                employmentType: 'Full-time',
+                location: 'Remote',
+                title: 'Developer',
+                company: 'Tech Corp',
+                deadline: { $gte: expect.any(Date) }
+            });
         });
     });
 
@@ -488,7 +588,6 @@ describe('Job Controller', () => {
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
                 success: true,
-                message: 'Job questions retrieved successfully',
                 data: mockJob.questions
             });
         });
@@ -516,6 +615,38 @@ describe('Job Controller', () => {
             expect(res.json).toHaveBeenCalledWith({
                 success: false,
                 message: 'Database error'
+            });
+        });
+    });
+
+    describe('getJobQuestionsById edge cases', () => {
+        it('should handle missing query parameters', async () => {
+            req.query = {};
+
+            await getJobQuestionsById(req, res);
+
+            expect(res.json).toHaveBeenCalledWith({
+                success: false,
+                message: 'Database error'
+            });
+            expect(res.status).toHaveBeenCalledWith(500);
+        });
+
+        it('should handle job with no questions', async () => {
+            const mockJob = {
+                _id: 'job123',
+                questions: []
+            };
+            
+            req.query = { jobId: 'job123' };
+            Job.findById.mockResolvedValue(mockJob);
+
+            await getJobQuestionsById(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                data: []
             });
         });
     });
@@ -553,6 +684,18 @@ describe('Job Controller', () => {
                 location: { $in: ['Remote', 'On-site'] },
                 title: { $in: ['Developer', 'Designer'] }
             });
+        });
+    });
+
+    describe('buildJobFilter with empty values', () => {
+        it('should handle empty string values', () => {
+            const query = {
+                jobType: '',
+                location: '',
+                role: ''
+            };
+            const filter = buildJobFilter(query);
+            expect(filter).toEqual({});
         });
     });
 

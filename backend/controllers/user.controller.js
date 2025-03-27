@@ -245,11 +245,18 @@ export const userController = {
                 return res.status(404).json(createResponse(false, "User not found"));
             }
 
+            if (req.body.projects) {
+                req.body.projects = req.body.projects.map(project => 
+                    typeof project === 'object' ? project.description : project
+                );
+            }
+
             Object.assign(user, req.body);
             const updatedUser = await user.save();
 
             return res.status(200).json(createResponse(true, "User updated successfully", updatedUser));
         } catch (error) {
+            console.log(error);
             return res.status(500).json(createResponse(false, "Server error"));
         }
     },

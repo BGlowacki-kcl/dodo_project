@@ -1,0 +1,5 @@
+[
+  { "_id": "q1", "questionText": "Why do you want to work with us?" },
+  { "_id": "q2", "questionText": "Describe your relevant experience" },
+  { "_id": "q3", "questionText": "What are your strengths?" }
+]

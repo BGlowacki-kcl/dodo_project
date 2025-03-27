@@ -26,6 +26,7 @@ export async function makeApiRequest(endpoint, method, body = null) {
   
   const responseJson = await response.json();
   if (!responseJson.success) {
+
       throw new Error(responseJson.message || `Failed to ${method.toLowerCase()} ${endpoint}`);
   }
   

@@ -28,6 +28,7 @@ const AddDetails = () => {
     name: "",
     location: "",
     phoneNumber: "",
+    email: "",
     dob: "",
     skills: [],
     education: [],

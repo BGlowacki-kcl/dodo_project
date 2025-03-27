@@ -1,6 +1,16 @@
 import mongoose from "mongoose";
 import Job from "../../models/job.model.js";
-import { handleError, handleRejection, verifyJobOwnership, formatAnswers, isValidStatus } from "../../controllers/helpers.js";
+import Application from "../../models/application.model.js";
+import User from "../../models/user/user.model.js";
+import { 
+  handleError, 
+  verifyJobOwnership, 
+  formatAnswers, 
+  isValidStatus, 
+  getTotalStatus, 
+  getJobsByEmployerHelper, 
+  getLineGraphData
+} from "../../controllers/helpers.js";
 
 describe("Helper Functions", () => {
   describe("formatAnswers", () => {
@@ -76,38 +86,80 @@ describe("Helper Functions", () => {
     });
   });
 
-  describe("handleRejection", () => {
-    let res;
-    beforeEach(() => {
-      res = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn()
-      };
+  describe("getTotalStatus", () => {
+    it("should return aggregated status counts for jobs", async () => {
+      const mockJobs = [{ _id: "job1" }, { _id: "job2" }];
+      const mockAggregation = [
+        { _id: "Applied", count: 5 },
+        { _id: "Rejected", count: 2 }
+      ];
+
+      Application.aggregate = jest.fn().mockResolvedValue(mockAggregation);
+
+      const result = await getTotalStatus(mockJobs);
+      expect(result).toEqual(mockAggregation);
+      expect(Application.aggregate).toHaveBeenCalledWith([
+        { $match: { job: { $in: ["job1", "job2"] } } },
+        { $group: { _id: "$status", count: { $sum: 1 } } }
+      ]);
     });
 
-    it("should prevent rejecting accepted applications", async () => {
-      const application = { status: "accepted" };
-      await handleRejection(res, application);
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: "Cannot reject an accepted application"
-      });
+    it("should throw an error if aggregation fails", async () => {
+      Application.aggregate = jest.fn().mockRejectedValue(new Error("Aggregation error"));
+      await expect(getTotalStatus([{ _id: "job1" }])).rejects.toThrow("Aggregation error");
+    });
+  });
+
+  describe("getJobsByEmployerHelper", () => {
+    it("should return jobs for a valid employer", async () => {
+      const mockEmployer = { _id: "employer1" };
+      const mockJobs = [{ title: "Job 1" }, { title: "Job 2" }];
+
+      User.findOne = jest.fn().mockResolvedValue(mockEmployer);
+      Job.find = jest.fn().mockResolvedValue(mockJobs);
+
+      const result = await getJobsByEmployerHelper("uid123");
+      expect(result).toEqual(mockJobs);
+      expect(User.findOne).toHaveBeenCalledWith({ uid: "uid123" });
+      expect(Job.find).toHaveBeenCalledWith({ postedBy: "employer1" });
     });
 
-    it("should reject application successfully", async () => {
-      const application = {
-        status: "applied",
-        save: jest.fn().mockResolvedValue(true)
-      };
-      await handleRejection(res, application);
-      expect(application.status).toBe("rejected");
-      expect(application.save).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        message: "Application rejected",
-        data: application
-      });
+    it("should throw an error if employer is not found", async () => {
+      User.findOne = jest.fn().mockResolvedValue(null);
+      await expect(getJobsByEmployerHelper("uid123")).rejects.toThrow("Employer not found");
+    });
+
+    it("should throw an error if fetching jobs fails", async () => {
+      User.findOne = jest.fn().mockResolvedValue({ _id: "employer1" });
+      Job.find = jest.fn().mockRejectedValue(new Error("Database error"));
+
+      await expect(getJobsByEmployerHelper("uid123")).rejects.toThrow("Database error");
+    });
+  });
+
+  describe("getLineGraphData", () => {
+    it("should return line graph data for job applications", async () => {
+      const mockJobIds = ["job1", "job2"];
+      const mockLineGraphData = [
+        { jobId: "job1", date: "01-01-2023", count: 5 },
+        { jobId: "job2", date: "02-01-2023", count: 3 }
+      ];
+
+      Application.aggregate = jest.fn().mockResolvedValue(mockLineGraphData);
+
+      const result = await getLineGraphData(mockJobIds);
+      expect(result).toEqual(mockLineGraphData);
+      expect(Application.aggregate).toHaveBeenCalledWith([
+        { $match: { job: { $in: mockJobIds }, status: { $ne: "Applying" } } },
+        { $group: { _id: { jobId: "$job", date: { $dateToString: { format: "%d-%m-%Y", date: "$submittedAt" } } }, count: { $sum: 1 } } },
+        { $sort: { "_id.date": 1 } },
+        { $project: { jobId: "$_id.jobId", date: "$_id.date", count: 1, _id: 0 } }
+      ]);
+    });
+
+    it("should throw an error if aggregation fails", async () => {
+      Application.aggregate = jest.fn().mockRejectedValue(new Error("Aggregation error"));
+      await expect(getLineGraphData(["job1"])).rejects.toThrow("Failed to fetch line graph data");
     });
   });
 });

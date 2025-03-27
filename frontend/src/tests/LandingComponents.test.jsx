@@ -1,37 +1,89 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { Box, ComboBox } from "../components/LandingComponents";
 
-describe("LandingComponents", () => {
-  describe("Box Component", () => {
-    const mockOnClick = vi.fn();
-    const mockImage = "https://example.com/image.jpg";
-    const mockText = "Job Openings";
-    const mockCounter = 42;
+describe("Box Component", () => {
+  const mockProps = {
+    image: "test-image.jpg",
+    text: "Test Job",
+    counter: 42,
+    onClick: vi.fn(),
+  };
 
-    it("calls onClick handler when box is clicked", () => {
-      render(<Box image={mockImage} text={mockText} onClick={mockOnClick} counter={mockCounter} />);
+  it("renders with the correct content", () => {
+    render(<Box {...mockProps} />);
+    
+    // Check that the text and counter are rendered
+    expect(screen.getByText("Test Job")).toBeInTheDocument();
+    expect(screen.getByText("42")).toBeInTheDocument();
+    
+    const boxElement = screen.getByText("Test Job").parentElement;
+    expect(boxElement).toBeInTheDocument();
+  });
 
-      const box = screen.getByText(mockCounter).closest("div");
-      fireEvent.click(box);
+  it("calls onClick when clicked", () => {
+    render(<Box {...mockProps} />);
+    
+    const boxElement = screen.getByText("Test Job").closest("div");
+    fireEvent.click(boxElement);
+    
+    expect(mockProps.onClick).toHaveBeenCalledTimes(1);
+  });
+});
 
-      expect(mockOnClick).toHaveBeenCalled();
+describe("ComboBox Component", () => {
+  const mockProps = {
+    label: "Role",
+    options: ["Developer", "Designer", "Manager"],
+    onSelect: vi.fn(),
+  };
+
+  it("renders with the correct placeholder", () => {
+    render(<ComboBox {...mockProps} />);
+    
+    const input = screen.getByPlaceholderText("Select a Role...");
+    expect(input).toBeInTheDocument();
+  });
+
+  it("shows dropdown when focused", async () => {
+    render(<ComboBox {...mockProps} />);
+    
+    const input = screen.getByPlaceholderText("Select a Role...");
+    fireEvent.focus(input);
+    
+    await waitFor(() => {
+      expect(screen.getByText("Developer")).toBeInTheDocument();
+      expect(screen.getByText("Designer")).toBeInTheDocument();
+      expect(screen.getByText("Manager")).toBeInTheDocument();
     });
   });
 
-  describe("ComboBox Component", () => {
-    const mockOptions = ["Software Engineer", "Product Manager", "Data Scientist"];
-    const mockOnSelect = vi.fn();
-    const mockLabel = "Job Role";
-
-    it("renders input with placeholder", () => {
-      render(<ComboBox label={mockLabel} options={mockOptions} onSelect={mockOnSelect} />);
-
-      const input = screen.getByRole("textbox");
-      expect(input).toBeInTheDocument();
-      expect(input).toHaveAttribute("placeholder", `Select a ${mockLabel}...`);
-      expect(input).toHaveClass("w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500");
+  it("filters options based on input", async () => {
+    render(<ComboBox {...mockProps} />);
+    
+    const input = screen.getByPlaceholderText("Select a Role...");
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "de" } });
+    
+    await waitFor(() => {
+      expect(screen.getByText("Developer")).toBeInTheDocument();
+      expect(screen.getByText("Designer")).toBeInTheDocument();
+      expect(screen.queryByText("Manager")).not.toBeInTheDocument();
     });
+  });
+
+  it("calls onSelect when option is clicked", async () => {
+    render(<ComboBox {...mockProps} />);
+    
+    const input = screen.getByPlaceholderText("Select a Role...");
+    fireEvent.focus(input);
+    
+    await waitFor(() => {
+      const option = screen.getByText("Developer");
+      fireEvent.click(option);
+    });
+    
+    expect(mockProps.onSelect).toHaveBeenCalledWith("Developer");
+    expect(input).toHaveValue("Developer");
   });
 });

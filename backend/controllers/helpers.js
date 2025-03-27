@@ -94,7 +94,6 @@ export const getJobsByEmployerHelper = async (uid) => {
 /**
  * Gets line graph data for jobs
  */
-// Helper function to generate line graph data
 export const getLineGraphData = async (jobIds) => {
     try {
       const lineGraphData = await Application.aggregate([
