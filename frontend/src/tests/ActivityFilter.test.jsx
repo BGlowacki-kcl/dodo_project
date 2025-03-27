@@ -30,7 +30,6 @@ describe('ActivityFilter Component', () => {
       <ActivityFilter isOpen={true} onClose={() => {}} applyFilters={() => {}} />
     );
 
-    // Wait for useEffect to populate titles and types
     await waitFor(() => {
       expect(screen.getByText('Activity Filters')).toBeInTheDocument();
       expect(screen.getByText('Titles')).toBeInTheDocument();
@@ -38,7 +37,6 @@ describe('ActivityFilter Component', () => {
       expect(screen.getByText('Submission Date')).toBeInTheDocument();
       expect(screen.getByText('Statuses')).toBeInTheDocument();
 
-      // Check some filter options
       expect(screen.getByText('Software Engineer')).toBeInTheDocument();
       expect(screen.getByText('Full-Time')).toBeInTheDocument();
       expect(screen.getByText('Applying')).toBeInTheDocument();
@@ -218,5 +216,173 @@ describe('ActivityFilter Component', () => {
       statuses: ['Applying'],
       submissionDateRange: '1_week'
     });
+  });
+
+  // Additional Tests for Improved Coverage
+  it('deselects title when checkbox is clicked again', async () => {
+    const mockApplyFilters = vi.fn();
+    render(
+      <ActivityFilter isOpen={true} onClose={() => {}} applyFilters={mockApplyFilters} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+    });
+
+    const titleCheckbox = screen.getByLabelText('Software Engineer');
+    fireEvent.click(titleCheckbox); // Select
+    fireEvent.click(titleCheckbox); // Deselect
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titles: [],
+        types: [],
+        statuses: [],
+        submissionDateRange: ''
+      })
+    );
+  });
+
+  it('handles multiple title selections', async () => {
+    const mockApplyFilters = vi.fn();
+    render(
+      <ActivityFilter isOpen={true} onClose={() => {}} applyFilters={mockApplyFilters} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByLabelText('Software Engineer'));
+    fireEvent.click(screen.getByLabelText('Data Scientist'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titles: ['Software Engineer', 'Data Scientist'],
+        types: [],
+        statuses: [],
+        submissionDateRange: ''
+      })
+    );
+  });
+
+  it('handles case-insensitive title search', async () => {
+    render(
+      <ActivityFilter isOpen={true} onClose={() => {}} applyFilters={() => {}} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+    });
+
+    const titleSearchInput = screen.getByPlaceholderText('Search titles...');
+    fireEvent.change(titleSearchInput, { target: { value: 'SOFTWARE' } });
+
+    expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+    expect(screen.queryByText('Data Scientist')).not.toBeInTheDocument();
+  });
+
+  it('shows no titles when search has no matches', async () => {
+    render(
+      <ActivityFilter isOpen={true} onClose={() => {}} applyFilters={() => {}} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+    });
+
+    const titleSearchInput = screen.getByPlaceholderText('Search titles...');
+    fireEvent.change(titleSearchInput, { target: { value: 'NonExistent' } });
+
+    expect(screen.queryByText('Software Engineer')).not.toBeInTheDocument();
+    expect(screen.queryByText('Data Scientist')).not.toBeInTheDocument();
+    expect(screen.queryByText('Product Manager')).not.toBeInTheDocument();
+  });
+
+  it('calls onClose when header close button is clicked', async () => {
+    const mockOnClose = vi.fn();
+    render(
+      <ActivityFilter isOpen={true} onClose={mockOnClose} applyFilters={() => {}} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Activity Filters')).toBeInTheDocument();
+    });
+
+    const closeButton = screen.getByText('✕');
+    fireEvent.click(closeButton);
+
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('maintains state across multiple interactions', async () => {
+    const mockApplyFilters = vi.fn();
+    render(
+      <ActivityFilter isOpen={true} onClose={() => {}} applyFilters={mockApplyFilters} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Software Engineer')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByLabelText('Software Engineer'));
+    fireEvent.click(screen.getByLabelText('Full-Time'));
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titles: ['Software Engineer'],
+        types: ['Full-Time'],
+        statuses: [],
+        submissionDateRange: ''
+      })
+    );
+
+    fireEvent.click(screen.getByLabelText('Applying'));
+    fireEvent.click(screen.getByLabelText('1 Week Ago'));
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titles: ['Software Engineer'],
+        types: ['Full-Time'],
+        statuses: ['Applying'],
+        submissionDateRange: '1_week'
+      })
+    );
+  });
+
+  it('applies filters with all statuses selected', async () => {
+    const mockApplyFilters = vi.fn();
+    render(
+      <ActivityFilter isOpen={true} onClose={() => {}} applyFilters={mockApplyFilters} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Applying')).toBeInTheDocument();
+    });
+
+    const statuses = [
+      'Applying', 'Applied', 'In Review', 'Shortlisted',
+      'Code Challenge', 'Rejected', 'Accepted'
+    ];
+    statuses.forEach(status => {
+      fireEvent.click(screen.getByLabelText(status));
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titles: [],
+        types: [],
+        statuses,
+        submissionDateRange: ''
+      })
+    );
   });
 });

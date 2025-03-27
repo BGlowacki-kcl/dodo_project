@@ -1,279 +1,331 @@
-import React from "react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { vi } from "vitest";
-import JobDetailsPage from "../pages/user/JobDetailsPage";
+// src/tests/job.service.test.jsx
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import {
+  getAllJobs,
+  getJobById,
+  createJob,
+  updateJob,
+  deleteJob,
+  getJobCountByType,
+  getAllJobRoles,
+  getAllJobLocations,
+  getAllJobTypes,
+  getAllCompanies,
+  getFilteredJobs,
+  getJobsByEmployer,
+  getApplicantsByJobId,
+  getJobQuestionsById,
+  getSalaryBounds
+} from '../services/job.service.js';
+import { makeApiRequest } from '../services/helper.js';
 
-// Mocks
-import * as jobService from "../services/job.service";
-import * as applicationService from "../services/application.service";
-import * as shortlistService from "../services/shortlist.service";
-import * as notificationContext from "../context/notification.context";
-
-// Mock components
-vi.mock("../components/JobDetailsContent", () => ({
-  default: ({ job }) => (
-    <div data-testid="job-details-content">{job.title || "No job title"}</div>
-  ),
+// Mock makeApiRequest
+vi.mock('../services/helper.js', () => ({
+  makeApiRequest: vi.fn()
 }));
 
-vi.mock("../components/DeadlineBadge", () => ({
-  default: ({ deadline }) => (
-    <span data-testid="deadline-badge">{deadline || "No deadline"}</span>
-  ),
-}));
-
-// Mock hooks and functions
-const mockNavigate = vi.fn();
-const mockShowNotification = vi.fn();
-
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
-
-vi.mock("../context/notification.context", () => ({
-  useNotification: () => mockShowNotification,
-}));
-
-// Mock storage
-const mockSessionStorage = (() => {
-  let store = { token: "fake-token" };
-  return {
-    getItem: vi.fn(key => store[key] || null),
-    setItem: vi.fn((key, value) => {
-      store[key] = value.toString();
-    }),
-    removeItem: vi.fn(key => {
-      delete store[key];
-    }),
-    clear: vi.fn(() => {
-      store = {};
-    })
-  };
-})();
-
-Object.defineProperty(window, 'sessionStorage', {
-  value: mockSessionStorage
-});
-
-describe("JobDetailsPage", () => {
-  const mockJob = {
-    _id: "job123",
-    title: "Frontend Developer",
-    company: "Tech Corp",
-    location: "Remote",
-    employmentType: "Full-time",
-    experienceLevel: "Mid-Senior",
-    salaryRange: { min: 80000, max: 120000 },
-    requirements: ["React", "JavaScript", "TypeScript"],
-    description: "A great job opportunity for frontend developers",
-    deadline: "2025-05-01",
-    questions: [
-      { _id: "q1", questionText: "Tell us about yourself" },
-      { _id: "q2", questionText: "Why do you want this job?" }
-    ]
-  };
-
-  beforeEach(() => {
+describe('Job Service', () => {
+  afterEach(() => {
     vi.clearAllMocks();
-    
-    // Default mock implementations
-    vi.spyOn(jobService, "getJobById").mockResolvedValue(mockJob);
-    vi.spyOn(applicationService, "getAllUserApplications").mockResolvedValue([]);
-    vi.spyOn(shortlistService, "getShortlist").mockResolvedValue({ jobs: [] });
-    vi.spyOn(shortlistService, "addJobToShortlist").mockResolvedValue({ success: true });
-    vi.spyOn(shortlistService, "removeJobFromShortlist").mockResolvedValue({ success: true });
-    vi.spyOn(applicationService, "applyToJob").mockResolvedValue({ _id: "app123" });
   });
 
-  const renderPage = () =>
-    render(
-      <MemoryRouter initialEntries={["/user/jobs/details/job123"]}>
-        <Routes>
-          <Route path="/user/jobs/details/:jobId" element={<JobDetailsPage />} />
-        </Routes>
-      </MemoryRouter>
+  // Existing Tests
+  it('getAllJobs retrieves all jobs', async () => {
+    const mockJobs = [{ id: '1', title: 'Software Engineer' }];
+    makeApiRequest.mockResolvedValue(mockJobs);
+
+    const result = await getAllJobs();
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/?deadlineValid=true', 'GET');
+    expect(result).toEqual(mockJobs);
+  });
+
+  it('getJobById retrieves a job by ID', async () => {
+    const mockJob = { id: '1', title: 'Software Engineer' };
+    makeApiRequest.mockResolvedValue(mockJob);
+
+    const result = await getJobById('1');
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/1', 'GET');
+    expect(result).toEqual(mockJob);
+  });
+
+  it('getJobById throws error on failure', async () => {
+    const mockError = new Error('Not found');
+    makeApiRequest.mockRejectedValue(mockError);
+
+    await expect(getJobById('1')).rejects.toThrow('Not found');
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/1', 'GET');
+  });
+
+  it('createJob creates a new job', async () => {
+    const jobData = { title: 'Data Scientist' };
+    const mockResponse = { id: '2', ...jobData };
+    makeApiRequest.mockResolvedValue(mockResponse);
+
+    const result = await createJob(jobData);
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/create', 'POST', jobData);
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('createJob throws error on failure', async () => {
+    const jobData = { title: 'Data Scientist' };
+    const mockError = new Error('Creation failed');
+    makeApiRequest.mockRejectedValue(mockError);
+
+    await expect(createJob(jobData)).rejects.toThrow('Creation failed');
+  });
+
+  it('updateJob updates an existing job', async () => {
+    const jobData = { title: 'Updated Job' };
+    const mockResponse = { id: '1', ...jobData };
+    makeApiRequest.mockResolvedValue(mockResponse);
+
+    const result = await updateJob('1', jobData);
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/1', 'PUT', jobData);
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('deleteJob deletes a job', async () => {
+    const mockResponse = { success: true };
+    makeApiRequest.mockResolvedValue(mockResponse);
+
+    const result = await deleteJob('1');
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/1', 'DELETE');
+    expect(result).toEqual(mockResponse);
+  });
+
+  it('getJobCountByType retrieves count by type', async () => {
+    makeApiRequest.mockResolvedValue(5);
+
+    const result = await getJobCountByType('Full-Time');
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/count/type?type=Full-Time', 'GET');
+    expect(result).toBe(5);
+  });
+
+  it('getAllJobRoles retrieves all job roles', async () => {
+    const mockRoles = ['Engineer', 'Manager'];
+    makeApiRequest.mockResolvedValue(mockRoles);
+
+    const result = await getAllJobRoles();
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/roles', 'GET');
+    expect(result).toEqual(mockRoles);
+  });
+
+  it('getAllJobLocations retrieves all job locations', async () => {
+    const mockLocations = ['Remote', 'New York'];
+    makeApiRequest.mockResolvedValue(mockLocations);
+
+    const result = await getAllJobLocations();
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/locations', 'GET');
+    expect(result).toEqual(mockLocations);
+  });
+
+  it('getAllJobTypes retrieves all job types', async () => {
+    const mockTypes = ['Full-Time', 'Part-Time'];
+    makeApiRequest.mockResolvedValue(mockTypes);
+
+    const result = await getAllJobTypes();
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/employmentType', 'GET');
+    expect(result).toEqual(mockTypes);
+  });
+
+  it('getAllCompanies retrieves all companies', async () => {
+    const mockCompanies = ['TechCorp', 'DataInc'];
+    makeApiRequest.mockResolvedValue(mockCompanies);
+
+    const result = await getAllCompanies();
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/company', 'GET');
+    expect(result).toEqual(mockCompanies);
+  });
+
+  it('getFilteredJobs retrieves filtered jobs', async () => {
+    const filters = {
+      companies: ['TechCorp'],
+      jobTypes: ['Full-Time'],
+      locations: ['Remote'],
+      titles: ['Engineer'],
+      deadlineRange: '30_days',
+      salaryRange: [50000, 100000]
+    };
+    const mockJobs = [{ id: '1', title: 'Engineer' }];
+    makeApiRequest.mockResolvedValue(mockJobs);
+
+    const result = await getFilteredJobs(filters);
+
+    expect(makeApiRequest).toHaveBeenCalledWith(
+      '/api/job/search?company=TechCorp&jobType=Full-Time&location=Remote&title=Engineer&deadlineRange=30_days&salaryMin=50000&salaryMax=100000',
+      'GET'
     );
-
-  test("shows loading state initially", async () => {
-    renderPage();
-    expect(screen.getByText("Loading job details...")).toBeInTheDocument();
-    await waitFor(() => screen.getByTestId("job-details-content"));
+    expect(result).toEqual(mockJobs);
   });
 
-  test("renders job details correctly when data is loaded", async () => {
-    renderPage();
+  it('getJobsByEmployer retrieves employer jobs', async () => {
+    const mockJobs = [{ id: '1', title: 'Employer Job' }];
+    makeApiRequest.mockResolvedValue(mockJobs);
 
-    await waitFor(() => {
-      expect(screen.getByText("Job Details")).toBeInTheDocument();
-      expect(screen.getByTestId("job-details-content")).toBeInTheDocument();
-      expect(screen.getByTestId("deadline-badge")).toBeInTheDocument();
-    });
+    const result = await getJobsByEmployer();
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/employer', 'GET');
+    expect(result).toEqual(mockJobs);
   });
 
-  test("renders Apply Now button when user is not applied", async () => {
-    renderPage();
+  it('getApplicantsByJobId retrieves applicants for a job', async () => {
+    const mockResponse = { data: [{ id: 'user1', name: 'John' }] };
+    makeApiRequest.mockResolvedValue(mockResponse);
 
-    await waitFor(() => {
-      expect(screen.getByText("Apply Now")).toBeInTheDocument();
-      expect(screen.getByText("Add to Shortlist")).toBeInTheDocument();
-    });
+    const result = await getApplicantsByJobId('1');
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/applicants?jobId=1', 'GET');
+    expect(result).toEqual(mockResponse.data);
   });
 
-  test("navigates to application page when Apply Now is clicked", async () => {
-    renderPage();
-    
-    await waitFor(() => screen.getByText("Apply Now"));
-    fireEvent.click(screen.getByText("Apply Now"));
-
-    await waitFor(() => {
-      expect(applicationService.applyToJob).toHaveBeenCalledWith({
-        jobId: "job123",
-        coverLetter: "",
-        answers: [],
-      });
-      expect(mockNavigate).toHaveBeenCalledWith("/apply/job123");
-    });
+  it('getApplicantsByJobId throws error if jobId is missing', async () => {
+    await expect(getApplicantsByJobId('')).rejects.toThrow('Job ID is required');
+    expect(makeApiRequest).not.toHaveBeenCalled();
   });
 
-  test("shows Continue Application button when application is in progress", async () => {
-    applicationService.getAllUserApplications.mockResolvedValue([
-      { job: { _id: "job123" }, status: "Applying" },
-    ]);
+  it('getJobQuestionsById retrieves job questions', async () => {
+    const mockQuestions = [{ id: 'q1', text: 'Question 1' }];
+    makeApiRequest.mockResolvedValue(mockQuestions);
 
-    renderPage();
+    const result = await getJobQuestionsById('1');
 
-    await waitFor(() => {
-      expect(screen.getByText("Continue Application")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("Continue Application"));
-    expect(mockNavigate).toHaveBeenCalledWith("/apply/job123");
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/questions?jobId=1', 'GET');
+    expect(result).toEqual(mockQuestions);
   });
 
-  test("shows Application Submitted status when application is complete", async () => {
-    applicationService.getAllUserApplications.mockResolvedValue([
-      { job: { _id: "job123" }, status: "Applied" },
-    ]);
+  it('getSalaryBounds retrieves salary bounds', async () => {
+    const mockBounds = { minSalary: 30000, maxSalary: 150000 };
+    makeApiRequest.mockResolvedValue(mockBounds);
 
-    renderPage();
+    const result = await getSalaryBounds();
 
-    await waitFor(() => {
-      expect(screen.getByText("Application Submitted")).toBeInTheDocument();
-      // Verify this is not a button
-      expect(screen.queryByText("Apply Now")).not.toBeInTheDocument();
-    });
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/salary-bounds', 'GET', null, 'Failed to fetch salary bounds');
+    expect(result).toEqual(mockBounds);
   });
 
-  test("adds job to shortlist when Add to Shortlist button is clicked", async () => {
-    renderPage();
-    
-    await waitFor(() => screen.getByText("Add to Shortlist"));
-    
-    const button = screen.getByText("Add to Shortlist");
-    expect(button).toHaveClass("bg-gray-200", "text-gray-800");
-    
-    fireEvent.click(button);
-    
-    await waitFor(() => {
-      expect(shortlistService.addJobToShortlist).toHaveBeenCalledWith("job123");
-      expect(screen.getByText("Remove from Shortlist")).toBeInTheDocument();
-      expect(screen.getByText("Remove from Shortlist")).toHaveClass("bg-green-500", "text-white");
-    });
+  // Additional Tests for Better Coverage
+  it('getAllJobs handles API error', async () => {
+    const mockError = new Error('Server error');
+    makeApiRequest.mockRejectedValue(mockError);
+
+    await expect(getAllJobs()).rejects.toThrow('Server error');
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/?deadlineValid=true', 'GET');
   });
 
-  test("removes job from shortlist when Remove from Shortlist button is clicked", async () => {
-    // Start with job in shortlist
-    shortlistService.getShortlist.mockResolvedValue({
-      jobs: [{ _id: "job123" }],
-    });
+  it('getJobById handles null response', async () => {
+    makeApiRequest.mockResolvedValue(null);
 
-    renderPage();
-    
-    await waitFor(() => screen.getByText("Remove from Shortlist"));
-    
-    const button = screen.getByText("Remove from Shortlist");
-    expect(button).toHaveClass("bg-green-500", "text-white");
-    
-    fireEvent.click(button);
-    
-    await waitFor(() => {
-      expect(shortlistService.removeJobFromShortlist).toHaveBeenCalledWith("job123");
-      expect(screen.getByText("Add to Shortlist")).toBeInTheDocument();
-      expect(screen.getByText("Add to Shortlist")).toHaveClass("bg-gray-200", "text-gray-800");
-    });
+    const result = await getJobById('1');
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/1', 'GET');
+    expect(result).toBeNull();
   });
 
-  test("handles error when job data fetch fails", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    jobService.getJobById.mockRejectedValue(new Error("Failed to fetch job"));
-    
-    renderPage();
-    
-    await waitFor(() => {
-      expect(errorSpy).toHaveBeenCalledWith("Error fetching data:", expect.any(Error));
-    });
-    
-    errorSpy.mockRestore();
+  it('updateJob throws error on invalid ID', async () => {
+    const mockError = new Error('Invalid ID');
+    makeApiRequest.mockRejectedValue(mockError);
+
+    await expect(updateJob('invalid', { title: 'Test' })).rejects.toThrow('Invalid ID');
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/invalid', 'PUT', { title: 'Test' });
   });
 
-  test("handles error when shortlist update fails", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    shortlistService.addJobToShortlist.mockRejectedValue(new Error("Shortlist update failed"));
-    
-    renderPage();
-    
-    await waitFor(() => screen.getByText("Add to Shortlist"));
-    fireEvent.click(screen.getByText("Add to Shortlist"));
-    
-    await waitFor(() => {
-      expect(errorSpy).toHaveBeenCalledWith("Error updating shortlist:", expect.any(Error));
-    });
-    
-    errorSpy.mockRestore();
+  it('deleteJob handles 404 error', async () => {
+    const mockError = new Error('Job not found');
+    makeApiRequest.mockRejectedValue(mockError);
+
+    await expect(deleteJob('999')).rejects.toThrow('Job not found');
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/999', 'DELETE');
   });
 
-  test("handles error when application creation fails", async () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    applicationService.applyToJob.mockRejectedValue(new Error("Application failed"));
-    
-    renderPage();
-    
-    await waitFor(() => screen.getByText("Apply Now"));
-    fireEvent.click(screen.getByText("Apply Now"));
-    
-    await waitFor(() => {
-      expect(errorSpy).toHaveBeenCalledWith("Error applying to job:", expect.any(Error));
-    });
-    
-    errorSpy.mockRestore();
+  it('getJobCountByType handles empty response', async () => {
+    makeApiRequest.mockResolvedValue(0);
+
+    const result = await getJobCountByType('Contract');
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/count/type?type=Contract', 'GET');
+    expect(result).toBe(0);
   });
 
-  test("does not show Apply or Shortlist buttons when user is not logged in", async () => {
-    // Mock user not logged in
-    mockSessionStorage.getItem.mockReturnValueOnce(null);
-    
-    renderPage();
-    
-    await waitFor(() => {
-      expect(screen.queryByText("Apply Now")).not.toBeInTheDocument();
-      expect(screen.queryByText("Add to Shortlist")).not.toBeInTheDocument();
-    });
+  it('getFilteredJobs with empty filters returns unfiltered jobs', async () => {
+    const mockJobs = [{ id: '1', title: 'Engineer' }];
+    makeApiRequest.mockResolvedValue(mockJobs);
+
+    const result = await getFilteredJobs({});
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/search?', 'GET');
+    expect(result).toEqual(mockJobs);
   });
 
-  test("renders job details even when user is not logged in", async () => {
-    // Mock user not logged in
-    mockSessionStorage.getItem.mockReturnValueOnce(null);
-    
-    renderPage();
-    
-    await waitFor(() => {
-      expect(screen.getByTestId("job-details-content")).toHaveTextContent("Frontend Developer");
-      expect(screen.getByTestId("deadline-badge")).toBeInTheDocument();
-    });
+  it('getFilteredJobs with partial filters', async () => {
+    const filters = { titles: ['Manager'], salaryRange: [60000, 120000] };
+    const mockJobs = [{ id: '2', title: 'Manager' }];
+    makeApiRequest.mockResolvedValue(mockJobs);
+
+    const result = await getFilteredJobs(filters);
+
+    expect(makeApiRequest).toHaveBeenCalledWith(
+      '/api/job/search?title=Manager&salaryMin=60000&salaryMax=120000',
+      'GET'
+    );
+    expect(result).toEqual(mockJobs);
+  });
+
+  it('getFilteredJobs handles invalid salary range', async () => {
+    const filters = { salaryRange: [100000] }; // Incomplete range
+    const mockJobs = [{ id: '1', title: 'Engineer' }];
+    makeApiRequest.mockResolvedValue(mockJobs);
+
+    const result = await getFilteredJobs(filters);
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/search?', 'GET'); // No salary params added
+    expect(result).toEqual(mockJobs);
+  });
+
+  it('getFilteredJobs logs and throws error on failure', async () => {
+    const filters = { titles: ['Engineer'] };
+    const mockError = new Error('Filter error');
+    makeApiRequest.mockRejectedValue(mockError);
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(getFilteredJobs(filters)).rejects.toThrow('Filter error');
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/search?title=Engineer', 'GET');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching filtered jobs:', mockError);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('getApplicantsByJobId returns empty array on no data', async () => {
+    makeApiRequest.mockResolvedValue({});
+
+    const result = await getApplicantsByJobId('1');
+
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/applicants?jobId=1', 'GET');
+    expect(result).toEqual([]);
+  });
+
+  it('getApplicantsByJobId handles API error', async () => {
+    const mockError = new Error('No applicants');
+    makeApiRequest.mockRejectedValue(mockError);
+
+    await expect(getApplicantsByJobId('1')).rejects.toThrow('No applicants');
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/applicants?jobId=1', 'GET');
+  });
+
+  it('getSalaryBounds handles error', async () => {
+    const mockError = new Error('Server error');
+    makeApiRequest.mockRejectedValue(mockError);
+
+    await expect(getSalaryBounds()).rejects.toThrow('Server error');
+    expect(makeApiRequest).toHaveBeenCalledWith('/api/job/salary-bounds', 'GET', null, 'Failed to fetch salary bounds');
   });
 });
