@@ -1,8 +1,15 @@
 import admin from "firebase-admin";
+import dotenv from "dotenv";
+import {readFileSync} from "fs";
 
-// Initialize Firebase Admin as usual
+dotenv.config()
+
+const serviceAccount = JSON.parse(
+    readFileSync(process.env.FIREBASE_PATH, 'utf8')
+);
+
 admin.initializeApp({
-    credential: admin.credential.cert("./backend/config/dodo-project-42d5c-firebase-adminsdk-fbsvc-14414f6ab9.json"),
+    credential: admin.credential.cert(serviceAccount),
 });
 
 
@@ -18,7 +25,6 @@ const deleteUsersInBatch = async (uids) => {
         console.error("Batch deletion error:", error);
     }
 };
-
 
 const deleteAllFirebaseUsers = async () => {
     try {

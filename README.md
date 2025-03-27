@@ -81,6 +81,9 @@ npm run dev
 
 The backend will be available at `http://localhost:5000`.
 
+*Expected behavior:*
+- First launch may show `Failed to warm up Hugging Face API`, see important note below.
+
 ### Frontend Server
 
 ```bash
@@ -89,6 +92,17 @@ npm run dev
 ```
 
 The frontend will be available at `http://localhost:5173`.
+
+### Important Note for Hugging face API
+The job matching feature requires the Hugging Face API. Since we are using free tier of inference API, the model need to be "warmed up".
+The server will automatically attempt to warm the model upon starting, If it fails (common on first try), you'll see:
+
+**Failed to warm up Hugging Face API: <error message> (Should be 503 error)**
+
+Please manually restart the backend server with a few seconds pause, until you see:
+
+**Hugging Face API warmed up**
+
 
 ## Testing
 

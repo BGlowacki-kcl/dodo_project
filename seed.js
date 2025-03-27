@@ -169,10 +169,10 @@ const generateJobs = async (num, employers) => {
             experienceLevel: faker.helpers.arrayElement(["Entry", "Mid", "Senior"]),
             postedBy: employer._id,
             questions: [],
-            // Randomly select up to 4 assessments from the available list
+            // Randomly select up to 3 assessments from the available list
             assessments: faker.helpers.arrayElements(
                 availableAssessments,
-                faker.number.int({ min: 0, max: 4 })
+                faker.number.int({ min: 0, max: 3 })
             ).map(a => a._id),
             createdAt: createdAt,
             deadline: deadline
@@ -208,10 +208,25 @@ const generateApplications = (num, jobSeekers, jobs) => {
             to: job.deadline
         });
 
+        // Determine possible statuses based on whether job has assessments
+        const possibleStatuses = [
+            'Applying',
+            'Applied',
+            'In Review',
+            'Shortlisted',
+            'Rejected',
+            'Accepted'
+        ];
+
+        // Only add 'Code Challenge' status if job has assessments
+        if (job.assessments && job.assessments.length > 0) {
+            possibleStatuses.push('Code Challenge');
+        }
+
         const application = {
             job: job._id,
             applicant: jobSeeker._id,
-            status: faker.helpers.arrayElement(['Applying', 'Applied', 'In Review', 'Shortlisted', 'Code Challenge', 'Rejected', 'Accepted']),
+            status: faker.helpers.arrayElement(possibleStatuses),
             coverLetter: generateCoverLetter(jobSeeker.name, job.title, job.company, [jobSeeker.skills], jobSeeker.email),
             answers: [],
             submittedAt: submittedAt
@@ -314,7 +329,7 @@ const seedDatabase = async () => {
         await Shortlist.deleteMany();
         console.log("Existing data deleted");
 
-        const jobSeekers = await generateJobSeekers(100); // Generate 100 jobseekers
+        const jobSeekers = await generateJobSeekers(150); // Generate 150 jobseekers
         const employers = await generateEmployers(); // Generate employers from fixed list
 
         const createdJobSeekers = await JobSeeker.insertMany(jobSeekers);
@@ -324,12 +339,12 @@ const seedDatabase = async () => {
         console.log("Employers added...");
 
         // Generate and insert Jobs
-        const jobs = await generateJobs(100, createdEmployers); // 100 Jobs
+        const jobs = await generateJobs(200, createdEmployers); // 100 Jobs
         const createdJobs = await Job.insertMany(jobs);
         console.log("Jobs added...");
 
         // Generate and insert Applications
-        const applications = generateApplications(800, createdJobSeekers, createdJobs); // 800 Applications
+        const applications = generateApplications(1000, createdJobSeekers, createdJobs); // 1000 Applications
         const createdApplications = await Application.insertMany(applications);
         console.log("Applications added...");
 
