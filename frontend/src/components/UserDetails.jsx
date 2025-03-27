@@ -41,7 +41,7 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
     };
 
     fetchUserProfile();
-  });
+  }, []);
 
   // Get the effective editing state (either from props or internal state)
   const effectiveEditing = editable ? editingSections : isEditing;
