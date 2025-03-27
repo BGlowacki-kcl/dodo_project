@@ -161,6 +161,26 @@ describe('Job Details (UI Login) via Search Results', () => {
       data: { status: true }
     }).as('profileCheck');
 
+    // Intercept job details with proper success and data structure
+    cy.intercept('GET', '**/api/job/job1', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          _id: 'job1',
+          title: 'Frontend Engineer',
+          company: 'Acme Corp',
+          location: 'San Francisco, CA',
+          employmentType: 'Full-time',
+          experienceLevel: 'Mid-Senior',
+          salaryRange: { min: 80000, max: 120000 },
+          description: 'Join our team as a Frontend Engineer to build innovative web applications.',
+          requirements: ['JavaScript', 'React', 'CSS'],
+          deadline: '2023-12-31'
+        }
+      }
+    }).as('jobDetails');
+
     // Go to the search results page
     cy.visit('/search-results');
     
@@ -174,20 +194,22 @@ describe('Job Details (UI Login) via Search Results', () => {
       .its('length')
       .should('eq', 4);
 
-    // Target the specific JobCard for job1 instead of the container
+    // Target the specific JobCard for job1
     cy.contains('.bg-white.border.border-gray-200.rounded-xl', 'Frontend Engineer')
       .should('be.visible')
-      .should('contain', 'Acme Corp') // Additional verification to ensure it's the right job
+      .should('contain', 'Acme Corp')
       .click();
 
-    // Instead of checking window.open, check that navigation occurred
+    // Check that navigation occurred
     cy.url().should('include', '/user/jobs/details/job1');
 
-    // Wait for the job details fixture
-    cy.wait('@jobDetails');
+    // Wait for the job details fixture and check response
+    cy.wait('@jobDetails').then((interception) => {
+      cy.log('Job Details Response:', JSON.stringify(interception.response.body));
+    });
 
-    // Check that the details page shows "Frontend Engineer"
-    cy.contains('Frontend Engineer').should('be.visible');
+    // Add a longer timeout since the job details might take time to render
+    cy.contains('Frontend Engineer', { timeout: 10000 }).should('be.visible');
   });
 
   it('should allow filtering jobs', () => {
@@ -221,102 +243,237 @@ describe('Job Details (UI Login) via Search Results', () => {
   });
 
   it('should allow shortlisting the job', () => {
+    // Intercept job details with proper success and data structure
+    cy.intercept('GET', '**/api/job/job1', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          _id: 'job1',
+          title: 'Frontend Engineer',
+          company: 'Acme Corp',
+          location: 'San Francisco, CA',
+          employmentType: 'Full-time',
+          experienceLevel: 'Mid-Senior',
+          salaryRange: { min: 80000, max: 120000 },
+          description: 'Join our team as a Frontend Engineer to build innovative web applications.',
+          requirements: ['JavaScript', 'React', 'CSS'],
+          deadline: '2023-12-31'
+        }
+      }
+    }).as('jobDetails');
+
     // Intercept the PUT call to add job1 to shortlist
     cy.intercept('PUT', '**/api/shortlist/addjob?jobid=job1', {
-      success: true,
-      data: { jobs: [{ _id: 'job1' }] }
+      statusCode: 200,
+      body: {
+        success: true,
+        data: { jobs: [{ _id: 'job1' }] }
+      }
     }).as('addShortlist');
 
-    // Same approach: start at search results, stub window.open
+    // Start at search results page
     cy.visit('/search-results');
     cy.wait('@fetchJobs');
 
-    cy.window().then((win) => {
-      cy.stub(win, 'open').callsFake((url) => {
-        win.location.href = url;
-      }).as('windowOpen');
-    });
-
-    // Click "Frontend Engineer"
+    // Click "Frontend Engineer" - navigation happens via React Router, not window.open
     cy.contains('Frontend Engineer').click();
-    cy.get('@windowOpen').should('have.been.calledWithMatch', /\/user\/jobs\/details\/job1/);
-
-    // Manually visit the details page
-    cy.visit('/user/jobs/details/job1');
-    cy.wait('@jobDetails');
+    
+    // Verify URL changed to job details page
+    cy.url().should('include', '/user/jobs/details/job1');
+    
+    // Wait for the job details to load and check response
+    cy.wait('@jobDetails').then((interception) => {
+      cy.log('Job Details Response:', JSON.stringify(interception.response.body));
+    });
+    
+    // Add a longer timeout since the job details might take time to render
+    cy.contains('Frontend Engineer', { timeout: 10000 }).should('be.visible');
 
     // The button says "Add to Shortlist"
-    cy.contains('button', 'Add to Shortlist').click();
+    cy.contains('button', 'Add to Shortlist').should('be.visible').click();
     cy.wait('@addShortlist').its('response.statusCode').should('eq', 200);
 
     // Now the UI might say "Remove from Shortlist"
-    cy.contains('Remove from Shortlist').should('exist');
+    cy.contains('Remove from Shortlist').should('be.visible');
   });
 
   it('should allow applying and navigate to /apply/:jobId', () => {
+    // Add proper job details intercept for this test
+    cy.intercept('GET', '**/api/job/job1', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          _id: 'job1',
+          title: 'Frontend Engineer',
+          company: 'Acme Corp',
+          location: 'San Francisco, CA',
+          employmentType: 'Full-time',
+          experienceLevel: 'Mid-Senior',
+          salaryRange: { min: 80000, max: 120000 },
+          description: 'Join our team as a Frontend Engineer to build innovative web applications.',
+          requirements: ['JavaScript', 'React', 'CSS'],
+          deadline: '2026-12-31', // Updated to future date
+          questions: [  // Added questions array
+            { _id: 'q1', questionText: 'Why do you want to work with us?' },
+            { _id: 'q2', questionText: 'Describe your relevant experience' },
+            { _id: 'q3', questionText: 'What are your strengths?' }
+          ]
+        }
+      }
+    }).as('jobDetails');
+
     // Intercept the POST /api/application/apply with proper success flag
     cy.intercept('POST', '**/api/application/apply', {
-      success: true,
-      data: { _id: 'fakeAppId', status: 'Applying' }
+      statusCode: 200,
+      body: {
+        success: true,
+        data: { _id: 'fakeAppId', status: 'Applying' }
+      }
     }).as('applyJob');
+
+    // Intercept user applications to show that no application exists yet
+    cy.intercept('GET', '**/api/application/all', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: [] // No applications yet
+      }
+    }).as('getApplications');
 
     // Start from search results
     cy.visit('/search-results');
     cy.wait('@fetchJobs');
 
-    cy.window().then((win) => {
-      cy.stub(win, 'open').callsFake((url) => {
-        win.location.href = url;
-      }).as('windowOpen');
-    });
-
+    // Navigate to job details
     cy.contains('Frontend Engineer').click();
-    cy.get('@windowOpen').should('have.been.calledWithMatch', /\/user\/jobs\/details\/job1/);
+    
+    // Verify URL changed to job details page
+    cy.url().should('include', '/user/jobs/details/job1');
+    
+    // Wait for the job details to load and check response
+    cy.wait('@jobDetails').then((interception) => {
+      cy.log('Job Details Response:', JSON.stringify(interception.response.body));
+    });
+    
+    // Wait for applications to be checked
+    cy.wait('@getApplications');
 
-    cy.visit('/user/jobs/details/job1');
-    cy.wait('@jobDetails');
-
-    // Click "Apply" and ensure the click works
-    cy.contains('button', 'Apply').should('be.visible').click({force: true});
+    // Verify the page has loaded before clicking Apply
+    cy.contains('Frontend Engineer', { timeout: 10000 }).should('be.visible');
+    
+    // Find and click the "Apply Now" button
+    cy.contains('button', 'Apply Now').should('be.visible').click();
     
     // Wait for the API request to complete
     cy.wait('@applyJob').then((interception) => {
       cy.log('Apply response:', JSON.stringify(interception.response.body));
     });
     
-    // Check URL - if navigation doesn't work, force navigation
-    cy.url().then(url => {
-      if (!url.includes('/apply/job1')) {
-        cy.log('Manual navigation required - URL did not change to apply page');
-        cy.visit('/apply/job1');
-      }
-    });
-
-    // Now verify we're on the apply page
+    // Verify we're on the apply page
     cy.url().should('include', '/apply/job1');
   });
 
   it('should complete the application process on the Apply page', () => {
-    // Intercept job questions data - match the format returned by the actual API
-    // Note: The job controller's getJobQuestionsById returns questions directly, not wrapped in success/data
-    cy.intercept('GET', '**/api/job/questions?jobId=job1', [
-      { _id: 'q1', questionText: 'Why do you want to work with us?' },
-      { _id: 'q2', questionText: 'Describe your relevant experience' },
-      { _id: 'q3', questionText: 'What are your strengths?' }
-    ]).as('getJobQuestions');
+    // Remove the problematic global request logging intercept
+    // Instead, add specific logging in each intercept's response handlers
+    
+    // Intercept job questions with correct format
+    cy.intercept('GET', '**/api/job/questions?jobId=job1', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: [
+          { _id: 'q1', questionText: 'Why do you want to work with us?' },
+          { _id: 'q2', questionText: 'Describe your relevant experience' },
+          { _id: 'q3', questionText: 'What are your strengths?' }
+        ]
+      }
+    }).as('getJobQuestions');
+
+    // Ensure we intercept question requests without query params too
+    cy.intercept('GET', '**/api/job/questions', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: [
+          { _id: 'q1', questionText: 'Why do you want to work with us?' },
+          { _id: 'q2', questionText: 'Describe your relevant experience' },
+          { _id: 'q3', questionText: 'What are your strengths?' }
+        ]
+      }
+    }).as('getJobQuestionsAlt');
 
     // Intercept user applications call with an existing application for job1
-    // This is critical - the Apply component expects to find an existing application
     cy.intercept('GET', '**/api/application/all', {
       success: true,
       data: [{
         _id: 'app123',
         status: 'Applying',
-        job: { _id: 'job1', title: 'Frontend Engineer' },
+        job: { 
+          _id: 'job1', 
+          title: 'Frontend Engineer',
+          company: 'Acme Corp',
+          questions: [
+            { _id: 'q1', questionText: 'Why do you want to work with us?' },
+            { _id: 'q2', questionText: 'Describe your relevant experience' },
+            { _id: 'q3', questionText: 'What are your strengths?' }
+          ]
+        },
         coverLetter: '',
         answers: []
       }]
     }).as('getAllApplications');
+
+    // Intercept job details to include questions
+    cy.intercept('GET', '**/api/job/job1', {
+      statusCode: 200,
+      body: {
+        success: true, 
+        data: {
+          _id: 'job1',
+          title: 'Frontend Engineer',
+          company: 'Acme Corp',
+          location: 'San Francisco, CA',
+          employmentType: 'Full-time',
+          experienceLevel: 'Mid-Senior',
+          salaryRange: { min: 80000, max: 120000 },
+          description: 'Join our team as a Frontend Engineer to build innovative web applications.',
+          requirements: ['JavaScript', 'React', 'CSS'],
+          deadline: '2026-12-31',
+          questions: [
+            { _id: 'q1', questionText: 'Why do you want to work with us?' },
+            { _id: 'q2', questionText: 'Describe your relevant experience' },
+            { _id: 'q3', questionText: 'What are your strengths?' }
+          ]
+        }
+      }
+    }).as('getJobDetails');
+
+    // Intercept the getApplicationById call with detailed job
+    cy.intercept('GET', '**/api/application/byId?id=app123', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          _id: 'app123',
+          job: { 
+            _id: 'job1', 
+            title: 'Frontend Engineer',
+            company: 'Acme Corp',
+            questions: [
+              { _id: 'q1', questionText: 'Why do you want to work with us?' },
+              { _id: 'q2', questionText: 'Describe your relevant experience' },
+              { _id: 'q3', questionText: 'What are your strengths?' }
+            ]
+          },
+          status: 'Applying',
+          coverLetter: '',
+          answers: []
+        }
+      }
+    }).as('getApplicationById');
 
     // Additional intercept for shortlisted jobs
     cy.intercept('GET', '**/api/shortlist/jobs', {
@@ -324,57 +481,56 @@ describe('Job Details (UI Login) via Search Results', () => {
       data: { jobs: [] }
     }).as('getShortlist');
 
-    // Intercept application creation - ensure format matches what the component expects
-    cy.intercept('POST', '**/api/application/apply', {
-      success: true,
-      data: { 
-        _id: 'app123', 
-        status: 'Applying',
-        job: { _id: 'job1' }
-      }
-    }).as('createApplication');
-
-    // Intercept the getApplicationById call that happens when an existing application is found
-    cy.intercept('GET', '**/api/application/byId?id=app123', {
-      success: true,
-      data: {
-        _id: 'app123',
-        job: { _id: 'job1', title: 'Frontend Engineer' },
-        status: 'Applying',
-        coverLetter: '',
-        answers: []
-      }
-    }).as('getApplicationById');
-
     // Intercept application saving
     cy.intercept('PUT', '**/api/application/save', {
-      success: true,
-      data: { 
-        message: 'Application saved successfully',
-        _id: 'app123'
+      statusCode: 200,
+      body: {
+        success: true,
+        data: { 
+          message: 'Application saved successfully',
+          _id: 'app123'
+        }
       }
     }).as('saveApplication');
 
     // Intercept application submission
     cy.intercept('PUT', '**/api/application/submit', {
-      success: true,
-      data: { message: 'Application submitted successfully' }
+      statusCode: 200,
+      body: {
+        success: true,
+        data: { message: 'Application submitted successfully' }
+      }
     }).as('submitApplication');
 
-    // Start directly from the apply page to avoid navigation issues
+    // Start directly from the apply page
     cy.visit('/apply/job1');
     
-    // Wait for the critical data to load
-    cy.wait(['@getAllApplications', '@getJobQuestions']);
+    // Wait for critical data to load and log responses
+    cy.wait('@getJobQuestions');
+    cy.log('Job Questions were requested');
     
-    // Add a longer wait and better visibility checks before trying to interact
+    cy.wait('@getApplicationById');
+    cy.log('Application by ID was requested');
+    
+    // Log current URL without nesting - use separate commands
+    cy.url().then(url => {
+      cy.log('Current URL:', url);
+    });
+
     // Wait for cover letter section to be visible
     cy.contains('Cover Letter', { timeout: 15000 }).should('be.visible');
     
-    // Fill in the cover letter
+    // Fill in cover letter
     cy.get('textarea').first().should('be.visible').clear()
       .type('I am excited to apply for this position because I believe my skills and experience make me an excellent fit.');
     
+    // Debug Questions section without nesting promises
+    cy.contains('h2', 'Questions').should('exist');
+    cy.contains('h2', 'Questions').then($el => {
+      cy.log('Questions section HTML:', $el.parent().html());
+    });
+    
+    // Continue with the rest of the test
     // Find questions section and answer the first question
     cy.contains('h2', 'Questions').should('be.visible');
     
