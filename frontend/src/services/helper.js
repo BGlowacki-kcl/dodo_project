@@ -10,26 +10,27 @@ import { checkTokenExpiration } from "./auth.service";
  * @throws {Error} - If request fails
  */
 export async function makeApiRequest(endpoint, method, body = null) {
-    const requestOptions = {
+  const requestOptions = {
       method,
       headers: getRequestHeaders(),
-    };
-  
-    if (body) {
-      requestOptions.body = JSON.stringify(body);
-    }
-  
-    const response = await fetch(endpoint, requestOptions);
-    console.log("response1", response);
-    checkTokenExpiration(response);
-    console.log("response", response);
+  };
 
-    const responseJson = await response.json();
-    if (!responseJson.success) {
+  if (body) {
+      requestOptions.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(endpoint, requestOptions);
+  
+  // Clone the response before checking token expiration
+  await checkTokenExpiration(response.clone());
+  
+  const responseJson = await response.json();
+  if (!responseJson.success) {
+
       throw new Error(responseJson.message || `Failed to ${method.toLowerCase()} ${endpoint}`);
-    }
-    
-    return responseJson.data;
+  }
+  
+  return responseJson.data;
 }
 
 /**

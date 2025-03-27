@@ -121,28 +121,37 @@ const ApplicantDetails = () => {
   };
 
   /**
-   * Updates the application status and reloads the page.
-   * @param {string} newStatus - The new status to set.
-   */
-  const handleStatusUpdate = async (newStatus) => {
-    setLoading(true);
-    try {
-      if (!applicationId) throw new Error("Application ID not available");
+ * Updates the application status and reloads the page.
+ * @param {string} newStatus - The new status to set.
+ */
+const handleStatusUpdate = async (newStatus) => {
+  setLoading(true);
+  try {
+    console.log(newStatus);
+    if (!applicationId) throw new Error("Application ID not available");
 
-      await updateStatus(applicationId, newStatus === "rejected");
-
-      setApplicant((prev) => ({
-        ...prev,
-        status: newStatus,
-      }));
-      window.location.reload();
-    } catch (error) {
-      console.error("Error updating status:", error);
-      setError(`Failed to update status: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Determine if this is a rejection operation
+    const isRejection = newStatus.toLowerCase() === "rejected";
+    console.log(isRejection);
+    console.log( applicationId)
+    
+    // Call updateStatus with the correct parameters:
+    // - applicationId: The ID of the application
+    // - isRejection: true if rejecting, false if shortlisting/accepting
+    await updateStatus(applicationId, isRejection);
+    
+    setApplicant((prev) => ({
+      ...prev,
+      status: newStatus.charAt(0).toUpperCase() + newStatus.slice(1), // Capitalize for consistent display
+    }));
+    window.location.reload();
+  } catch (error) {
+    console.error("Error updating status:", error);
+    setError(`Failed to update status: ${error.message}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ----------------------------- Render -----------------------------
   const { shortlistCaption, rejectCaption, isShortlistDisabled, isRejectDisabled } = getButtonState(applicant?.status);
