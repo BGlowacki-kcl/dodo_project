@@ -1,23 +1,59 @@
+/**
+ * PostCard.jsx
+ *
+ * This component represents a card displaying job post details.
+ * - Displays job title, type, location, and application statistics.
+ * - Includes a status breakdown table and a deadline badge.
+ * - Navigates to the job's statistics page when clicked.
+ */
+
 import React from "react";
 import WhiteBox from "./WhiteBox";
 import { useNavigate } from "react-router-dom";
 import DeadlineBadge from "./DeadlineBadge";
 
-const PostCard = ({ title, type, location, totalApplicants, pendingApplicants, statusBreakdown, jobId, deadline }) => {
+const PostCard = ({
+  title,
+  type,
+  location,
+  totalApplicants,
+  pendingApplicants,
+  statusBreakdown,
+  jobId,
+  deadline,
+}) => {
   const navigate = useNavigate();
 
+  // ----------------------------- Handlers -----------------------------
+  /**
+   * Handles the card click event to navigate to the job's statistics page.
+   */
   const handleCardClick = () => {
-    navigate(`/employer/post/${jobId}`); // Navigate to the specific job's statistics page
+    navigate(`/employer/post/${jobId}`);
   };
 
-  // Define the desired order of statuses
-  const statusOrder = ["Applied", "Shortlisted", "Code Challenge", "In Review", "Rejected", "Accepted"];
+  // ----------------------------- Helpers -----------------------------
+  /**
+   * Defines the desired order of statuses and sorts the status breakdown array.
+   * @returns {Array} - Sorted status breakdown array.
+   */
+  const getSortedStatuses = () => {
+    const statusOrder = [
+      "Applied",
+      "Shortlisted",
+      "Code Challenge",
+      "In Review",
+      "Rejected",
+      "Accepted",
+    ];
+    return statusBreakdown
+      .filter((status) => status.status !== "Applying") // Exclude "Applying" status
+      .sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
+  };
 
-  // Sort the statusBreakdown array based on the defined order
-  const sortedStatuses = statusBreakdown
-    .filter((status) => status.status !== "Applying") // Exclude "Applying" status
-    .sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
+  const sortedStatuses = getSortedStatuses();
 
+  // ----------------------------- Render -----------------------------
   return (
     <WhiteBox
       className="flex flex-col md:flex-row justify-between items-center cursor-pointer hover:shadow-lg transition-shadow"
