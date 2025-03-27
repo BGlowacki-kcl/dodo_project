@@ -122,7 +122,10 @@ export async function setAssessmentDeadline(appId, deadline) {
  */
 export async function updateStatus(appId, reject) {
   try {
-    const queryParams = reject ? `?id=${appId}&reject=true` : `?id=${appId}`;
+    // Define the new status based on the reject flag
+    const queryParams = reject ? `?id=${appId}&reject=true` : `?id=${appId}&reject=false`;
+    
+    // Use query param for ID and put status in body
     return await makeApiRequest(`/api/application/status${queryParams}`, 'PUT');
   } catch (error) {
     throw error;
