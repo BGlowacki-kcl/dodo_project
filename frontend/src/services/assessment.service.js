@@ -238,7 +238,6 @@ export const assessmentService = {
     }
     
     const completeCode = code + constructCode(tests, language, funcForCppTest);
-    console.log("Code:", completeCode);
     const codeSendResponse = await sendCode(completeCode, language);
     
     if (!codeSendResponse || !codeSendResponse.id) {

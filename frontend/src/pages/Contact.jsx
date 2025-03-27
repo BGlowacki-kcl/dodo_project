@@ -137,16 +137,6 @@ const Contact = () => {
           </form>
         </WhiteBox>
 
-        {/* Help Text */}
-        <div className="mt-8 text-center">
-          <p className="text-gray-600">
-            Looking for job opportunities?{" "}
-            <Link to="/search-results" className="text-blue-600 hover:underline">
-              Browse all jobs
-            </Link>
-          </p>
-        </div>
-
         {/* Footer Section */}
         <div className="w-full mt-20 border-t border-gray-300 py-6 text-center">
           <p className="text-gray-600">
@@ -156,10 +146,6 @@ const Contact = () => {
           <div className="flex justify-center gap-4 mt-2 text-sm text-gray-500">
             <Link to="/" className="hover:text-gray-800 transition">
               Home
-            </Link>
-            <span className="text-gray-400">|</span>
-            <Link to="/search-results" className="hover:text-gray-800 transition">
-              Jobs
             </Link>
           </div>
         </div>

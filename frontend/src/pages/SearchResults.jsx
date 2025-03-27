@@ -118,10 +118,21 @@ const SearchResults = () => {
         setSearchQuery(query.toLowerCase());
     };
 
-    const applyFilters = (filters) => {
-        // Logic to apply filters and fetch filtered jobs
-        console.log("Filters applied:", filters);
-    };
+    const applyFilters = async (filters) => {
+        try {
+          setLoading(true);
+          const data = await getFilteredJobs(filters);
+          setSearchResults(data);
+          setCurrentPage(0);
+          setIsFilterOpen(false);
+        } catch (error) {
+          console.error("Error applying filters:", error);
+          showNotification("Failed to apply filters", "error");
+        } finally {
+          setLoading(false);
+        }
+      };
+      
 
     // Filter jobs based on the search query
     const filteredJobs = searchResults.filter((job) =>
