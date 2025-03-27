@@ -644,7 +644,6 @@ describe('Employer Dashboard and Features', () => {
     cy.intercept('GET', '**/api/application/byId*', (req) => {
       // Increment request counter
       applicationRequestCount++;
-      console.log(`Intercepted application request #${applicationRequestCount}`);
       
       // Create response data based on the request count
       const status = applicationRequestCount === 1 ? 'Applied' : 'Code Challenge';
