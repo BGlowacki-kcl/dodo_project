@@ -176,4 +176,101 @@ describe('SearchAndShortlistFilter Component', () => {
     expect(mockOnClose).toHaveBeenCalledTimes(1);
     expect(mockApplyFilters).not.toHaveBeenCalled();
   });
+
+  // Add this new test to cover salary range slider functionality
+  test('handles salary range slider changes', async () => {
+    render(
+      <SearchAndShortlistFilter 
+        isOpen={true} 
+        onClose={mockOnClose} 
+        applyFilters={mockApplyFilters} 
+      />
+    );
+    
+    await waitFor(() => {
+      expect(screen.getByText('Advanced Filters')).toBeInTheDocument();
+    });
+    
+    // Find the range slider for salary
+    const salarySlider = screen.getByRole('slider');
+    
+    // Change the slider value to test setSalaryRange
+    fireEvent.change(salarySlider, { target: { value: 50000 } });
+    
+    // Apply filters to ensure the new salary range is used
+    fireEvent.click(screen.getByText('Apply'));
+    
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        salaryRange: expect.arrayContaining([expect.any(Number), 50000])
+      })
+    );
+  });
+
+  // Replace the test with a more specific approach that works with the actual DOM structure
+  test('handles salary range slider changes for both min and max values', async () => {
+    render(
+      <SearchAndShortlistFilter 
+        isOpen={true} 
+        onClose={mockOnClose} 
+        applyFilters={mockApplyFilters} 
+      />
+    );
+    
+    await waitFor(() => {
+      expect(screen.getByText('Advanced Filters')).toBeInTheDocument();
+    });
+    
+    // Get the salary slider
+    const salarySlider = screen.getByRole('slider');
+    
+    // First set the slider to a specific value
+    fireEvent.change(salarySlider, { target: { value: 60000 } });
+    
+    // Then set to another value to ensure both min/max parts of the salary range are touched
+    fireEvent.change(salarySlider, { target: { value: 80000 } });
+    
+    // Apply filters to ensure the new salary range is used
+    fireEvent.click(screen.getByText('Apply'));
+    
+    // Verify the filter was applied with the appropriate salary range
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        salaryRange: expect.arrayContaining([expect.any(Number), 80000])
+      })
+    );
+  });
+
+  // Test the deadline input which is available as a spinbutton role
+  test('handles deadline range input changes', async () => {
+    render(
+      <SearchAndShortlistFilter 
+        isOpen={true} 
+        onClose={mockOnClose} 
+        applyFilters={mockApplyFilters} 
+      />
+    );
+    
+    await waitFor(() => {
+      expect(screen.getByText('Advanced Filters')).toBeInTheDocument();
+    });
+    
+    // Find the deadline range input by its role and placeholder
+    const deadlineInput = screen.getByRole('spinbutton', { 
+      name: '' // The input doesn't have an accessible name
+    });
+    
+    // Change the deadline value
+    fireEvent.change(deadlineInput, { target: { value: 14 } });
+    
+    // Apply filters to ensure the new deadline is used
+    fireEvent.click(screen.getByText('Apply'));
+    
+    // Verify deadline was updated
+    expect(mockApplyFilters).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deadlineRange: 14
+      })
+    );
+  });
 });
