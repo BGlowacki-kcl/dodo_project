@@ -62,31 +62,6 @@ const SingleApplicationPage = () => {
     }
   };
 
-  // ----------------------------- Helpers -----------------------------
-  /**
-   * Returns the appropriate modal message based on the application status.
-   * @param {string} status - The current application status.
-   * @returns {string} - The modal message.
-   */
-  const getModalMessage = (status) => {
-    switch (status) {
-      case "Applied":
-        return "Congratulations! Your application has been submitted successfully.";
-      case "In Review":
-        return "Your application is currently under review. Good luck!";
-      case "Shortlisted":
-        return "Great news! You have been shortlisted for the next stage.";
-      case "Rejected":
-        return "Unfortunately, your application was not successful this time. Keep trying!";
-      case "Code Challenge":
-        return "You have been invited to complete a code challenge. Click the orange button to proceed.";
-      case "Accepted":
-        return "Congratulations! Your application has been accepted.";
-      default:
-        return "Your application status has been updated.";
-    }
-  };
-
   // ----------------------------- Handlers -----------------------------
   /**
    * Handles the code assessment button click.
@@ -201,3 +176,29 @@ const SingleApplicationPage = () => {
 };
 
 export default SingleApplicationPage;
+
+// ----------------------------- Helpers -----------------------------
+//Needed to be seperated to allow for unit testing of this function
+/**
+ * Returns the appropriate modal message based on the application status.
+ * @param {string} status - The current application status.
+ * @returns {string} - The modal message.
+ */
+export const getModalMessage = (status) => {
+  switch (status) {
+    case "Applied":
+      return "Congratulations! Your application has been submitted successfully.";
+    case "In Review":
+      return "Your application is currently under review. Good luck!";
+    case "Shortlisted":
+      return "Great news! You have been shortlisted for the next stage.";
+    case "Rejected":
+      return "Unfortunately, your application was not successful this time. Keep trying!";
+    case "Code Challenge":
+      return "You have been invited to complete a code challenge. Click the orange button to proceed.";
+    case "Accepted":
+      return "Congratulations! Your application has been accepted.";
+    default:
+      return "Your application status has been updated.";
+  }
+};
