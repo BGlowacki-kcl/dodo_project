@@ -144,7 +144,6 @@ export const applicationController = {
             const assessments = await CodeAssessment.find({ _id: { $in: assessmentIds } });
             const submissions = await CodeSubmission.find({ application: app._id });
             const assessmentSubmission = { assessments, submissions };
-            console.log("assessmentSubmission: ", assessmentSubmission);
 
             applicationData.assessments = assessmentSubmission;
 
@@ -187,17 +186,14 @@ export const applicationController = {
         try {
             const { id } = req.query;
             const { deadline } = req.body;
-            console.log(id);
             const application = await Application.findById(id);
             if (!application) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
-            console.log(application);
             application.finishAssessmentDate = deadline;
             await application.save();
             return res.json(createResponse(true, "Assessment deadline set", deadline));
         } catch (error) {
-            console.log(error);
             return handleError(res, error, "Error setting assessment deadline");
         }
     },
@@ -284,7 +280,6 @@ export const applicationController = {
             if (!user || !app) {
                 return res.status(404).json(createResponse(false, "Application or user not found"));
             }
-            console.log("app: ", app);
 
             if (reject === "true") {
                 app.status = "Rejected";
@@ -356,7 +351,6 @@ export const applicationController = {
                 groupedStatuses, // For Employer Job Posts
                 lineGraphData,   // For Employer Dashboard
             };
-            console.log("dashboardData: ------------------------------", dashboardData);
         
             return res.status(200).json({ success: true, message: "Dashboard data retrieved successfully", data: dashboardData });
         } catch (error) {

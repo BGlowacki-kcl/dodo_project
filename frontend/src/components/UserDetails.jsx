@@ -33,7 +33,6 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
     const fetchUserProfile = async () => {
       try {
         const userData = await userService.getUserProfile();
-        console.log("User data", userData);
         user.email = userData.email;
       } catch (error) {
         showNotification(error.message || "Failed to fetch user data", "error");
@@ -48,14 +47,10 @@ const UserDetails = ({ user, isEditing = {}, onEdit, onChange, onAdd, onRemove, 
 
   // Handle saving a specific section
   const handleSectionSave = (section) => {
-    if (editable) return; // If globally editable, don't handle section saves individually
-    console.log("SAving section", section);
-    console.log("User", user);
-    // Call the parent's onSave handler with the section name and entire user object
-    // This allows using the existing updateUser function which expects the complete user object
-    console.log("onSave", onSave);
+    if (editable) return; 
+
+
     if (onSave) {
-      console.log("Calling onSave");
       onSave(section, user);
       showNotification(`${section.charAt(0).toUpperCase() + section.slice(1)} information updated successfully`, "success");
     }

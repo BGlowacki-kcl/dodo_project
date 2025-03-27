@@ -127,13 +127,10 @@ const ApplicantDetails = () => {
 const handleStatusUpdate = async (newStatus) => {
   setLoading(true);
   try {
-    console.log(newStatus);
     if (!applicationId) throw new Error("Application ID not available");
 
     // Determine if this is a rejection operation
     const isRejection = newStatus.toLowerCase() === "rejected";
-    console.log(isRejection);
-    console.log( applicationId)
     
     // Call updateStatus with the correct parameters:
     // - applicationId: The ID of the application
