@@ -48,7 +48,7 @@ const Apply = () => {
   }, [jobId]);
 
   // ----------------------------- Data Fetching -----------------------------
- /**
+/**
  * Fetches application data, including job questions and existing application details.
  */
 const fetchApplicationData = async () => {
@@ -65,12 +65,28 @@ const fetchApplicationData = async () => {
       const allApplications = await fetchAllApplications();
       console.log("All user applications:", allApplications);
       
-      // Check if we already have an application for this job
-      const existingApplication = findApplication(allApplications);
+      // Check if user has already submitted an application for this job
+      const existingApplication = allApplications.find(app => {
+        // Handle both string and object job IDs
+        const appJobId = typeof app.job === 'object' ? app.job._id : app.job;
+        return appJobId === jobId && app.status !== "Applying";
+      });
       
       if (existingApplication) {
-        console.log("Found existing application:", existingApplication);
-        await fetchApplicationDetails(existingApplication);
+        showNotification("You have already applied for this job", "warning");
+        navigate(`/user/jobs/details/${jobId}`);
+        return;
+      }
+      
+      // Check if we have an in-progress application for this job
+      const inProgressApplication = allApplications.find(app => {
+        const appJobId = typeof app.job === 'object' ? app.job._id : app.job;
+        return appJobId === jobId && app.status === "Applying";
+      });
+      
+      if (inProgressApplication) {
+        console.log("Found existing application:", inProgressApplication);
+        await fetchApplicationDetails(inProgressApplication);
       } else {
         // No application exists, create one
         console.log("No existing application found for job ID:", jobId);
