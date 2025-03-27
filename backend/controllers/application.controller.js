@@ -254,6 +254,11 @@ export const applicationController = {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
 
+            const formattedAnswers = answers.map((answer) => ({
+                questionId: new mongoose.Types.ObjectId(answer.questionId),
+                answerText: answer.answerText,
+            }));
+
             const newApp = await Application.create({
                 job: jobId,
                 applicant: user._id,
@@ -266,6 +271,7 @@ export const applicationController = {
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
         } catch (error) {
+            console.error("Error creating application:", error);
             return res.status(500).json(createResponse(false, "Error creating application"));
         }
     },

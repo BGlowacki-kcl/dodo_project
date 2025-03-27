@@ -172,7 +172,7 @@ const SearchResults = () => {
                             isLoggedIn={isLoggedIn}
                             handleJobClick={handleJobClick}
                             handleAddToShortlist={handleAddToShortlist}
-                            isShortlisted={checkIfShortlisted(job._id)}
+                            shortlist={shortlistedJobIds}
                         />
                     ))
                 ) : (

@@ -52,7 +52,7 @@ export const checkRole = (roles) => async (req, res, next) => {
     } catch (error) {
         console.error('Auth error:', error);
         if (error.code === 'auth/argument-error' || error.code === "auth/id-token-expired") {
-            return res.status(403).json(createResponse(false, 'Token expired', { action: 'LOGOUT' }, 403));
+            return res.status(403).json({ seccess: false, message:  'Token expired', action: 'LOGOUT' });
         }
         return res.status(403).json(createResponse(false, 'Unauthorized', null, 403));
     }

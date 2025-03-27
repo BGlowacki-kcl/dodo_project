@@ -20,7 +20,7 @@ export async function makeApiRequest(endpoint, method, body = null) {
     }
   
     const response = await fetch(endpoint, requestOptions);
-    console.log("response", response);
+    console.log("response1", response);
     checkTokenExpiration(response);
     console.log("response", response);
 

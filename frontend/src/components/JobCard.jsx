@@ -1,6 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const JobCard = ({ job, isLoggedIn, isShortlisted, handleJobClick, handleAddToShortlist }) => {
+const JobCard = ({ job, isLoggedIn, shortlist, handleJobClick, handleAddToShortlist }) => {
+    const [isShortlisted, setIsShortlisted] = useState(false);
+    useEffect(() => {
+        if(shortlist.has(job._id)){
+            setIsShortlisted(true);
+        }
+    }, [shortlist]);
     return (
         <div 
             key={job._id} 
