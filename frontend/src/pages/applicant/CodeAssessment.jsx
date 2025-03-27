@@ -47,7 +47,7 @@ const CodeAss = () => {
       const application = await getApplicationById(appId);
       if (application.status !== "Code Challenge") {
         navigate("/applicant-dashboard");
-        showMessage("Application cannot be accessed", "info");
+        showNotification("Application cannot be accessed", "info");
         return;
       }
       const deadlineFetched = await getAssessmentDeadline(appId);
