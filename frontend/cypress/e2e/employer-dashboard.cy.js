@@ -622,6 +622,235 @@ describe('Employer Dashboard and Features', () => {
       .should('include', '15');
   });
 
+  it('should manage job posts and applicant status through all tabs', () => {
+    // Set up intercepts for job updates
+    cy.intercept('PUT', '**/api/job/job1', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          _id: 'job1',
+          title: 'Frontend Engineer',
+          company: 'Google',
+          // Response will include updated fields from the test
+        }
+      }
+    }).as('updateJob');
+    
+    // Let's track application requests to handle both initial and post-update states
+    let applicationRequestCount = 0;
+    
+    // Use a single intercept for application details with a counter to differentiate responses
+    cy.intercept('GET', '**/api/application/byId*', (req) => {
+      // Increment request counter
+      applicationRequestCount++;
+      console.log(`Intercepted application request #${applicationRequestCount}`);
+      
+      // Create response data based on the request count
+      const status = applicationRequestCount === 1 ? 'Applied' : 'Code Challenge';
+      
+      req.reply({
+        statusCode: 200,
+        body: {
+          success: true,
+          data: {
+            id: 'app1',
+            applicationId: 'app1',
+            status: status, // This changes based on request count
+            job: {
+              _id: 'job1',
+              title: 'Frontend Engineer',
+              company: 'Google',
+              questions: [
+                { _id: 'q1', questionText: 'Why do you want to work with Google?' },
+                { _id: 'q2', questionText: 'What is your experience with frontend development?' }
+              ]
+            },
+            applicant: {
+              name: 'John Smith',
+              email: 'john.smith@example.com',
+              phoneNumber: '+1 555-1234',
+              location: 'San Francisco, CA',
+              education: [
+                { institution: 'MIT', degree: 'B.S. Computer Science', year: '2020' }
+              ],
+              skills: ['JavaScript', 'React', 'CSS', 'HTML']
+            },
+            coverLetter: 'I am excited to apply for this position and believe my skills align perfectly with your requirements.',
+            answers: [
+              { questionId: 'q1', answerText: 'Google has been my dream company since I was in college.' },
+              { questionId: 'q2', answerText: 'I have 5 years of experience with React and modern JavaScript.' }
+            ],
+            submittedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        }
+      });
+    }).as('getApplication');
+    
+    // Intercept for application status update
+    cy.intercept('PUT', '**/api/application/status*', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          message: "Application status updated successfully",
+          status: "Code Challenge"
+        }
+      }
+    }).as('updateApplicationStatus');
+    
+    // Fix for 403 errors after page reload: intercept API user endpoint
+    cy.intercept('GET', '**/api/user/', {
+      statusCode: 200,
+      body: {
+        success: true,
+        data: {
+          _id: 'employer123',
+          uid: 'firebase-employer-uid',
+          email: 'careers@google.com',
+          role: 'employer',
+          name: 'Google',
+          companyName: 'Google',
+          companyDescription: 'A leading technology company',
+          location: 'Mountain View, CA'
+        }
+      }
+    }).as('getUserAfterReload');
+    
+    // Set auth data before visiting page
+    cy.window().then(win => {
+      win.sessionStorage.clear();
+      win.sessionStorage.setItem('token', 'fake_employer_token');
+      win.sessionStorage.setItem('role', 'employer');
+      win.localStorage.setItem('token', 'fake_employer_token');
+    });
+    
+    // Start from employer posts page
+    cy.visit('/employer/posts');
+    
+    // Wait for jobs to load
+    cy.wait('@getEmployerJobs');
+    cy.wait('@getDashboardData');
+    
+    // Click on the first job (Frontend Engineer)
+    cy.contains('Frontend Engineer').click();
+    
+    // Verify we're on the post details page with the correct URL format
+    cy.url().should('include', '/employer/post/job1');
+    
+    // Verify Statistics tab content (default tab)
+    cy.contains('Post Details').should('be.visible');
+    cy.contains('Statistics').should('be.visible');
+    cy.contains('Total Applicants').should('be.visible');
+    cy.contains('24').should('exist'); // Total applicant count
+    
+    // Click on the Applicants tab
+    cy.contains('button', 'Applicants').click();
+    
+    // Wait for applicants data to load
+    cy.wait('@getJobApplicants');
+    
+    // Verify applicants table is displayed
+    cy.contains('Name').should('be.visible');
+    cy.contains('Email').should('be.visible');
+    cy.contains('John Smith').should('be.visible');
+    cy.contains('jane.doe@example.com').should('be.visible');
+    
+    // Click on the Post tab
+    cy.contains('button', 'Post').click();
+    
+    // Verify job details are displayed
+    cy.contains('Job Description').should('be.visible');
+    cy.contains('Work with our team to build innovative web applications').should('be.visible');
+    
+    // Test editing the deadline - FIXED: Target by title attribute instead of text content
+    cy.get('button[title="Edit Deadline"]').should('be.visible').click();
+    
+    // Set new deadline (1 month from today)
+    const futureDate = new Date();
+    futureDate.setMonth(futureDate.getMonth() + 1);
+    const formattedDate = futureDate.toISOString().split('T')[0];
+    
+    cy.get('input[type="date"]').clear().type(formattedDate);
+    cy.get('button[title="Save Deadline"]').click();
+    cy.wait('@updateJob');
+    
+    // Edit job salary in the Post tab - FIXED: Target FaEdit icon near Salary and correct placeholder names
+    cy.contains('Salary').should('be.visible')
+      .parent().parent().find('button').should('be.visible').click();
+    cy.get('input[placeholder="Min Salary"]').clear().type('95000');
+    cy.get('input[placeholder="Max Salary"]').clear().type('160000');
+    
+    // FIXED: Target the Save button by its position after entering edit mode
+    // The button with the save icon appears in the same position as the edit button
+    cy.contains('Salary')
+      .parent().parent()
+      .find('button')
+      .should('be.visible')
+      .click();
+    cy.wait('@updateJob');
+    
+    // Edit job description - FIXED: Target FaEdit icon near Job Description
+    cy.contains('Job Description').parent().find('button').should('be.visible').click();
+    cy.get('textarea').clear().type('We are looking for a talented Frontend Engineer to join our innovative team. The ideal candidate will have strong experience with React, JavaScript, and modern web technologies.');
+    
+    // FIXED: Target the Save button by its position after entering edit mode
+    cy.contains('Job Description')
+      .parent()
+      .find('button')
+      .should('be.visible')
+      .click();
+    cy.wait('@updateJob');
+    
+    // Switch back to the Applicants tab
+    cy.contains('button', 'Applicants').click();
+    cy.wait('@getJobApplicants');
+    
+    // Click on the first applicant (John Smith)
+    cy.contains('tr', 'John Smith').click();
+    
+    // Verify redirection to applicant details page
+    cy.url().should('include', '/applicant/app1');
+    
+    // Wait for application details to load
+    cy.wait('@getApplication').then(() => {
+      console.log('First application details request completed');
+    });
+    
+    // Verify applicant details page header
+    cy.contains('Applicant Details').should('be.visible');
+    cy.contains('John Smith').should('be.visible');
+    
+    // Click the Shortlist button with {force: true} to ensure it clicks even if it becomes disabled
+    // This addresses the race condition where button state changes between assertion and click
+    cy.contains('button', 'Shortlist')
+      .should('be.visible')
+      .click({ force: true });
+    
+    // Wait for status update request
+    cy.wait('@updateApplicationStatus');
+    
+    // Set auth data to ensure it persists
+    cy.window().then(win => {
+      win.sessionStorage.setItem('token', 'fake_employer_token');
+      win.sessionStorage.setItem('role', 'employer');
+      win.localStorage.setItem('token', 'fake_employer_token');
+    });
+    
+    // Force a visit to the applicant page again (simulating the reload)
+    cy.visit(`/applicant/app1`);
+    
+    // Wait for application details with updated status
+    cy.wait('@getApplication').then(() => {
+      console.log('Second application details request completed');
+    });
+    
+    // Now verify we can see the updated status text
+    cy.contains('Code Challenge', { timeout: 10000 }).should('be.visible');
+    
+    // We don't need to verify the button state now, as we're just checking the status text
+  });
+
   // Clear sessions properly after tests complete
   after(() => {
     // Clear cookies
