@@ -129,7 +129,7 @@ const ApplicantDetails = () => {
     try {
       if (!applicationId) throw new Error("Application ID not available");
 
-      await updateStatus(applicationId, newStatus === "Rejected");
+      await updateStatus(applicationId, newStatus === "rejected");
 
       setApplicant((prev) => ({
         ...prev,
