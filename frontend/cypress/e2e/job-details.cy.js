@@ -90,10 +90,60 @@ describe('Job Details (UI Login) via Search Results', () => {
       }
     });
     
-    // 1) Intercept main job list (Search Results) – must have "Frontend Engineer" with _id = "job1"
-    cy.intercept('GET', '**/api/job', { fixture: 'jobs.json' }).as('fetchJobs');
-
-    // 2) Intercept the job details GET /api/job/job1
+    // Update intercepts to match the actual API calls made by the SearchResults page
+    cy.intercept('GET', '**/api/job?deadlineValid=true', { 
+      statusCode: 200,
+      body: { 
+        success: true, 
+        message: 'Jobs retrieved successfully',
+        data: require('../fixtures/jobs.json') 
+      }
+    }).as('fetchJobs');
+    
+    cy.intercept('GET', '**/api/job/roles', { 
+      statusCode: 200,
+      body: { 
+        success: true, 
+        message: 'Job roles retrieved successfully',
+        data: require('../fixtures/jobRoles.json') 
+      }
+    }).as('getJobRoles');
+    
+    cy.intercept('GET', '**/api/job/locations', { 
+      statusCode: 200,
+      body: { 
+        success: true, 
+        message: 'Job locations retrieved successfully',
+        data: require('../fixtures/jobLocations.json') 
+      }
+    }).as('getJobLocations');
+    
+    cy.intercept('GET', '**/api/job/employmentType', { 
+      statusCode: 200,
+      body: { 
+        success: true, 
+        message: 'Job types retrieved successfully',
+        data: require('../fixtures/jobTypes.json') 
+      }
+    }).as('getJobTypes');
+    
+    cy.intercept('GET', '**/api/job/company', { 
+      statusCode: 200,
+      body: { 
+        success: true, 
+        message: 'Companies retrieved successfully',
+        data: require('../fixtures/companies.json') 
+      }
+    }).as('getCompanies');
+    
+    cy.intercept('GET', '**/api/job/salary-bounds', {
+      body: { success: true, data: { minSalary: 30000, maxSalary: 150000 } }
+    }).as('getSalaryBounds');
+    cy.intercept('GET', '**/api/shortlist/jobs', { 
+      body: { success: true, data: { jobs: [] } }
+    }).as('getShortlist');
+    
+    // Job details intercept
     cy.intercept('GET', '**/api/job/job1', { fixture: 'jobDetails.json' }).as('jobDetails');
   });
 
@@ -113,30 +163,61 @@ describe('Job Details (UI Login) via Search Results', () => {
 
     // Go to the search results page
     cy.visit('/search-results');
-    cy.wait('@fetchJobs');
-
-    // Stub window.open so we can see that it was called with "/user/jobs/details/job1"
-    cy.window().then((win) => {
-      cy.stub(win, 'open').callsFake((url) => {
-        win.location.href = url;
-      }).as('windowOpen');
+    
+    // Wait for the main jobs data to load
+    cy.wait(['@fetchJobs', '@getShortlist']).then(() => {
+      cy.log('Jobs data loaded successfully');
     });
 
-    // Click the card or text "Frontend Engineer"
-    cy.contains('Frontend Engineer').click();
+    // Wait for filter-related data to load (in case they're needed)
+    cy.wait(['@getJobRoles', '@getJobLocations', '@getJobTypes', '@getCompanies'], { timeout: 10000 })
+      .its('length')
+      .should('eq', 4);
 
-    // Confirm the stub was called with the correct URL
-    cy.get('@windowOpen').should('have.been.calledOnce');
-    cy.get('@windowOpen').should('have.been.calledWithMatch', /\/user\/jobs\/details\/job1/);
+    // Target the specific JobCard for job1 instead of the container
+    cy.contains('.bg-white.border.border-gray-200.rounded-xl', 'Frontend Engineer')
+      .should('be.visible')
+      .should('contain', 'Acme Corp') // Additional verification to ensure it's the right job
+      .click();
 
-    // Cypress can't actually follow that new tab – so we do a manual visit:
-    cy.visit('/user/jobs/details/job1');
+    // Instead of checking window.open, check that navigation occurred
+    cy.url().should('include', '/user/jobs/details/job1');
 
     // Wait for the job details fixture
     cy.wait('@jobDetails');
 
     // Check that the details page shows "Frontend Engineer"
     cy.contains('Frontend Engineer').should('be.visible');
+  });
+
+  it('should allow filtering jobs', () => {
+    // Visit the search results page
+    cy.visit('/search-results');
+    
+    // Wait for the jobs to load
+    cy.wait('@fetchJobs');
+    
+    // Click the "Open Filters" button
+    cy.contains('button', 'Open Filters').click();
+    
+    // Verify the filter popup appears
+    cy.contains('h2', 'Advanced Filters').should('be.visible');
+    
+    // Check a filter option (e.g., select a job type)
+    cy.contains('Job Types')
+      .parent()
+      .find('label')
+      .first()
+      .click();
+    
+    // Click Apply button to apply the filters
+    cy.contains('button', 'Apply').click();
+    
+    // Verify the filter popup disappears
+    cy.contains('h2', 'Advanced Filters').should('not.exist');
+    
+    // Wait for the filtered jobs to load
+    cy.wait('@fetchJobs');
   });
 
   it('should allow shortlisting the job', () => {

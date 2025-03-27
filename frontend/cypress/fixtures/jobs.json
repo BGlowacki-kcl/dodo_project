@@ -1,46 +1,33 @@
 [
-    {
-      "_id": "job1",
-      "title": "Frontend Engineer",
-      "company": "Acme Corp",
-      "location": "New York",
-      "description": "Build amazing UIs",
-      "employmentType": "Full-Time",
-      "requirements": ["React", "JavaScript", "CSS"],
-      "questions": [
-        "Describe your experience with infrastructure as code.",
-        "How do you handle environment secrets in CI/CD?"
-      ]
-    },
-    {
-      "_id": "job2",
-      "title": "Backend Engineer",
-      "company": "Beta Inc",
-      "location": "San Francisco",
-      "description": "Create robust APIs",
-      "employmentType": "Full-Time",
-      "requirements": ["Node.js", "MongoDB"]
-    },
-    {
-      "_id": "job3",
-      "title": "UX Designer",
-      "company": "Gamma LLC",
-      "location": "Remote",
-      "description": "Design user experiences",
-      "employmentType": "Contract",
-      "requirements": ["Figma", "Wireframing"]
-    },
-    {
-      "_id": "job3",
-      "title": "DevOps Engineer",
-      "company": "GlobalTech",
-      "location": "Remote",
-      "description": "Manage CI/CD pipelines and cloud infrastructure",
-      "employmentType": "Full-Time",
-      "requirements": ["AWS", "Docker", "Kubernetes"],
-      "questions": [
-        "Describe your experience with infrastructure as code.",
-        "How do you handle environment secrets in CI/CD?"
-      ]
-    }
-  ]
+  {
+    "_id": "job1",
+    "title": "Frontend Engineer",
+    "company": "Acme Corp",
+    "location": "New York",
+    "description": "Build amazing UIs",
+    "employmentType": "Full-Time",
+    "requirements": ["React", "JavaScript", "CSS"],
+    "questions": [
+      "Describe your experience with infrastructure as code.",
+      "How do you handle environment secrets in CI/CD?"
+    ]
+  },
+  {
+    "_id": "job2",
+    "title": "Backend Engineer",
+    "company": "Beta Inc",
+    "location": "San Francisco",
+    "description": "Create robust APIs",
+    "employmentType": "Full-Time",
+    "requirements": ["Node.js", "MongoDB"]
+  },
+  {
+    "_id": "job3",
+    "title": "UX Designer",
+    "company": "GlobalTech",
+    "location": "Remote",
+    "description": "Design user experiences",
+    "employmentType": "Contract",
+    "requirements": ["Figma", "Wireframing"]
+  }
+]
