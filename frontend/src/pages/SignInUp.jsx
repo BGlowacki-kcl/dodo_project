@@ -146,6 +146,7 @@ const AuthForm = () => {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-9 text-gray-500"
+              data-testid="toggle-password" // Added for test compatibility
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>

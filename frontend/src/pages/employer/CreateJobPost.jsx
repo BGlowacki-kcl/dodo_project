@@ -13,6 +13,7 @@ import { assessmentService } from '../../services/assessment.service';
 import { userService } from "../../services/user.service";
 import WhiteBox from "../../components/WhiteBox";
 import { FaTrash } from "react-icons/fa";
+ 
 
 function CreateJobPost() {
   // ----------------------------- State Variables -----------------------------
@@ -41,7 +42,7 @@ function CreateJobPost() {
    */
   useEffect(() => {
     fetchTasks();
-    fetchEmployerDetails();
+    fetchLoggedInUser();
   }, []);
 
   // ----------------------------- Data Fetching -----------------------------
@@ -60,16 +61,17 @@ function CreateJobPost() {
   /**
    * Fetches employer details to prefill the company name.
    */
-  const fetchEmployerDetails = async () => {
+  const fetchLoggedInUser = async () => {
     try {
-      const employerDetails = await userService.getEmployerDetails();
+      const user = await userService.getUserProfile(); 
       setJobData((prev) => ({
         ...prev,
-        company: employerDetails.companyName || '',
+        company: user.name || '', // Use the user's name as the company name
+        postedBy: user._id,
       }));
     } catch (error) {
-      console.error('Error fetching employer details:', error);
-      setError('Failed to fetch employer details');
+      console.error('Error fetching logged-in user:', error);
+      setError('Failed to fetch logged-in user details');
     }
   };
 
@@ -178,6 +180,7 @@ function CreateJobPost() {
     setError('');
 
     try {
+      console.log(jobData);
       const missingFields = [];
       if (!jobData.title) missingFields.push('Title');
       if (!jobData.description) missingFields.push('Description');
@@ -203,243 +206,272 @@ function CreateJobPost() {
   // ----------------------------- Render -----------------------------
   return (
     <div className="container mx-auto p-4">
-      <div className="flex-1 p-10">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-left text-black">Create Job Post</h1>
-          <button
-            onClick={() => navigate('/employer/posts')}
-            className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition duration-200"
+  <div className="flex-1 p-10">
+    {/* Header */}
+    <div className="flex justify-between items-center mb-8">
+      <h1 className="text-4xl font-bold text-left text-black">Create Job Post</h1>
+      
+    </div>
+
+    {/* Form */}
+    <WhiteBox className="p-6">
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-500 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Title */}
+        <div>
+          <label htmlFor="title" className="block text-lg font-medium text-gray-700">
+            Title
+          </label>
+          <input
+            id="title"
+            type="text"
+            name="title"
+            value={jobData.title}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
+
+        {/* Company */}
+        <div>
+          <label htmlFor="company" className="block text-lg font-medium text-gray-700">
+            Company
+          </label>
+          <input
+            id="company"
+            type="text"
+            name="company"
+            value={jobData.company}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            required
+            disabled // Make the field read-only
+          />
+        </div>
+
+        {/* Requirements */}
+        <div>
+          <label htmlFor="requirements" className="block text-lg font-medium text-gray-700">
+            Requirements
+          </label>
+          <div className="flex items-center space-x-2 mt-2">
+            <input
+              id="requirements"
+              type="text"
+              value={requirementInput}
+              onChange={(e) => setRequirementInput(e.target.value)}
+              placeholder="Add a requirement"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            />
+            <button
+              type="button"
+              onClick={handleAddRequirement}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Add
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4">
+            {jobData.requirements.map((req, index) => (
+              <span
+                key={index}
+                className="bg-gray-200 px-4 py-2 rounded-lg text-sm text-gray-800 font-medium flex items-center space-x-2"
+              >
+                {req}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRequirement(index)}
+                  className="text-red-600 hover:text-red-800 ml-2"
+                >
+                  &times;
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Deadline */}
+        <div>
+          <label htmlFor="deadline" className="block text-lg font-medium text-gray-700">
+            Application Deadline
+          </label>
+          <input
+            id="deadline"
+            type="date"
+            name="deadline"
+            value={jobData.deadline}
+            onChange={handleChange}
+            min={new Date().toISOString().split('T')[0]}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
+
+        {/* Employment Type */}
+        <div>
+          <label htmlFor="employmentType" className="block text-lg font-medium text-gray-700">
+            Employment Type
+          </label>
+          <select
+            id="employmentType"
+            name="employmentType"
+            value={jobData.employmentType}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            required
           >
-            Cancel
+            <option value="">Select Employment Type</option>
+            <option value="full-time">Full-Time</option>
+            <option value="part-time">Part-Time</option>
+            <option value="internship">Internship</option>
+            <option value="contract">Contract</option>
+          </select>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label htmlFor="description" className="block text-lg font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            value={jobData.description}
+            onChange={handleChange}
+            rows="4"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
+
+        {/* Salary Range */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="minSalary" className="block text-lg font-medium text-gray-700">
+              Minimum Salary
+            </label>
+            <input
+              id="minSalary"
+              type="number"
+              value={jobData.salaryRange.min}
+              onChange={(e) => handleSalaryChange('min', e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+          <div>
+            <label htmlFor="maxSalary" className="block text-lg font-medium text-gray-700">
+              Maximum Salary
+            </label>
+            <input
+              id="maxSalary"
+              type="number"
+              value={jobData.salaryRange.max}
+              onChange={(e) => handleSalaryChange('max', e.target.value)}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
+        </div>
+
+        {/* Location */}
+        <div>
+          <label htmlFor="location" className="block text-lg font-medium text-gray-700">
+            Location
+          </label>
+          <input
+            id="location"
+            type="text"
+            name="location"
+            value={jobData.location}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+            required
+          />
+        </div>
+
+        {/* Assessments */}
+        <div>
+          <label htmlFor="assessments" className="block text-lg font-medium text-gray-700">
+            Assessments
+          </label>
+          <div className="mt-2 space-y-2">
+            {tasks.map((task, index) => (
+              <label key={task.id || index} className="flex items-center space-x-2">
+                <input
+                  id={`assessment-${task.id || index}`}
+                  type="checkbox"
+                  value={task.id}
+                  onChange={() => handleAssessmentChange(task.id)}
+                />
+                <span className="text-base text-gray-800">{task.title}</span> {/* Updated to text-base */}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Questions */}
+        <div>
+          <label htmlFor="questions" className="block text-lg font-medium text-gray-700">
+            Questions
+          </label>
+          {jobData.questions.map((question, index) => (
+            <div key={index} className="mb-4 flex items-center space-x-4">
+              <input
+                id={`question-${index}`}
+                type="text"
+                value={question.questionText}
+                onChange={(e) => handleQuestionChange(index, e.target.value)}
+                placeholder="Enter question text"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveQuestion(index)}
+                className="text-red-600 hover:text-red-800"
+                title="Delete Question"
+              >
+                <FaTrash size={18} />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={handleAddQuestion}
+            className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 transition-all"
+            title="Add Question"
+          >
+            <span className="text-xl font-bold">+</span>
           </button>
         </div>
 
-        {/* Form */}
-        <WhiteBox className="p-6">
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-500 text-red-700 rounded">
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Title</label>
-              <input
-                type="text"
-                name="title"
-                value={jobData.title}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
+        {/* Submit and Cancel Buttons */}
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => navigate('/employer/posts')}
+            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`px-4 py-2 text-white rounded-md ${
+              loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {loading ? 'Creating...' : 'Create Job'}
+          </button>
+        </div>
+      </form>
+    </WhiteBox>
+  </div>
+</div>
 
-            {/* Company */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Company</label>
-              <input
-                type="text"
-                name="company"
-                value={jobData.company}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                required
-                disabled // Make the field read-only
-              />
-            </div>
-
-            {/* Requirements */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Requirements</label>
-              <div className="flex items-center space-x-2 mt-2">
-                <input
-                  type="text"
-                  value={requirementInput}
-                  onChange={(e) => setRequirementInput(e.target.value)}
-                  placeholder="Add a requirement"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddRequirement}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Add
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {jobData.requirements.map((req, index) => (
-                  <span
-                    key={index}
-                    className="bg-gray-200 px-4 py-2 rounded-lg text-sm text-gray-800 font-medium flex items-center space-x-2"
-                  >
-                    {req}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveRequirement(index)}
-                      className="text-red-600 hover:text-red-800 ml-2"
-                    >
-                      &times;
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Deadline */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Application Deadline</label>
-              <input
-                type="date"
-                name="deadline"
-                value={jobData.deadline}
-                onChange={handleChange}
-                min={new Date().toISOString().split('T')[0]}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
-
-            {/* Employment Type */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Employment Type</label>
-              <select
-                name="employmentType"
-                value={jobData.employmentType}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                required
-              >
-                <option value="">Select Employment Type</option>
-                <option value="full-time">Full-Time</option>
-                <option value="part-time">Part-Time</option>
-                <option value="internship">Internship</option>
-                <option value="contract">Contract</option>
-              </select>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Description</label>
-              <textarea
-                name="description"
-                value={jobData.description}
-                onChange={handleChange}
-                rows="4"
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
-
-            {/* Salary Range */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-lg font-medium text-gray-700">Minimum Salary</label>
-                <input
-                  type="number"
-                  value={jobData.salaryRange.min}
-                  onChange={(e) => handleSalaryChange('min', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-lg font-medium text-gray-700">Maximum Salary</label>
-                <input
-                  type="number"
-                  value={jobData.salaryRange.max}
-                  onChange={(e) => handleSalaryChange('max', e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                />
-              </div>
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Location</label>
-              <input
-                type="text"
-                name="location"
-                value={jobData.location}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                required
-              />
-            </div>
-
-            {/* Assessments */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Assessments</label>
-              <div className="mt-2 space-y-2">
-                {tasks.map((task, index) => (
-                  <label key={task.id || index} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      value={task.id}
-                      onChange={() => handleAssessmentChange(task.id)}
-                    />
-                    <span className="text-base text-gray-800">{task.title}</span> {/* Updated to text-base */}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Questions */}
-            <div>
-              <label className="block text-lg font-medium text-gray-700">Questions</label>
-              {jobData.questions.map((question, index) => (
-                <div key={index} className="mb-4 flex items-center space-x-4">
-                  <input
-                    type="text"
-                    value={question.questionText}
-                    onChange={(e) => handleQuestionChange(index, e.target.value)}
-                    placeholder="Enter question text"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveQuestion(index)}
-                    className="text-red-600 hover:text-red-800"
-                    title="Delete Question"
-                  >
-                    <FaTrash size={18} />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={handleAddQuestion}
-                className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full shadow-md hover:bg-blue-700 transition-all"
-                title="Add Question"
-              >
-                <span className="text-xl font-bold">+</span>
-              </button>
-            </div>
-
-            {/* Submit and Cancel Buttons */}
-            <div className="flex justify-end space-x-4">
-              <button
-                type="button"
-                onClick={() => navigate('/employer/posts')}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`px-4 py-2 text-white rounded-md ${
-                  loading ? 'bg-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-              >
-                {loading ? 'Creating...' : 'Create Job'}
-              </button>
-            </div>
-          </form>
-        </WhiteBox>
-      </div>
-    </div>
   );
 }
 

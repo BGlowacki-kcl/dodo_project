@@ -3,9 +3,10 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import ApplicantActivity from '../components/activity'; // Adjust path as needed
 import { useNavigate } from 'react-router-dom';
 import { vi } from 'vitest';
+import { getAllUserApplications } from '../services/application.service.js'; // Import to access the mock
 
-// Mock the application service module without external top-level variables
-vi.mock('../services/applicationService', () => {
+// Mock the application service module
+vi.mock('../services/application.service.js', () => {
   const getAllUserApplications = vi.fn();
   return {
     getAllUserApplications,
@@ -89,14 +90,12 @@ describe('ApplicantActivity Component', () => {
   ];
 
   let mockNavigate;
-  let getAllUserApplications;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate = vi.fn();
     useNavigate.mockReturnValue(mockNavigate);
-    const module = await import('../services/application.service.js');
-    getAllUserApplications = module.getAllUserApplications;
+    // No need to re-import getAllUserApplications; it's already mocked
   });
 
   test('renders component and fetches applications', async () => {
