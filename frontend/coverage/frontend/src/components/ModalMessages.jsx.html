@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">12.5% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/24</span>
+                <span class='fraction'>24/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/0</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">12.5% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/24</span>
+                <span class='fraction'>24/24</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -114,32 +114,32 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * ModalMessages.jsx
@@ -151,34 +151,34 @@
 &nbsp;
 import React from "react";
 &nbsp;
-const ModalMessages = <span class="fstat-no" title="function not covered" >({ show, onClose, message, onConfirm, confirmText, cancelText }) =&gt; {</span>
+const ModalMessages = ({ show, onClose, message, onConfirm, confirmText, cancelText }) =&gt; {
   // ----------------------------- Render -----------------------------
-<span class="cstat-no" title="statement not covered" >  if (!show) return null;</span>
+  if (!show) return null;
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
-<span class="cstat-no" title="statement not covered" >    &lt;div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;div className="bg-white p-6 rounded-lg shadow-lg text-center"&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;p className="text-lg font-semibold mb-4"&gt;{message}&lt;/p&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;div className="flex justify-center space-x-4"&gt;</span>
-<span class="cstat-no" title="statement not covered" >          {onConfirm &amp;&amp; (</span>
-<span class="cstat-no" title="statement not covered" >            &lt;button</span>
-<span class="cstat-no" title="statement not covered" >              onClick={onConfirm}</span>
-<span class="cstat-no" title="statement not covered" >              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"</span>
+  return (
+    &lt;div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"&gt;
+      &lt;div className="bg-white p-6 rounded-lg shadow-lg text-center"&gt;
+        &lt;p className="text-lg font-semibold mb-4"&gt;{message}&lt;/p&gt;
+        &lt;div className="flex justify-center space-x-4"&gt;
+          {onConfirm &amp;&amp; (
+            &lt;button
+              onClick={onConfirm}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             &gt;
-<span class="cstat-no" title="statement not covered" >              {confirmText || "Confirm"}</span>
-<span class="cstat-no" title="statement not covered" >            &lt;/button&gt;</span>
+              {confirmText || "Confirm"}
+            &lt;/button&gt;
           )}
-<span class="cstat-no" title="statement not covered" >          &lt;button</span>
-<span class="cstat-no" title="statement not covered" >            onClick={onClose}</span>
-<span class="cstat-no" title="statement not covered" >            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"</span>
+          &lt;button
+            onClick={onClose}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
           &gt;
-<span class="cstat-no" title="statement not covered" >            {cancelText || "Close"}</span>
-<span class="cstat-no" title="statement not covered" >          &lt;/button&gt;</span>
-<span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;/div&gt;</span>
+            {cancelText || "Close"}
+          &lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
   );
-<span class="cstat-no" title="statement not covered" >};</span>
+};
 &nbsp;
 export default ModalMessages;</pre></td></tr></table></pre>
 
@@ -187,7 +187,7 @@ export default ModalMessages;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-03-27T04:49:33.973Z
+                at 2025-03-27T06:00:06.635Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
