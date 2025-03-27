@@ -244,9 +244,26 @@ export const userController = {
             if (!user) {
                 return res.status(404).json(createResponse(false, "User not found"));
             }
+            console.log(req.body);
 
-            Object.assign(user, req.body);
-            const updatedUser = await user.save();
+             // Validate input before updating
+        const updateData = { ...req.body };
+        
+        // Remove fields that shouldn't be updated
+        delete updateData._id;
+        delete updateData.uid;
+        delete updateData.email;
+        delete updateData.createdAt;
+
+        // Use updateOne or findOneAndUpdate for more controlled updates
+        const updatedUser = await User.findOneAndUpdate(
+            { uid: req.uid }, 
+            { $set: updateData }, 
+            { 
+                new: true,  // Return the modified document
+                runValidators: true  // Run model validations
+            }
+        );
 
             return res.status(200).json(createResponse(true, "User updated successfully", updatedUser));
         } catch (error) {
