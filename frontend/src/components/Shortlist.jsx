@@ -3,13 +3,16 @@ import { getShortlist, removeJobFromShortlist } from "../services/shortlist.serv
 import JobCard from "./JobCard";
 import Pagination from "./Pagination";
 import SearchBar from "./SearchBar";
+import SearchAndShortlistFilter from "./filters/SearchAndShortlistFilter"; // Import the filter component
 import { useNotification } from "../context/notification.context";
+import { FaFilter } from "react-icons/fa";
 
 const ApplicantShortlist = () => {
     const [shortlistedJobs, setShortlistedJobs] = useState([]);
     const [filteredJobs, setFilteredJobs] = useState([]); // Jobs filtered by the search query
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0); // Track the current page
+    const [isFilterOpen, setIsFilterOpen] = useState(false); // State to toggle filter modal
     const jobsPerPage = 15; // Number of jobs to display per page
     const showNotification = useNotification();
 
@@ -52,6 +55,11 @@ const ApplicantShortlist = () => {
         setCurrentPage(0); // Reset to the first page when searching
     };
 
+    const applyFilters = (filters) => {
+        // Logic to apply filters and fetch filtered jobs
+        console.log("Filters applied:", filters);
+    };
+
     // Calculate the jobs to display on the current page
     const startIndex = currentPage * jobsPerPage;
     const endIndex = startIndex + jobsPerPage;
@@ -66,12 +74,24 @@ const ApplicantShortlist = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row items-center justify-between mb-8 space-y-4 md:space-y-0">
                 <h1 className="text-4xl font-bold text-left text-black">My Shortlist</h1>
-                <SearchBar
-                    placeholder="Search jobs..."
-                    onSearch={handleSearch}
-                    width="20%" // Match the width of the SearchResults page
-                    height="40px" // Match the height of the SearchResults page
-                />
+                <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                    {/* Filters Button */}
+                    <button
+                        onClick={() => setIsFilterOpen(true)}
+                        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition"
+                    >
+                        <FaFilter className="mr-2" />
+                        Filters
+                    </button>
+
+                    {/* Search Bar */}
+                    <SearchBar
+                        placeholder="Search jobs..."
+                        onSearch={handleSearch}
+                        width="100%" // Full width on smaller screens
+                        height="40px" // Match the height of the SearchResults page
+                    />
+                </div>
             </div>
 
             {/* Job Listings */}
@@ -103,6 +123,13 @@ const ApplicantShortlist = () => {
                     onPageChange={handlePageChange}
                 />
             )}
+
+            {/* Filter Modal */}
+            <SearchAndShortlistFilter
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+                applyFilters={applyFilters}
+            />
         </div>
     );
 };

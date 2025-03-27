@@ -273,7 +273,7 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
           {/* Deadlines */}
           <div>
             <h3 className="font-semibold flex items-center gap-2">
-              <FaClock className="text-blue-500" /> Deadlines
+              <FaClock className="text-blue-500" /> Days till Deadline
             </h3>
             <input
               type="number"
