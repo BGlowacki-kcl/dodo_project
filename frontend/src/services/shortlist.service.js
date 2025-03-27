@@ -50,7 +50,7 @@ export async function addJobToShortlist(jobId) {
  */
 export async function removeJobFromShortlist(jobId) {
   try {
-    return await makeApiRequest(`${SHORTLIST_ENDPOINT}/removejob?jobid=${jobId}`, 'DELETE');
+    return await makeApiRequest(`${SHORTLIST_ENDPOINT}/removejob?jobid=${jobId}`, 'PUT');
   } catch (error) {
     throw error;
   }

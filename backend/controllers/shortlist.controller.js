@@ -60,13 +60,16 @@ const isJobInShortlist = (shortlist, jobId) => shortlist.jobs.includes(jobId);
  * @returns {Promise<Object>} Updated shortlist
  */
 const removeJob = async (shortlist, jobId) => {
-    const jobIndex = shortlist.jobs.indexOf(jobId);
+    const jobIndex = shortlist.jobs.findIndex(job => job._id.toString() === jobId.toString());
+    
     if (jobIndex === -1) {
         const error = new Error("Job not in shortlist");
         error.status = 404;
         throw error;
     }
+    
     shortlist.jobs.splice(jobIndex, 1);
+    
     return await shortlist.save();
 };
 
@@ -145,10 +148,11 @@ export const addJobToShortlist = async (req, res) => {
 export const removeJobFromShortlist = async (req, res) => {
     try {
         const userId = req.uid;
-        const { jobId } = req.params;
+        const { jobid } = req.query;
+        console.log(userId);
 
         const shortlist = await fetchShortlist(userId);
-        const updatedShortlist = await removeJob(shortlist, jobId);
+        const updatedShortlist = await removeJob(shortlist, jobid);
         return res.status(200).json({ success: true, data: updatedShortlist });
     } catch (error) {
         const status = error.status || 500;
