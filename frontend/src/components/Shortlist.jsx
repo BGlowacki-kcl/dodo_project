@@ -1,102 +1,137 @@
 import React, { useState, useEffect } from "react";
-import { getShortlist } from "../services/shortlist.service";
+import { getShortlist, removeJobFromShortlist } from "../services/shortlist.service";
+import JobCard from "./JobCard";
+import Pagination from "./Pagination";
+import SearchBar from "./SearchBar";
+import SearchAndShortlistFilter from "./filters/SearchAndShortlistFilter"; // Import the filter component
+import { useNotification } from "../context/notification.context";
+import { FaFilter } from "react-icons/fa";
 
-function ApplicantShortlist() {
+const ApplicantShortlist = () => {
     const [shortlistedJobs, setShortlistedJobs] = useState([]);
-    const [filters, setFilters] = useState({
-        location: "",
-        jobType: "",
-    });
+    const [filteredJobs, setFilteredJobs] = useState([]); // Jobs filtered by the search query
+    const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0); // Track the current page
+    const [isFilterOpen, setIsFilterOpen] = useState(false); // State to toggle filter modal
+    const jobsPerPage = 15; // Number of jobs to display per page
+    const showNotification = useNotification();
 
     useEffect(() => {
         async function fetchShortlist() {
             try {
                 const data = await getShortlist();
                 setShortlistedJobs(data.jobs);
+                setFilteredJobs(data.jobs); // Initialize filtered jobs with all jobs
             } catch (err) {
                 console.error("Failed to fetch shortlist:", err);
+                showNotification("Failed to fetch shortlisted jobs", "error");
+            } finally {
+                setLoading(false);
             }
         }
         fetchShortlist();
     }, []);
 
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters({
-            ...filters,
-            [name]: value,
-        });
+    const handleRemoveFromShortlist = async (jobId) => {
+        try {
+            await removeJobFromShortlist(jobId);
+            setShortlistedJobs((prev) => prev.filter((job) => job._id !== jobId));
+            setFilteredJobs((prev) => prev.filter((job) => job._id !== jobId)); // Update filtered jobs
+            showNotification("Job removed from shortlist", "success");
+        } catch (err) {
+            console.error("Error removing job from shortlist:", err);
+            showNotification("Failed to remove job from shortlist", "error");
+        }
     };
 
-    const filteredJobs = shortlistedJobs.filter((job) => {
-        return (
-            (filters.location === "" ||
-                job.location.toLowerCase().includes(filters.location.toLowerCase())) &&
-            (filters.jobType === "" || job.type === filters.jobType)
+    const handleSearch = (query) => {
+        const lowerCaseQuery = query.toLowerCase();
+        const filtered = shortlistedJobs.filter((job) =>
+            job.title.toLowerCase().includes(lowerCaseQuery) ||
+            job.company.toLowerCase().includes(lowerCaseQuery) ||
+            job.location.toLowerCase().includes(lowerCaseQuery)
         );
-    });
+        setFilteredJobs(filtered);
+        setCurrentPage(0); // Reset to the first page when searching
+    };
+
+    const applyFilters = (filters) => {
+        // Logic to apply filters and fetch filtered jobs
+        console.log("Filters applied:", filters);
+    };
+
+    // Calculate the jobs to display on the current page
+    const startIndex = currentPage * jobsPerPage;
+    const endIndex = startIndex + jobsPerPage;
+    const currentJobs = filteredJobs.slice(startIndex, endIndex);
+
+    const handlePageChange = ({ selected }) => {
+        setCurrentPage(selected); // Update the current page
+    };
 
     return (
-        <div className="min-h-screen bg-black text-white flex">
-            <div className="flex flex-1">
-                {/* Sidebar */}
-                <div className="w-72 bg-gray-900 p-6 shadow-xl">
-                    <h2 className="text-2xl font-bold mb-6 text-white">Filters</h2>
-                    <div className="mb-6">
-                        <label className="block text-sm font-semibold">Location</label>
-                        <input
-                            type="text"
-                            name="location"
-                            value={filters.location}
-                            onChange={handleFilterChange}
-                            placeholder="Enter location"
-                            className="mt-2 block w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring focus:ring-white"
-                        />
-                    </div>
-                    <div className="mb-6">
-                        <label className="block text-sm font-semibold">Job Type</label>
-                        <select
-                            name="jobType"
-                            value={filters.jobType}
-                            onChange={handleFilterChange}
-                            className="mt-2 block w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring focus:ring-white"
-                        >
-                            <option value="">All</option>
-                            <option value="Full-time">Full-time</option>
-                            <option value="Part-time">Part-time</option>
-                            <option value="Contract">Contract</option>
-                        </select>
-                    </div>
-                </div>
+        <div className="container mx-auto p-4">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row items-center justify-between mb-8 space-y-4 md:space-y-0">
+                <h1 className="text-4xl font-bold text-left text-black">My Shortlist</h1>
+                <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 w-full md:w-auto">
+                    {/* Filters Button */}
+                    <button
+                        onClick={() => setIsFilterOpen(true)}
+                        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition"
+                    >
+                        <FaFilter className="mr-2" />
+                        Filters
+                    </button>
 
-                {/* Shortlisted Job Listing */}
-                <div className="flex-1 p-10 bg-gray-800">
-                    <h2 className="text-3xl font-bold mb-8 text-white">My Shortlisted Jobs</h2>
-                    {filteredJobs.length === 0 ? (
-                        <p>No shortlisted jobs available.</p>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredJobs.map((job) => (
-                                <div
-                                    key={job._id}
-                                    className="bg-gray-700 p-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl border border-gray-600"
-                                >
-                                    <h3 className="text-2xl font-semibold text-white">{job.title}</h3>
-                                    <p className="text-gray-300 mt-2">
-                                        {job.company} - {job.location}
-                                    </p>
-                                    <p className="text-gray-300 mt-2">{job.type}</p>
-                                    <button className="mt-5 w-full bg-white text-black py-2 rounded-lg transition-all hover:bg-gray-300 shadow-md">
-                                        Apply Now
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    {/* Search Bar */}
+                    <SearchBar
+                        placeholder="Search jobs..."
+                        onSearch={handleSearch}
+                        width="100%" // Full width on smaller screens
+                        height="40px" // Match the height of the SearchResults page
+                    />
                 </div>
             </div>
+
+            {/* Job Listings */}
+            <div className="flex flex-col space-y-4">
+                {loading ? (
+                    <p className="text-center text-gray-500">Loading shortlisted jobs...</p>
+                ) : filteredJobs.length === 0 ? (
+                    <p className="text-center text-gray-500">No shortlisted jobs match your search.</p>
+                ) : (
+                    currentJobs.map((job) => (
+                        <JobCard
+                            key={job._id}
+                            job={job}
+                            isLoggedIn={true}
+                            isShortlisted={true}
+                            handleJobClick={() => console.log(`Navigating to job ${job._id}`)} // Replace with actual navigation logic
+                            handleRemoveFromShortlist={handleRemoveFromShortlist}
+                            handleAddToShortlist={() => {}} // Not needed here
+                            showNotification={showNotification}
+                        />
+                    ))
+                )}
+            </div>
+
+            {/* Pagination */}
+            {!loading && filteredJobs.length > jobsPerPage && (
+                <Pagination
+                    pageCount={Math.ceil(filteredJobs.length / jobsPerPage)}
+                    onPageChange={handlePageChange}
+                />
+            )}
+
+            {/* Filter Modal */}
+            <SearchAndShortlistFilter
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+                applyFilters={applyFilters}
+            />
         </div>
     );
-}
+};
 
 export default ApplicantShortlist;

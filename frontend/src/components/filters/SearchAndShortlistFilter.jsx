@@ -46,6 +46,12 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
   const [companies, setCompanies] = useState([]);
   const [salaryBounds, setSalaryBounds] = useState({ min: 0, max: 100000 });
 
+  // Search states for filtering options
+  const [titleSearch, setTitleSearch] = useState("");
+  const [companySearch, setCompanySearch] = useState("");
+  const [locationSearch, setLocationSearch] = useState("");
+  const [jobTypeSearch, setJobTypeSearch] = useState("");
+
   // ----------------------------- Data Fetching -----------------------------
   /**
    * Fetches filter data (titles, locations, job types, companies, salary bounds).
@@ -137,17 +143,26 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
               <h3 className="font-semibold flex items-center gap-2">
                 <FaClipboardList className="text-blue-500" /> Titles
               </h3>
+              <input
+                type="text"
+                placeholder="Search titles..."
+                value={titleSearch}
+                onChange={(e) => setTitleSearch(e.target.value)}
+                className="w-full border rounded p-2 text-xs mb-2"
+              />
               <div className="border rounded p-2 max-h-32 overflow-y-auto text-xs">
-                {titles.map((title) => (
-                  <label key={title} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedTitles.includes(title)}
-                      onChange={() => toggleSelection(title, selectedTitles, setSelectedTitles)}
-                    />
-                    {title}
-                  </label>
-                ))}
+                {titles
+                  .filter((title) => title.toLowerCase().includes(titleSearch.toLowerCase()))
+                  .map((title) => (
+                    <label key={title} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedTitles.includes(title)}
+                        onChange={() => toggleSelection(title, selectedTitles, setSelectedTitles)}
+                      />
+                      {title}
+                    </label>
+                  ))}
               </div>
             </div>
 
@@ -156,17 +171,26 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
               <h3 className="font-semibold flex items-center gap-2">
                 <FaBuilding className="text-blue-500" /> Companies
               </h3>
+              <input
+                type="text"
+                placeholder="Search companies..."
+                value={companySearch}
+                onChange={(e) => setCompanySearch(e.target.value)}
+                className="w-full border rounded p-2 text-xs mb-2"
+              />
               <div className="border rounded p-2 max-h-32 overflow-y-auto text-xs">
-                {companies.map((company) => (
-                  <label key={company} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedCompanies.includes(company)}
-                      onChange={() => toggleSelection(company, selectedCompanies, setSelectedCompanies)}
-                    />
-                    {company}
-                  </label>
-                ))}
+                {companies
+                  .filter((company) => company.toLowerCase().includes(companySearch.toLowerCase()))
+                  .map((company) => (
+                    <label key={company} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedCompanies.includes(company)}
+                        onChange={() => toggleSelection(company, selectedCompanies, setSelectedCompanies)}
+                      />
+                      {company}
+                    </label>
+                  ))}
               </div>
             </div>
 
@@ -175,17 +199,26 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
               <h3 className="font-semibold flex items-center gap-2">
                 <FaMapMarkerAlt className="text-blue-500" /> Locations
               </h3>
+              <input
+                type="text"
+                placeholder="Search locations..."
+                value={locationSearch}
+                onChange={(e) => setLocationSearch(e.target.value)}
+                className="w-full border rounded p-2 text-xs mb-2"
+              />
               <div className="border rounded p-2 max-h-32 overflow-y-auto text-xs">
-                {locations.map((location) => (
-                  <label key={location} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedLocations.includes(location)}
-                      onChange={() => toggleSelection(location, selectedLocations, setSelectedLocations)}
-                    />
-                    {location}
-                  </label>
-                ))}
+                {locations
+                  .filter((location) => location.toLowerCase().includes(locationSearch.toLowerCase()))
+                  .map((location) => (
+                    <label key={location} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedLocations.includes(location)}
+                        onChange={() => toggleSelection(location, selectedLocations, setSelectedLocations)}
+                      />
+                      {location}
+                    </label>
+                  ))}
               </div>
             </div>
 
@@ -194,17 +227,26 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
               <h3 className="font-semibold flex items-center gap-2">
                 <FaBriefcase className="text-blue-500" /> Job Types
               </h3>
+              <input
+                type="text"
+                placeholder="Search job types..."
+                value={jobTypeSearch}
+                onChange={(e) => setJobTypeSearch(e.target.value)}
+                className="w-full border rounded p-2 text-xs mb-2"
+              />
               <div className="border rounded p-2 max-h-32 overflow-y-auto text-xs">
-                {jobTypes.map((type) => (
-                  <label key={type} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedJobTypes.includes(type)}
-                      onChange={() => toggleSelection(type, selectedJobTypes, setSelectedJobTypes)}
-                    />
-                    {type}
-                  </label>
-                ))}
+                {jobTypes
+                  .filter((type) => type.toLowerCase().includes(jobTypeSearch.toLowerCase()))
+                  .map((type) => (
+                    <label key={type} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedJobTypes.includes(type)}
+                        onChange={() => toggleSelection(type, selectedJobTypes, setSelectedJobTypes)}
+                      />
+                      {type}
+                    </label>
+                  ))}
               </div>
             </div>
           </div>
@@ -231,7 +273,7 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
           {/* Deadlines */}
           <div>
             <h3 className="font-semibold flex items-center gap-2">
-              <FaClock className="text-blue-500" /> Deadlines
+              <FaClock className="text-blue-500" /> Days till Deadline
             </h3>
             <input
               type="number"

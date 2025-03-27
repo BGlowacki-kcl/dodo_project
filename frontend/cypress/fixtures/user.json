@@ -1,0 +1,10 @@
+{
+    "_id": "fakeUserId",
+    "name": "Test User",
+    "email": "john.doe@example.com",
+    "role": "jobSeeker",
+    "skills": [],
+    "education": [],
+    "experience": []
+  }
+  
