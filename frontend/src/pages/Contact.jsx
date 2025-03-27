@@ -72,9 +72,10 @@ const Contact = () => {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
+                {/* Fixed: Changed name="Name" to name="name" to match state */}
                 <FormItem
                   htmlFor="name"
-                  name="Name"
+                  name="name"
                   label="Your Name"
                   value={formData.name}
                   onChange={handleChange}
@@ -83,9 +84,10 @@ const Contact = () => {
                 />
               </div>
               <div>
+                {/* Fixed: Changed name="Email" to name="email" to match state */}
                 <FormItem
                   htmlFor="email"
-                  name="Email"
+                  name="email"
                   label="Email Address"
                   value={formData.email}
                   onChange={handleChange}
@@ -95,9 +97,10 @@ const Contact = () => {
               </div>
             </div>
 
+            {/* Fixed: Changed name="Subject" to name="subject" to match state */}
             <FormItem
               htmlFor="subject"
-              name="Subject"
+              name="subject"
               label="Subject"
               value={formData.subject}
               onChange={handleChange}
@@ -105,9 +108,10 @@ const Contact = () => {
               placeholder="What is this regarding?"
             />
 
+            {/* Fixed: Changed name="Message" to name="message" to match state */}
             <FormItem
               htmlFor="message"
-              name="Message"
+              name="message"
               label="Your Message"
               value={formData.message}
               onChange={handleChange}
@@ -118,7 +122,7 @@ const Contact = () => {
 
             <div className="pt-2">
               <button
-                type="Submit"
+                type="submit"
                 disabled={status === "sending"}
                 className={`w-full py-4 text-lg font-medium text-white rounded-lg shadow-md transition-all duration-300
                   ${

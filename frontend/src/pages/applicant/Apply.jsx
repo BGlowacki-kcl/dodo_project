@@ -18,6 +18,7 @@ import {
   getAllUserApplications,
   submitApplication,
   withdrawApplication,
+  applyToJob,
 } from "../../services/application.service.js";
 import { getJobQuestionsById } from "../../services/job.service.js";
 import { useNotification } from "../../context/notification.context";
@@ -47,29 +48,85 @@ const Apply = () => {
   }, [jobId]);
 
   // ----------------------------- Data Fetching -----------------------------
-  /**
-   * Fetches application data, including job questions and existing application details.
-   */
-  const fetchApplicationData = async () => {
+/**
+ * Fetches application data, including job questions and existing application details.
+ */
+const fetchApplicationData = async () => {
+  try {
+    setLoading(true);
+    showNotification("Fetching application details...", "info");
+    
+    // Get job questions first
+    const fetchedQuestions = await fetchJobQuestions();
+    setQuestions(fetchedQuestions);
+    
     try {
-      showNotification("Fetching application details...", "info");
-      const [fetchedQuestions, allApplications] = await Promise.all([
-        fetchJobQuestions(),
-        fetchAllApplications(),
-      ]);
-
-      setQuestions(fetchedQuestions);
-
-      const application = findApplication(allApplications);
-      if (application) {
-        await fetchApplicationDetails(application);
+      // Try to get existing applications
+      const allApplications = await fetchAllApplications();
+      console.log("All user applications:", allApplications);
+      
+      // Check if user has already submitted an application for this job
+      const existingApplication = allApplications.find(app => {
+        // Handle both string and object job IDs
+        const appJobId = typeof app.job === 'object' ? app.job._id : app.job;
+        return appJobId === jobId && app.status !== "Applying";
+      });
+      
+      if (existingApplication) {
+        showNotification("You have already applied for this job", "warning");
+        navigate(`/user/jobs/details/${jobId}`);
+        return;
+      }
+      
+      // Check if we have an in-progress application for this job
+      const inProgressApplication = allApplications.find(app => {
+        const appJobId = typeof app.job === 'object' ? app.job._id : app.job;
+        return appJobId === jobId && app.status === "Applying";
+      });
+      
+      if (inProgressApplication) {
+        console.log("Found existing application:", inProgressApplication);
+        await fetchApplicationDetails(inProgressApplication);
+      } else {
+        // No application exists, create one
+        console.log("No existing application found for job ID:", jobId);
+        await createNewApplication();
       }
     } catch (error) {
-      showNotification("Failed to fetch application details. Please try again.", "error");
-    } finally {
-      setLoading(false);
+      console.error("Error in application fetch:", error);
+      // If we can't fetch applications, create a new one
+      await createNewApplication();
     }
-  };
+  } catch (error) {
+    console.error("Error in fetchApplicationData:", error);
+    showNotification("Failed to fetch application details. Please try again.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+/**
+ * Creates a new job application.
+ */
+const createNewApplication = async () => {
+  try {
+    // Create new application with the job ID
+    const newApp = await applyToJob({
+      
+      jobId: jobId,
+      coverLetter: "",
+      answers: []
+    });
+    if (!newApp || !newApp._id) {
+      throw new Error("Failed to create application - no ID returned");
+    }
+    
+    setApplicationId(newApp._id);
+    showNotification("New application created", "info");
+  } catch (error) {
+    console.error("Failed to create new application:", error);
+    showNotification("Could not create application. Please try again.", "error");
+  }
+};
 
   /**
    * Fetches the list of questions associated with the current job.
@@ -84,7 +141,13 @@ const Apply = () => {
    * @returns {Promise<Array>} - Array of application objects.
    */
   const fetchAllApplications = async () => {
-    return await getAllUserApplications();
+    try {
+      const applications = await getAllUserApplications();
+      return Array.isArray(applications) ? applications : [];
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+      return []; // Return empty array on error
+    }
   };
 
   /**
