@@ -41,16 +41,26 @@ export const isValidStatus = (status) => {
  * Verifies job ownership
  */
 export const verifyJobOwnership = async (jobId, userId) => {
-    try {
-        const job = await Job.findById(jobId);
-        if(job){
-            return job.postedBy.toString() == userId;
-        } else {
-            throw new Error("Job not found");
-        }
-    } catch (err){
-        return false;
-    }
+  try {
+      const job = await Job.findById(jobId);
+      console.log("Job found:", job ? 'yes' : 'no');
+      console.log("Job postedBy:", job?.postedBy);
+      console.log("UserId:", userId);
+      console.log("Types:", {
+          postedBy: typeof job?.postedBy.toString(),
+          userId: typeof userId
+      });
+      console.log("Comparison result:", job?.postedBy.toString() === userId);
+      
+      if(job){
+          return job.postedBy.toString() === userId;
+      } else {
+          throw new Error("Job not found");
+      }
+  } catch (err){
+      console.error("Error in verifyJobOwnership:", err);
+      return false;
+  }
 };
 
 /**
@@ -84,7 +94,6 @@ export const getJobsByEmployerHelper = async (uid) => {
 /**
  * Gets line graph data for jobs
  */
-// Helper function to generate line graph data
 export const getLineGraphData = async (jobIds) => {
     try {
       const lineGraphData = await Application.aggregate([

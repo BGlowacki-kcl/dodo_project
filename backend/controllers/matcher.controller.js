@@ -43,6 +43,7 @@ export async function query(cvText, jobDescription) {
             }
         })
     });
+
     if (!response.ok) {
         throw new Error(`API request failed with status: ${response.status}`);
     }

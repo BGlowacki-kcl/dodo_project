@@ -67,6 +67,20 @@ describe("GET /api/user/role", () => {
       message: "User not found"
     });
   });
+
+  it("should return 500 if an unexpected error occurs", async () => {
+    User.findOne = jest.fn().mockRejectedValue(new Error("Unexpected error"));
+
+    const response = await request(app)
+      .get("/api/user/role?email=test@test.com")
+      .set("Authorization", "Bearer mockToken");
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body).toEqual({
+      success: false,
+      message: "Server error",
+    });
+  });
 });
 
 describe("GET /api/user", () => {
@@ -74,10 +88,10 @@ describe("GET /api/user", () => {
     jest.clearAllMocks();
   });
 
-  test("Should return 400 if no uid is provided", async () => {
-    const response = await request(app).get("/api/user").set("Authorization", "Bearer mockToken");;
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toHaveProperty("message", "No user provided!");
+  test("Should return 401 if no uid is provided", async () => {
+    const response = await request(app).get("/api/user");
+    expect(response.statusCode).toBe(401);
+    expect(response.body).toHaveProperty("message", "Unauthorized");
   });
 
   test("Should return 404 if user not found", async () => {
@@ -108,6 +122,20 @@ describe("GET /api/user", () => {
     const response = await request(app).get("/api/user?uid=any").set("Authorization", "Bearer mockToken");;
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toBe("Server error");
+  });
+
+  it("should return 500 if an unexpected error occurs", async () => {
+    User.findOne = jest.fn().mockRejectedValue(new Error("Unexpected error"));
+
+    const response = await request(app)
+      .get("/api/user")
+      .set("Authorization", "Bearer mockToken");
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body).toEqual({
+      success: false,
+      message: "Server error",
+    });
   });
 });
 
@@ -267,6 +295,19 @@ describe("POST /api/user/basic", () => {
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toBe("Server error");
   });
+
+  it("should return 400 if the role is invalid", async () => {
+    const response = await request(app)
+      .post("/api/user/basic")
+      .send({ email: "test@example.com", role: "invalidRole" })
+      .set("Authorization", "Bearer mockToken");
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toEqual({
+      success: false,
+      message: "Invalid role",
+    });
+  });
 });
 
 describe("PUT /api/user", () => {
@@ -389,6 +430,20 @@ describe("DELETE /api/user", () => {
 
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toBe("DB error");
+  });
+
+  it("should return 404 if the user is not found", async () => {
+    User.findOneAndDelete = jest.fn().mockResolvedValue(null);
+
+    const response = await request(app)
+      .delete("/api/user")
+      .set("Authorization", "Bearer mockToken");
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toEqual({
+      success: false,
+      message: "User not found",
+    });
   });
 });
 

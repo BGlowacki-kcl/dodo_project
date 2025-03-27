@@ -96,7 +96,7 @@ const SearchAndShortlistFilter = ({ isOpen, onClose, applyFilters }) => {
       salaryRange,
       deadlineRange,
     };
-
+    console.log("Selected Filters:", filters);
     applyFilters(filters); // Pass filters to parent component
     onClose(); // Close the filter pop-up
   };

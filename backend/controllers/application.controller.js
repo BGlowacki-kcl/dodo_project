@@ -12,7 +12,6 @@
  * The controller interacts with the Application, Job, and User models.
  */
 
-import mongoose from "mongoose";
 import Application from "../models/application.model.js";
 import Job from "../models/job.model.js";
 import User from "../models/user/user.model.js";
@@ -22,8 +21,6 @@ import {
     formatAnswers, 
     isValidStatus, 
     verifyJobOwnership,
-    getTotalStatus,
-    getJobsByEmployerHelper,
     getLineGraphData 
 } from "./helpers.js";
 import CodeAssessment from "../models/codeAssessment.model.js";
@@ -52,40 +49,6 @@ export const applicationController = {
             return res.status(200).json(createResponse(true, "Application retrieved successfully", application));
         } catch (error) {
             return handleError(res, error, "Error retrieving application");
-        }
-    },
-
-    /**
-     * Updates the status of an application
-     * @param {Object} req - Express request object
-     * @param {Object} res - Express response object
-     * @returns {Promise<void>}
-     */
-    async updateApplicationStatus(req, res) {
-        try {
-            const { id } = req.params;
-            const { status } = req.body;
-
-            if (!isValidStatus(status)) {
-                return res.status(400).json(createResponse(false, "Invalid application status"));
-            }
-
-            const application = await Application.findById(id).populate("job");
-            if (!application) {
-                return res.status(404).json(createResponse(false, "Application not found"));
-            }
-
-            const isOwner = await verifyJobOwnership(application.job._id, req.uid);
-            if (!isOwner) {
-                return res.status(403).json(createResponse(false, "Unauthorized to update application status"));
-            }
-
-            application.status = status;
-            await application.save();
-
-            return res.status(200).json(createResponse(true, "Application status updated successfully", application));
-        } catch (error) {
-            return handleError(res, error, "Error updating application status");
         }
     },
 
@@ -257,6 +220,11 @@ export const applicationController = {
                 return res.status(403).json(createResponse(false, "Unauthorized"));
             }
 
+            const formattedAnswers = answers.map((answer) => ({
+                questionId: new mongoose.Types.ObjectId(answer.questionId),
+                answerText: answer.answerText,
+            }));
+
             const newApp = await Application.create({
                 job: jobId,
                 applicant: user._id,
@@ -269,6 +237,7 @@ export const applicationController = {
             const populatedApp = await newApp.populate("job");
             return res.status(201).json(createResponse(true, "Application created", populatedApp));
         } catch (error) {
+            console.error("Error creating application:", error);
             return res.status(500).json(createResponse(false, "Error creating application"));
         }
     },
@@ -299,7 +268,6 @@ export const applicationController = {
             return res.status(500).json(createResponse(false, "Error withdrawing application"));
         }
     },
-
     /**
      * Updates application status with progression logic
      * @param {Object} req - Express request object
@@ -308,6 +276,7 @@ export const applicationController = {
      */
     async updateApplicationProgress(req, res) {
         try {
+            const validStatuses = ["Applying", "Applied", "Shortlisted", "Code Challenge", "In Review", "Accepted"];
             const { id, reject } = req.query;
             const user = await User.findOne({ uid: req.uid });
             const app = await Application.findById(id).populate("job");
@@ -315,13 +284,35 @@ export const applicationController = {
             if (!user || !app) {
                 return res.status(404).json(createResponse(false, "Application or user not found"));
             }
+            console.log("app: ", app);
 
-            if (reject) {
-                return await handleRejection(res, app);
+            if (reject === "true") {
+                app.status = "Rejected";
+                await app.save();
+                return res.status(200).json(createResponse(true, "Application rejected"));
             }
 
-            return await handleStatusProgression(res, app, user);
+            if (app.status === "Hired") {
+                return res.status(200).json(createResponse(true, "Application already in final status"));
+            }
+
+            const currentIndex = validStatuses.indexOf(app.status);
+            if (currentIndex === -1 || currentIndex === validStatuses.length - 1) {
+                return res.status(400).json(createResponse(false, "Invalid or final status"));
+            }
+
+            const newStatus = validStatuses[currentIndex + 1];
+
+            if (newStatus === "Code Challenge" && (!app.job.assessments || app.job.assessments.length === 0)) {
+                app.status = "In Review";
+            } else {
+                app.status = newStatus;
+            }
+
+            await app.save();
+            return res.status(200).json(createResponse(true, "Application status updated", { newStatus: app.status }));
         } catch (error) {
+            console.error("Error updating application status:", error);
             return handleError(res, error, "Error updating application status");
         }
     },
@@ -432,7 +423,7 @@ export const applicationController = {
 };
     
 // Helper function to group statuses by job ID
-async function groupStatusByJobId(jobIds) {
+export async function groupStatusByJobId(jobIds) {
   try {
     const groupedData = await Application.aggregate([
       { $match: { job: { $in: jobIds } } },
@@ -469,7 +460,7 @@ async function groupStatusByJobId(jobIds) {
   }
 }
 
-async function aggregateTotalStatuses(groupedStatuses) {
+export async function aggregateTotalStatuses(groupedStatuses) {
     return groupedStatuses.flatMap((job) => job.statuses).reduce((acc, status) => {
       const existing = acc.find((s) => s._id === status.status); // Ensure _id instead of status
       if (existing) {

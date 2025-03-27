@@ -196,6 +196,29 @@ const SearchResults = () => {
                 onClose={() => setIsFilterOpen(false)}
                 applyFilters={applyFilters}
             />
+
+            {/* JOB LISTINGS */}
+            <div className="flex flex-col space-y-4 px-4 pb-3 items-center w-full max-w-3xl overflow-y-auto max-h-90">
+                {loading ? (
+                    <p className="text-ltext text-center">Loading search results...</p>
+                ) : displayedJobs.length > 0 ? (
+                    displayedJobs.map((job) => (
+                        <JobCard
+                            key={job._id}
+                            job={job}
+                            isLoggedIn={isLoggedIn}
+                            handleJobClick={handleJobClick}
+                            handleAddToShortlist={handleAddToShortlist}
+                            shortlist={shortlistedJobIds}
+                        />
+                    ))
+                ) : (
+                    <p className="text-white text-center">No job results found.</p>
+                )}
+            </div>
+
+            {/* PAGINATION CONTROLS */}
+            <Pagination pageCount={pageCount} onPageChange={handlePageChange} />
         </div>
     );
 };

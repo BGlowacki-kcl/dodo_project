@@ -104,7 +104,7 @@ export const sendEmail = async (req, res) => {
         const emailData = req.body;
 
         if (!areFieldsValid(emailData)) {
-            return res.status(400).json({ error: 'All fields are required' });
+            return res.status(400).json({ success: false, error: 'All fields are required' });
         }
 
         const transporter = createTransporter();
@@ -112,9 +112,9 @@ export const sendEmail = async (req, res) => {
         const mailOptions = buildMailOptions(emailData);
         await transporter.sendMail(mailOptions);
 
-        return res.status(200).json({ message: 'Email sent successfully' });
+        return res.status(200).json({ success: true, message: 'Email sent successfully' });
     } catch (error) {
         console.error('Email sending error:', error);
-        return res.status(500).json({ error: 'Failed to send email' });
+        return res.status(500).json({ success: false, error: 'Failed to send email' });
     }
 };
