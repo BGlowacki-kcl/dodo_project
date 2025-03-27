@@ -2,22 +2,21 @@
  * ActivityFilter.jsx
  *
  * This component provides filtering options for user activities.
- * - Allows filtering by titles, types, locations, and statuses.
+ * - Allows filtering by titles, types, statuses, and submission dates.
  */
 
 import React, { useState, useEffect } from "react";
-import { FaFilter, FaClipboardList, FaBriefcase, FaMapMarkerAlt, FaCheckCircle } from "react-icons/fa";
+import { FaFilter, FaClipboardList, FaBriefcase, FaCalendarAlt, FaCheckCircle } from "react-icons/fa";
 
 const ActivityFilter = ({ isOpen, onClose, applyFilters }) => {
   // ----------------------------- State -----------------------------
   const [selectedTitles, setSelectedTitles] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
-  const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedDateRange, setSelectedDateRange] = useState(""); // Predefined date range
 
   const [titles, setTitles] = useState([]);
   const [types, setTypes] = useState([]);
-  const [locations, setLocations] = useState([]);
   const [statuses] = useState([
     "Applying",
     "Applied",
@@ -30,14 +29,12 @@ const ActivityFilter = ({ isOpen, onClose, applyFilters }) => {
 
   const [titleSearch, setTitleSearch] = useState("");
   const [typeSearch, setTypeSearch] = useState("");
-  const [locationSearch, setLocationSearch] = useState("");
 
   // ----------------------------- Effects -----------------------------
   useEffect(() => {
-    // Simulate fetching filter data (titles, types, locations)
+    // Simulate fetching filter data (titles, types)
     setTitles(["Software Engineer", "Data Scientist", "Product Manager"]);
     setTypes(["Full-Time", "Part-Time", "Internship"]);
-    setLocations(["New York", "San Francisco", "Remote"]);
   }, []);
 
   // ----------------------------- Handlers -----------------------------
@@ -53,8 +50,8 @@ const ActivityFilter = ({ isOpen, onClose, applyFilters }) => {
     const filters = {
       titles: selectedTitles,
       types: selectedTypes,
-      locations: selectedLocations,
       statuses: selectedStatuses,
+      submissionDateRange: selectedDateRange, // Use predefined date range
     };
     applyFilters(filters);
     onClose();
@@ -138,31 +135,52 @@ const ActivityFilter = ({ isOpen, onClose, applyFilters }) => {
               </div>
             </div>
 
-            {/* Locations */}
+            {/* Submission Date */}
             <div>
               <h3 className="font-semibold flex items-center gap-2">
-                <FaMapMarkerAlt className="text-blue-500" /> Locations
+                <FaCalendarAlt className="text-blue-500" /> Submission Date
               </h3>
-              <input
-                type="text"
-                placeholder="Search locations..."
-                value={locationSearch}
-                onChange={(e) => setLocationSearch(e.target.value)}
-                className="w-full border rounded p-2 text-xs mb-2"
-              />
-              <div className="border rounded p-2 max-h-32 overflow-y-auto text-xs">
-                {locations
-                  .filter((location) => location.toLowerCase().includes(locationSearch.toLowerCase()))
-                  .map((location) => (
-                    <label key={location} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedLocations.includes(location)}
-                        onChange={() => toggleSelection(location, selectedLocations, setSelectedLocations)}
-                      />
-                      {location}
-                    </label>
-                  ))}
+              <div className="border rounded p-2 text-xs">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="dateRange"
+                    value="1_week"
+                    checked={selectedDateRange === "1_week"}
+                    onChange={(e) => setSelectedDateRange(e.target.value)}
+                  />
+                  1 Week Ago
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="dateRange"
+                    value="2_weeks"
+                    checked={selectedDateRange === "2_weeks"}
+                    onChange={(e) => setSelectedDateRange(e.target.value)}
+                  />
+                  2 Weeks Ago
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="dateRange"
+                    value="1_month"
+                    checked={selectedDateRange === "1_month"}
+                    onChange={(e) => setSelectedDateRange(e.target.value)}
+                  />
+                  1 Month Ago
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="dateRange"
+                    value="past_1_month"
+                    checked={selectedDateRange === "past_1_month"}
+                    onChange={(e) => setSelectedDateRange(e.target.value)}
+                  />
+                  Past One Month Ago
+                </label>
               </div>
             </div>
 
