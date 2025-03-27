@@ -46,6 +46,10 @@ async function createUserSession(userCredential, role) {
   sessionStorage.setItem('role', role);
   window.dispatchEvent(new Event('authChange'));
   
+  // If you call makeApiRequest here, parse result similarly:
+  // const result = await makeApiRequest('/auth/endpoint', 'POST', {...});
+  // return typeof result === 'object' && result !== null ? (result.data || result) : result;
+
   return idToken;
 }
 

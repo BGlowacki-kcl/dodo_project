@@ -13,10 +13,11 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
  * @returns {Promise<Object>} - Response with execution ID
  */
 async function sendCode(code, language) {
-  return await makeApiRequest(`${BASE_URL}/assessment/send`, 'POST', {
+  const result = await makeApiRequest(`${BASE_URL}/assessment/send`, 'POST', {
     source_code: code,
     language: language,
   });
+  return typeof result === 'object' && result !== null ? (result.data || result) : result;
 }
 
 /**
@@ -27,7 +28,8 @@ async function sendCode(code, language) {
 async function getExecutionDetails(id) {
   try {
     console.log("id", id);
-    return await makeApiRequest(`${BASE_URL}/assessment/status?id=${id}`, "GET");
+    const result = await makeApiRequest(`${BASE_URL}/assessment/status?id=${id}`, "GET");
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
   } catch (error) {
     return { error: error.message };
   }
@@ -255,7 +257,8 @@ export const assessmentService = {
    * @returns {Promise<Object>} - Task details
    */
   async getTask(appId, taskId) {
-    return await makeApiRequest(`${BASE_URL}/assessment/task?appId=${appId}&taskId=${taskId}`, "GET");
+    const result = await makeApiRequest(`${BASE_URL}/assessment/task?appId=${appId}&taskId=${taskId}`, "GET");
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
   },
 
   /**
@@ -264,7 +267,8 @@ export const assessmentService = {
    * @returns {Promise<Object>} - Task IDs
    */
   async getTasksId(appId) {
-    return await makeApiRequest(`${BASE_URL}/assessment/tasksid?appId=${appId}`, "GET");
+    const result = await makeApiRequest(`${BASE_URL}/assessment/tasksid?appId=${appId}`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   },
 
   /**
@@ -272,7 +276,8 @@ export const assessmentService = {
    * @returns {Promise<Object>} - All tasks
    */
   async getAllTasks() {
-    return await makeApiRequest(`${BASE_URL}/assessment/alltasks`, "GET");
+    const result = await makeApiRequest(`${BASE_URL}/assessment/alltasks`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   },
 
   /**

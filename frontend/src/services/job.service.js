@@ -27,10 +27,16 @@ function getAuthHeaders() {
  * @returns {Promise<Array>} - List of all jobs
  */
 export async function getAllJobs() {
-  return await makeApiRequest(
-    `${API_BASE_URL}/?deadlineValid=true`,
-    "GET"
-  );
+  try {
+    const result = await makeApiRequest(
+      `${API_BASE_URL}/?deadlineValid=true`,
+      "GET"
+    );
+    return Array.isArray(result) ? result : (result?.data || []);
+  } catch (error) {
+    console.error("Failed to get all jobs", error);
+    return [];
+  }
 }
 
 /**
@@ -40,7 +46,8 @@ export async function getAllJobs() {
  */
 export async function getJobById(id) {
   try {
-    return await makeApiRequest(`${API_BASE_URL}/${id}`, "GET");
+    const result = await makeApiRequest(`${API_BASE_URL}/${id}`, "GET");
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
   } catch (error) {
     throw error;
   }
@@ -91,11 +98,16 @@ export async function deleteJob(id) {
  * @param {string} jobType - Job type
  * @returns {Promise<number>} - Count of jobs
  */
-export async function getJobCountByType(jobType) {
+export async function getJobCountByType(type) {
   try {
-    return await makeApiRequest(`${API_BASE_URL}/count/type?type=${jobType}`, "GET");
+    const result = await makeApiRequest(`/job/count/type?type=${encodeURIComponent(type)}`, 'GET');
+    // Handle both formats: direct number or object with count property
+    return typeof result === 'object' && result !== null && 'count' in result 
+      ? result.count 
+      : result;
   } catch (error) {
-    throw error;
+    console.error(`Failed to get ${type} job count`, error);
+    return 0;
   }
 }
 
@@ -105,7 +117,8 @@ export async function getJobCountByType(jobType) {
  */
 export async function getAllJobRoles() {
   try {
-    return await makeApiRequest(`${API_BASE_URL}/roles`, "GET");
+    const result = await makeApiRequest(`${API_BASE_URL}/roles`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     throw error;
   }
@@ -117,7 +130,8 @@ export async function getAllJobRoles() {
  */
 export async function getAllJobLocations() {
   try {
-    return await makeApiRequest(`${API_BASE_URL}/locations`, "GET");
+    const result = await makeApiRequest(`${API_BASE_URL}/locations`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     throw error;
   }
@@ -129,7 +143,8 @@ export async function getAllJobLocations() {
  */
 export async function getAllJobTypes() {
   try {
-    return await makeApiRequest(`${API_BASE_URL}/employmentType`, "GET");
+    const result = await makeApiRequest(`${API_BASE_URL}/employmentType`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     throw error;
   }
@@ -141,7 +156,8 @@ export async function getAllJobTypes() {
  */
 export async function getAllCompanies() {
   try {
-    return await makeApiRequest(`${API_BASE_URL}/company`, "GET");
+    const result = await makeApiRequest(`${API_BASE_URL}/company`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     throw error;
   }
@@ -201,7 +217,8 @@ export async function getFilteredJobs(filters) {
     const queryString = buildFilterQueryParams(filters);
     
     // Make the API request with the query parameters
-    return await makeApiRequest(`${API_BASE_URL}/search?${queryString}`, "GET");
+    const result = await makeApiRequest(`${API_BASE_URL}/search?${queryString}`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     // Log the error for debugging
     console.error("Error fetching filtered jobs:", error);
@@ -215,7 +232,8 @@ export async function getFilteredJobs(filters) {
  */
 export async function getJobsByEmployer() {
   try {
-    return await makeApiRequest(`${API_BASE_URL}/employer`, "GET");
+    const result = await makeApiRequest(`${API_BASE_URL}/employer`, "GET");
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     throw error;
   }
@@ -258,10 +276,15 @@ export async function getJobQuestionsById(jobId) {
  * @returns {Promise<Object>} - { minSalary, maxSalary }
  */
 export async function getSalaryBounds() {
-  return await makeApiRequest(
+  try {
+    const result = await makeApiRequest(
       `${API_BASE_URL}/salary-bounds`,
       "GET",
       null,
       "Failed to fetch salary bounds"
-  );
+    );
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
+  } catch (error) {
+    return { minSalary: 0, maxSalary: 100000 }; // Safe default
+  }
 }

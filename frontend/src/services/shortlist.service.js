@@ -13,7 +13,8 @@ const SHORTLIST_ENDPOINT = `${BASE_URL}/shortlist`;
  */
 export async function getShortlist() {
   try {
-    return await makeApiRequest(`${SHORTLIST_ENDPOINT}/jobs`, 'GET');
+    const result = await makeApiRequest(`${SHORTLIST_ENDPOINT}/jobs`, 'GET');
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     throw error;
   }
@@ -24,12 +25,13 @@ export async function getShortlist() {
  * @returns {Promise<Object>} - User's shortlisted jobs
  */
 export async function createShortlist() {
-    try {
-      return await makeApiRequest(`${SHORTLIST_ENDPOINT}/create`, 'POST');
-    } catch (error) {
-      throw error;
-    }
+  try {
+    const result = await makeApiRequest(`${SHORTLIST_ENDPOINT}/create`, 'POST');
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
+  } catch (error) {
+    throw error;
   }
+}
 
 /**
  * Adds a job to a user's shortlist

@@ -78,3 +78,17 @@ export default async function getParsedResume(file) {
     throw new Error(`Error parsing resume: ${error.message}`);
   }
 }
+
+/**
+ * Placeholder method for resume service
+ * @returns {Promise<Array>} - Response data
+ * @throws {Error} - If request fails
+ */
+export async function someResumeServiceMethod() {
+  try {
+    const result = await makeApiRequest('/resume/endpoint', 'GET');
+    return Array.isArray(result) ? result : (result?.data || []);
+  } catch (error) {
+    throw error;
+  }
+}

@@ -28,13 +28,22 @@ export async function makeApiRequest(endpoint, method, body = null) {
   // Clone the response before checking token expiration
   await checkTokenExpiration(response.clone());
   
-  const responseJson = await response.json();
-  if (!responseJson.success) {
-
-      throw new Error(responseJson.message || `Failed to ${method.toLowerCase()} ${endpoint}`);
+  // Check HTTP status first
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
   }
   
-  return responseJson.data;
+  const responseJson = await response.json();
+  
+  // Handle different response formats:
+  // 1. If response has a success property and it's false, throw an error
+  // 2. If no success property exists or it's true, return the data or the whole response
+  if (responseJson.hasOwnProperty('success') && !responseJson.success) {
+    throw new Error(responseJson.message || `Failed to ${method.toLowerCase()} ${endpoint}`);
+  }
+  
+  // Return data property if it exists, otherwise return the whole response
+  return responseJson.hasOwnProperty('data') ? responseJson.data : responseJson;
 }
 
 /**

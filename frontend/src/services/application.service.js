@@ -12,7 +12,8 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
  */
 export async function getAllUserApplications() {
   try {
-    return await makeApiRequest(`${BASE_URL}/application/all`, 'GET');
+    const result = await makeApiRequest(`${BASE_URL}/application/all`, 'GET');
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     throw error;
   }
@@ -25,7 +26,8 @@ export async function getAllUserApplications() {
  */
 export async function getApplicationById(appId) {
   try {
-    return await makeApiRequest(`${BASE_URL}/application/byId?id=${appId}`, 'GET');
+    const result = await makeApiRequest(`${BASE_URL}/application/byId?id=${appId}`, 'GET');
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
   } catch (error) {
     throw error;
   }
@@ -38,7 +40,8 @@ export async function getApplicationById(appId) {
  */
 export async function getJobApplicants(jobId) {
   try {
-    return await makeApiRequest(`${BASE_URL}/application/byJobId?jobId=${jobId}`, 'GET');
+    const result = await makeApiRequest(`${BASE_URL}/application/byJobId?jobId=${jobId}`, 'GET');
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     return handleApiError(error, "Failed to fetch applicants");
   }
@@ -83,7 +86,8 @@ export async function withdrawApplication(appId) {
  */
 export async function getApplicationsData() {
   try {
-    return await makeApiRequest(`${BASE_URL}/application/data`, 'GET');
+    const result = await makeApiRequest(`${BASE_URL}/application/data`, 'GET');
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
   } catch (error) {
     throw error;
   }
@@ -96,7 +100,8 @@ export async function getApplicationsData() {
  */
 export async function getAssessmentDeadline(appId) {
   try {
-    return await makeApiRequest(`${BASE_URL}/application/deadline?id=${appId}`, 'GET');
+    const result = await makeApiRequest(`${BASE_URL}/application/deadline?id=${appId}`, 'GET');
+    return typeof result === 'object' && result !== null ? (result.data || result) : result;
   } catch (error) {
     throw error;
   }

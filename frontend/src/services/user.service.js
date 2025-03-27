@@ -19,7 +19,8 @@ export const userService = {
    */
   async updateUser(userData) {
     try {
-      return await makeApiRequest(`${API_BASE_URL}/`, 'PUT', userData);
+      const result = await makeApiRequest(`${API_BASE_URL}/`, 'PUT', userData);
+      return typeof result === 'object' && result !== null ? (result.data || result) : result;
     } catch (error) {
       throw error;
     }
@@ -31,7 +32,8 @@ export const userService = {
    */
   async getUserProfile() {
     try {
-      return await makeApiRequest(`${API_BASE_URL}/`, 'GET');
+      const result = await makeApiRequest(`${API_BASE_URL}/`, 'GET');
+      return typeof result === 'object' && result !== null ? (result.data || result) : result;
     } catch (error) {
       throw error;
     }
@@ -46,7 +48,8 @@ export const userService = {
       if (!sessionStorage.getItem("token")) {
         return "unLogged";
       }
-      return await makeApiRequest(`${API_BASE_URL}/role`, 'GET');
+      const result = await makeApiRequest(`${API_BASE_URL}/role`, 'GET');
+      return typeof result === 'object' && result !== null ? (result.data || result) : result;
     } catch (error) {
       throw error;
     }
@@ -100,7 +103,8 @@ export const userService = {
  */
 export async function verifyUserRole(email, expectedRole) {
   try {
-    const role = await makeApiRequest(`${BASE_URL}/user/role?email=${email}`, 'GET');
+    const result = await makeApiRequest(`${BASE_URL}/user/role?email=${email}`, 'GET');
+    const role = typeof result === 'object' && result !== null ? (result.data || result) : result;
     return role === expectedRole;
   } catch (error) {
     throw error;

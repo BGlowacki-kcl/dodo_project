@@ -35,7 +35,8 @@ export async function getRecommendedJobs() {
       throw new Error("User is not authenticated.");
     }
     
-    return await makeApiRequest(`${BASE_URL}/matcher/recommend-jobs`, 'GET');
+    const result = await makeApiRequest(`${BASE_URL}/matcher/recommend-jobs`, 'GET');
+    return Array.isArray(result) ? result : (result?.data || []);
   } catch (error) {
     return handleApiError(error, "Failed to get job recommendations");
   }

@@ -20,4 +20,13 @@ const sendEmail = async (emailData) => {
   }
 };
 
+export async function someEmailServiceMethod() {
+  try {
+    const result = await makeApiRequest('/email/endpoint', 'GET');
+    return Array.isArray(result) ? result : (result?.data || []);
+  } catch (error) {
+    throw error;
+  }
+}
+
 export default sendEmail;
