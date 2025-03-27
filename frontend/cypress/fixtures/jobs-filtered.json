@@ -1,0 +1,16 @@
+[
+    {
+      "_id": "job1",
+      "title": "Frontend Engineer",
+      "company": "Acme Corp",
+      "location": "New York",
+      "description": "Only Full-Time job for this test",
+      "employmentType": "Full-Time",
+      "requirements": ["React", "JavaScript", "CSS"],
+      "questions": [
+        "Describe your experience with infrastructure as code.",
+        "How do you handle environment secrets in CI/CD?"
+      ]
+    }
+  ]
+  
