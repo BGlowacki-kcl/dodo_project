@@ -2,7 +2,7 @@ import { app } from "./app.js";
 import { connectDB } from './config/db.js';
 import { warmUpHuggingFace } from './controllers/matcher.controller.js';
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 5000;
 
 // Async startup routine
 const startServer = async () => {
