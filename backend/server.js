@@ -13,9 +13,9 @@ const startServer = async () => {
             console.log(`Server is running on: http://localhost:${port}`);
         });
 
-        warmUpHuggingFace().catch(error => {
-            console.error('Hugging Face warm-up failed (non-critical):', error.message);
-        });
+        // warmUpHuggingFace().catch(error => {
+        //     console.error('Hugging Face warm-up failed (non-critical):', error.message);
+        // });
 
     } catch (error) {
         console.error('Server startup failed:', error);

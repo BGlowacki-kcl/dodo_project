@@ -19,7 +19,6 @@ const createResponse = (success, message, data = null, status = 200) => ({
 export const checkRole = (roles) => async (req, res, next) => {
     try {
         const idToken = req.headers.authorization?.split('Bearer ')[1];
-        console.log('idToken:', idToken);
         if (!idToken) {
             return res.status(403).json(createResponse(false, 'No token provided', null, 403));
         }
@@ -43,7 +42,6 @@ export const checkRole = (roles) => async (req, res, next) => {
 
         const userRole = user.role;
         if (!roles.includes(userRole)) {
-            console.log('User role:', userRole, " roles: ", roles);
             return res.status(403).json(createResponse(false, 'Forbidden', null, 403));
         }
 
