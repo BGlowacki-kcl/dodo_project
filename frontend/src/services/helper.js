@@ -1,5 +1,6 @@
 import { checkTokenExpiration } from "./auth.service";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
  * Base API request handler with common configuration
@@ -10,6 +11,9 @@ import { checkTokenExpiration } from "./auth.service";
  * @throws {Error} - If request fails
  */
 export async function makeApiRequest(endpoint, method, body = null) {
+  // Ensure endpoint starts with BASE_URL
+  const fullEndpoint = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
+  
   const requestOptions = {
       method,
       headers: getRequestHeaders(),
@@ -19,7 +23,7 @@ export async function makeApiRequest(endpoint, method, body = null) {
       requestOptions.body = JSON.stringify(body);
   }
 
-  const response = await fetch(endpoint, requestOptions);
+  const response = await fetch(fullEndpoint, requestOptions);
   
   // Clone the response before checking token expiration
   await checkTokenExpiration(response.clone());

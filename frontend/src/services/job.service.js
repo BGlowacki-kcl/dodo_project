@@ -4,11 +4,12 @@
  */
 import { makeApiRequest } from "./helper.js";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 /**
  * API base URL for job endpoints
  * @constant {string}
  */
-const API_BASE_URL = "/api/job";
+const API_BASE_URL = `${BASE_URL}/job`;
 
 /**
  * Gets authentication headers for API requests

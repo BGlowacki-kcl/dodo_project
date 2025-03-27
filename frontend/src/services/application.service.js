@@ -4,13 +4,15 @@
  */
 import { makeApiRequest, handleApiError } from './helper';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 /**
  * Retrieves all applications for the current user
  * @returns {Promise<Array>} - List of all user applications
  */
 export async function getAllUserApplications() {
   try {
-    return await makeApiRequest('/api/application/all', 'GET');
+    return await makeApiRequest(`${BASE_URL}/application/all`, 'GET');
   } catch (error) {
     throw error;
   }
@@ -23,7 +25,7 @@ export async function getAllUserApplications() {
  */
 export async function getApplicationById(appId) {
   try {
-    return await makeApiRequest(`/api/application/byId?id=${appId}`, 'GET');
+    return await makeApiRequest(`${BASE_URL}/application/byId?id=${appId}`, 'GET');
   } catch (error) {
     throw error;
   }
@@ -36,7 +38,7 @@ export async function getApplicationById(appId) {
  */
 export async function getJobApplicants(jobId) {
   try {
-    return await makeApiRequest(`/api/application/byJobId?jobId=${jobId}`, 'GET');
+    return await makeApiRequest(`${BASE_URL}/application/byJobId?jobId=${jobId}`, 'GET');
   } catch (error) {
     return handleApiError(error, "Failed to fetch applicants");
   }
@@ -52,7 +54,7 @@ export async function getJobApplicants(jobId) {
  */
 export async function applyToJob({ jobId, coverLetter, answers }) {
   try {
-    return await makeApiRequest('/api/application/apply', 'POST', {
+    return await makeApiRequest(`${BASE_URL}/application/apply`, 'POST', {
       jobId,
       coverLetter,
       answers,
@@ -69,7 +71,7 @@ export async function applyToJob({ jobId, coverLetter, answers }) {
  */
 export async function withdrawApplication(appId) {
   try {
-    return await makeApiRequest(`/api/application/withdraw?id=${appId}`, 'DELETE');
+    return await makeApiRequest(`${BASE_URL}/application/withdraw?id=${appId}`, 'DELETE');
   } catch (error) {
     throw error;
   }
@@ -81,7 +83,7 @@ export async function withdrawApplication(appId) {
  */
 export async function getApplicationsData() {
   try {
-    return await makeApiRequest('/api/application/data', 'GET');
+    return await makeApiRequest(`${BASE_URL}/application/data`, 'GET');
   } catch (error) {
     throw error;
   }
@@ -94,7 +96,7 @@ export async function getApplicationsData() {
  */
 export async function getAssessmentDeadline(appId) {
   try {
-    return await makeApiRequest(`/api/application/deadline?id=${appId}`, 'GET');
+    return await makeApiRequest(`${BASE_URL}/application/deadline?id=${appId}`, 'GET');
   } catch (error) {
     throw error;
   }
@@ -108,7 +110,7 @@ export async function getAssessmentDeadline(appId) {
  */
 export async function setAssessmentDeadline(appId, deadline) {
   try {
-    return await makeApiRequest(`/api/application/deadline?id=${appId}`, 'PUT', { deadline });
+    return await makeApiRequest(`${BASE_URL}/application/deadline?id=${appId}`, 'PUT', { deadline });
   } catch (error) {
     throw error;
   }
@@ -126,7 +128,7 @@ export async function updateStatus(appId, reject) {
     const queryParams = reject ? `?id=${appId}&reject=true` : `?id=${appId}&reject=false`;
     
     // Use query param for ID and put status in body
-    return await makeApiRequest(`/api/application/status${queryParams}`, 'PUT');
+    return await makeApiRequest(`${BASE_URL}/application/status${queryParams}`, 'PUT');
   } catch (error) {
     throw error;
   }
@@ -143,7 +145,7 @@ export async function updateStatus(appId, reject) {
  */
 export async function saveApplication({ applicationId, jobId, coverLetter, answers }) {
   try {
-    return await makeApiRequest('/api/application/save', 'PUT', {
+    return await makeApiRequest(`${BASE_URL}/application/save`, 'PUT', {
       applicationId,
       jobId,
       coverLetter,
@@ -161,7 +163,7 @@ export async function saveApplication({ applicationId, jobId, coverLetter, answe
  */
 export async function submitApplication(applicationId) {
   try {
-    return await makeApiRequest('/api/application/submit', 'PUT', { applicationId });
+    return await makeApiRequest(`${BASE_URL}/application/submit`, 'PUT', { applicationId });
   } catch (error) {
     throw error;
   }

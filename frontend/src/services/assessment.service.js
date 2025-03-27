@@ -4,6 +4,8 @@
  */
 import { makeApiRequest } from './helper';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 /**
  * Sends code to the execution API
  * @param {string} code - Source code to execute
@@ -11,7 +13,7 @@ import { makeApiRequest } from './helper';
  * @returns {Promise<Object>} - Response with execution ID
  */
 async function sendCode(code, language) {
-  return await makeApiRequest('/api/assessment/send', 'POST', {
+  return await makeApiRequest(`${BASE_URL}/assessment/send`, 'POST', {
     source_code: code,
     language: language,
   });
@@ -25,7 +27,7 @@ async function sendCode(code, language) {
 async function getExecutionDetails(id) {
   try {
     console.log("id", id);
-    return await makeApiRequest(`/api/assessment/status?id=${id}`, "GET");
+    return await makeApiRequest(`${BASE_URL}/assessment/status?id=${id}`, "GET");
   } catch (error) {
     return { error: error.message };
   }
@@ -254,7 +256,7 @@ export const assessmentService = {
    * @returns {Promise<Object>} - Task details
    */
   async getTask(appId, taskId) {
-    return await makeApiRequest(`/api/assessment/task?appId=${appId}&taskId=${taskId}`, "GET");
+    return await makeApiRequest(`${BASE_URL}/assessment/task?appId=${appId}&taskId=${taskId}`, "GET");
   },
 
   /**
@@ -263,7 +265,7 @@ export const assessmentService = {
    * @returns {Promise<Object>} - Task IDs
    */
   async getTasksId(appId) {
-    return await makeApiRequest(`/api/assessment/tasksid?appId=${appId}`, "GET");
+    return await makeApiRequest(`${BASE_URL}/assessment/tasksid?appId=${appId}`, "GET");
   },
 
   /**
@@ -271,7 +273,7 @@ export const assessmentService = {
    * @returns {Promise<Object>} - All tasks
    */
   async getAllTasks() {
-    return await makeApiRequest('/api/assessment/alltasks', "GET");
+    return await makeApiRequest(`${BASE_URL}/assessment/alltasks`, "GET");
   },
 
   /**
@@ -285,7 +287,7 @@ export const assessmentService = {
    */
   async submit(appId, testsPassed, code, language, taskId) {
     try {
-      const data = await makeApiRequest('/api/assessment/submit', 'POST', {
+      const data = await makeApiRequest(`${BASE_URL}/assessment/submit`, 'POST', {
         appId,
         testsPassed,
         code,

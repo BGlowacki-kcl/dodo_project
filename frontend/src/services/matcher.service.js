@@ -3,7 +3,9 @@
  * Handles job recommendation functionality
  */
 import { getAuth } from "firebase/auth";
-import { handleApiError } from "./helper.js";
+import { handleApiError, makeApiRequest } from "./helper.js";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 /**
  * Gets the current user's Firebase authentication token
@@ -33,19 +35,7 @@ export async function getRecommendedJobs() {
       throw new Error("User is not authenticated.");
     }
     
-    const response = await fetch("http://localhost:5000/api/matcher/recommend-jobs", {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error("Failed to fetch recommended jobs");
-    }
-    
-    const data = await response.json();
-    return data.recommendedJobs;
+    return await makeApiRequest(`${BASE_URL}/matcher/recommend-jobs`, 'GET');
   } catch (error) {
     return handleApiError(error, "Failed to get job recommendations");
   }

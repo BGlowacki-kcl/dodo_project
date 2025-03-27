@@ -4,7 +4,8 @@
  */
 import { makeApiRequest } from "./helper.js";
 
-const API_BASE_URL = "/api/user";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = `${BASE_URL}/user`;
 
 /**
  * User service with public methods for user-related operations
@@ -99,7 +100,7 @@ export const userService = {
  */
 export async function verifyUserRole(email, expectedRole) {
   try {
-    const role = await makeApiRequest(`/api/user/role?email=${email}`, 'GET');
+    const role = await makeApiRequest(`${BASE_URL}/user/role?email=${email}`, 'GET');
     return role === expectedRole;
   } catch (error) {
     throw error;
@@ -113,7 +114,7 @@ export async function verifyUserRole(email, expectedRole) {
  */
 export async function checkProfileCompletion(navigate) {
   try {
-    const data = await makeApiRequest('/api/user/completed', 'GET');
+    const data = await makeApiRequest(`${BASE_URL}/user/completed`, 'GET');
     const userRole = sessionStorage.getItem('role');
     if (!data && userRole === 'jobSeeker') {
       navigate('/addDetails');

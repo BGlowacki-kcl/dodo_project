@@ -4,7 +4,8 @@
  */
 import { makeApiRequest } from "./helper.js";
 
-const SHORTLIST_ENDPOINT = '/api/shortlist';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const SHORTLIST_ENDPOINT = `${BASE_URL}/shortlist`;
 
 /**
  * Retrieves a user's job shortlist

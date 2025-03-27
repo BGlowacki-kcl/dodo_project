@@ -6,6 +6,8 @@ import * as pdfjs from "pdfjs-dist/build/pdf";
 import { checkTokenExpiration } from "./auth.service";
 import { makeApiRequest } from "./helper";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 
@@ -70,7 +72,7 @@ export default async function getParsedResume(file) {
       throw new Error("No text extracted from PDF");
     }
     
-    const response = await makeApiRequest("/api/chat", "POST", { query: text });
+    const response = await makeApiRequest(`${BASE_URL}/chat`, "POST", { query: text });
     return await prepareAnswer(response);
   } catch (error) {
     throw new Error(`Error parsing resume: ${error.message}`);
