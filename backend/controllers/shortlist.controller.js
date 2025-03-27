@@ -8,7 +8,7 @@ import User from "../models/user/user.model.js";
  * @returns {Promise<Object>} Shortlist document
  */
 const fetchShortlist = async (userId) => {
-    const shortlist = await Shortlist.findOne({ user: userId });
+    const shortlist = await Shortlist.findOne({ user: userId }).populate("jobs");
     if (!shortlist) {
         const error = new Error("Shortlist not found");
         error.status = 404;
