@@ -24,7 +24,6 @@ async function sendCode(code, language) {
  */
 async function getExecutionDetails(id) {
   try {
-    console.log("id", id);
     return await makeApiRequest(`/api/assessment/status?id=${id}`, "GET");
   } catch (error) {
     return { error: error.message };
@@ -236,7 +235,6 @@ export const assessmentService = {
     }
     
     const completeCode = code + constructCode(tests, language, funcForCppTest);
-    console.log("Code:", completeCode);
     const codeSendResponse = await sendCode(completeCode, language);
     
     if (!codeSendResponse || !codeSendResponse.id) {

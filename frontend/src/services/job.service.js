@@ -195,14 +195,9 @@ function buildFilterQueryParams(filters) {
  */
 export async function getFilteredJobs(filters) {
   try {
-    // Log the input filters for debugging
-    console.log("Applying filters:", JSON.stringify(filters, null, 2));
     
     // Build the query string
     const queryString = buildFilterQueryParams(filters);
-    
-    // Log the generated query string
-    console.log("Generated query string:", queryString);
     
     // Make the API request with the query parameters
     return await makeApiRequest(`${API_BASE_URL}/search?${queryString}`, "GET");
