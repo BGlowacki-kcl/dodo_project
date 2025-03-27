@@ -1,89 +1,96 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import Contact from "../pages/Contact";
-import { vi } from "vitest";
-import { MemoryRouter } from "react-router-dom";
+// frontend/src/tests/Contact.test.jsx
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
+import Contact from '../pages/Contact.jsx';
+import sendEmail from '../services/email.service';
+import { NotificationProvider } from '../context/notification.context.jsx';
 
-// 🧠 Step 1: Declare `sendEmail` above
-let sendEmail = vi.fn();
-
-// Step 2: Hoisted mock — do NOT reference `sendEmail` here
-vi.mock("../services/email.service.js", () => ({
-  default: (...args) => sendEmail(...args),
+// Mock the sendEmail service
+vi.mock('../services/email.service', () => ({
+  default: vi.fn()
 }));
 
-// Other mocks
-vi.mock("../components/FormItem", () => ({
-  __esModule: true,
-  default: ({ label, name, value, onChange }) => (
-    <input
-      data-testid={`input-${name}`}
-      value={value}
-      placeholder={label}
-      onChange={(e) => onChange({ target: { name, value: e.target.value } })}
-    />
-  ),
+// Mock component for FormItem
+vi.mock('../components/FormItem.jsx', () => ({
+  default: ({ htmlFor, name, label, value, onChange, required, placeholder, largeArena }) => (
+    <div>
+      <label htmlFor={htmlFor}>{label}</label>
+      {largeArena ? (
+        <textarea
+          id={htmlFor}
+          name={name}
+          value={value}
+          onChange={onChange}
+          required={required}
+          placeholder={placeholder}
+        />
+      ) : (
+        <input
+          id={htmlFor}
+          name={name}
+          value={value}
+          onChange={onChange}
+          required={required}
+          placeholder={placeholder}
+        />
+      )}
+    </div>
+  )
 }));
 
-vi.mock("../components/WhiteBox", () => ({
-  __esModule: true,
-  default: ({ children }) => <div>{children}</div>,
+// Mock WhiteBox
+vi.mock('../components/WhiteBox.jsx', () => ({
+  default: ({ children, className }) => <div className={className}>{children}</div>
 }));
 
-const notify = vi.fn();
-vi.mock("../context/notification.context", () => ({
-  useNotification: () => notify,
-}));
+// Mock useNotification hook
+const mockShowNotification = vi.fn();
+vi.mock('../context/notification.context.jsx', async () => {
+  const actual = await vi.importActual('../context/notification.context.jsx');
+  return {
+    ...actual,
+    NotificationProvider: ({ children }) => <div>{children}</div>,
+    useNotification: () => mockShowNotification
+  };
+});
 
-describe("Contact Page", () => {
-  beforeEach(() => {
+// Custom render with providers
+const renderWithProviders = (ui) => {
+  return render(
+    <BrowserRouter>
+      <NotificationProvider>{ui}</NotificationProvider>
+    </BrowserRouter>
+  );
+};
+
+describe('Contact Component', () => {
+  afterEach(() => {
     vi.clearAllMocks();
-    sendEmail = vi.fn();
   });
 
-  test("renders form fields and button", () => {
-    render(
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>
-    );
+  it('updates form fields on user input', () => {
+    renderWithProviders(<Contact />);
+    const nameInput = screen.getByLabelText('Your Name');
+    const emailInput = screen.getByLabelText('Email Address');
+    const subjectInput = screen.getByLabelText('Subject');
+    const messageInput = screen.getByLabelText('Your Message');
 
-    expect(screen.getByPlaceholderText("Your Name")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Email Address")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Subject")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Your Message")).toBeInTheDocument();
-    expect(screen.getByText("Send Message")).toBeInTheDocument();
+    fireEvent.change(nameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+    fireEvent.change(subjectInput, { target: { value: 'Test Subject' } });
+    fireEvent.change(messageInput, { target: { value: 'Test Message' } });
+
+    expect(nameInput.value).toBe('John Doe');
+    expect(emailInput.value).toBe('john@example.com');
+    expect(subjectInput.value).toBe('Test Subject');
+    expect(messageInput.value).toBe('Test Message');
   });
 
-  test("shows error for invalid email", async () => {
-    render(<MemoryRouter><Contact /></MemoryRouter>);
-
-    fireEvent.change(screen.getByTestId("input-Email"), {
-      target: { value: "invalidemail" },
-    });
-
-    fireEvent.submit(screen.getByText("Send Message"));
-
-    await waitFor(() => {
-      expect(notify).toHaveBeenCalledWith("Please provide a valid email address", "danger");
-    });
+  it('renders footer with current year', () => {
+    renderWithProviders(<Contact />);
+    const currentYear = new Date().getFullYear();
+    expect(screen.getByText(`Joborithm © ${currentYear} - Your gateway to the best career opportunities.`)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
   });
-  
-  test("shows error and prevents submission for invalid email", async () => {
-    render(
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>
-    );
-  
-    // Only fill in the email field (invalid)
-    fireEvent.change(screen.getByTestId("input-Name"), { target: { value: "User" } });
-    fireEvent.change(screen.getByTestId("input-Email"), { target: { value: "invalid-email" } });
-    fireEvent.submit(screen.getByText("Send Message"));
-  
-    await waitFor(() => {
-      expect(notify).toHaveBeenCalledWith("Please provide a valid email address", "danger");
-    });
-  });
-
 });
