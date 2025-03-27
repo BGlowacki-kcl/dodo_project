@@ -48,6 +48,17 @@ describe('JobDetailsPage', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        
+        // Mock sessionStorage.getItem to return a fake token
+        Object.defineProperty(window, 'sessionStorage', {
+            value: {
+                getItem: vi.fn((key) => key === 'token' ? 'fake-token' : null),
+                setItem: vi.fn(),
+                removeItem: vi.fn()
+            },
+            writable: true
+        });
+        
         useParams.mockReturnValue({ jobId: mockJobId });
         useNavigate.mockReturnValue(mockNavigate);
         getJobById.mockResolvedValue(mockJob);
@@ -153,6 +164,7 @@ describe('JobDetailsPage', () => {
     });
 
     it('navigates to application page when "Continue Application" is clicked', async () => {
+        // Set up application state for this test
         getAllUserApplications.mockResolvedValue([{
             job: { _id: mockJobId },
             status: 'Applying'
@@ -160,8 +172,12 @@ describe('JobDetailsPage', () => {
 
         render(<JobDetailsPage />);
 
+        // Wait for component to render and use a more flexible approach to find the button
         await waitFor(() => {
-            fireEvent.click(screen.getByText('Continue Application'));
+            const continueButton = screen.getByRole('button', { 
+                name: /continue application/i 
+            });
+            fireEvent.click(continueButton);
         });
 
         expect(mockNavigate).toHaveBeenCalledWith(`/apply/${mockJobId}`);
@@ -171,19 +187,26 @@ describe('JobDetailsPage', () => {
         render(<JobDetailsPage />);
 
         await waitFor(() => {
-            fireEvent.click(screen.getByText('Add to Shortlist'));
+            const shortlistButton = screen.getByRole('button', { 
+                name: /add to shortlist/i 
+            });
+            fireEvent.click(shortlistButton);
         });
 
         expect(addJobToShortlist).toHaveBeenCalledWith(mockJobId);
     });
 
     it('removes job from shortlist when "Remove from Shortlist" is clicked', async () => {
+        // Setup shortlisted state
         getShortlist.mockResolvedValue({ jobs: [{ _id: mockJobId }] });
 
         render(<JobDetailsPage />);
 
         await waitFor(() => {
-            fireEvent.click(screen.getByText('Remove from Shortlist'));
+            const removeButton = screen.getByRole('button', { 
+                name: /remove from shortlist/i 
+            });
+            fireEvent.click(removeButton);
         });
 
         expect(removeJobFromShortlist).toHaveBeenCalledWith(mockJobId);
@@ -196,7 +219,10 @@ describe('JobDetailsPage', () => {
         render(<JobDetailsPage />);
 
         await waitFor(() => {
-            fireEvent.click(screen.getByText('Add to Shortlist'));
+            const shortlistButton = screen.getByRole('button', { 
+                name: /add to shortlist/i 
+            });
+            fireEvent.click(shortlistButton);
         });
 
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error updating shortlist:', expect.any(Error));
@@ -210,7 +236,10 @@ describe('JobDetailsPage', () => {
         render(<JobDetailsPage />);
 
         await waitFor(() => {
-            fireEvent.click(screen.getByText('Apply Now'));
+            const applyButton = screen.getByRole('button', { 
+                name: /apply now/i 
+            });
+            fireEvent.click(applyButton);
         });
 
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error applying to job:', expect.any(Error));

@@ -19,9 +19,12 @@ describe('Helper Functions', () => {
   describe('makeApiRequest', () => {
     it('makes a successful GET request without body', async () => {
       const mockResponse = { success: true, data: { id: 1 } };
-      fetch.mockResolvedValue({
-        json: vi.fn().mockResolvedValue(mockResponse),
-      });
+      const mockJsonPromise = Promise.resolve(mockResponse);
+      const mockFetchResponse = {
+        json: () => mockJsonPromise,
+        clone: () => ({ json: () => Promise.resolve(mockResponse) })
+      };
+      fetch.mockResolvedValue(mockFetchResponse);
       sessionStorage.setItem('token', 'test-token');
 
       const result = await makeApiRequest('/api/test', 'GET');
@@ -39,9 +42,12 @@ describe('Helper Functions', () => {
 
     it('makes a successful POST request with body', async () => {
       const mockResponse = { success: true, data: { id: 2 } };
-      fetch.mockResolvedValue({
-        json: vi.fn().mockResolvedValue(mockResponse),
-      });
+      const mockJsonPromise = Promise.resolve(mockResponse);
+      const mockFetchResponse = {
+        json: () => mockJsonPromise,
+        clone: () => ({ json: () => Promise.resolve(mockResponse) })
+      };
+      fetch.mockResolvedValue(mockFetchResponse);
       sessionStorage.setItem('token', 'test-token');
       const body = { key: 'value' };
 
@@ -61,9 +67,12 @@ describe('Helper Functions', () => {
 
     it('throws error on unsuccessful response', async () => {
       const mockResponse = { success: false, message: 'Request failed' };
-      fetch.mockResolvedValue({
-        json: vi.fn().mockResolvedValue(mockResponse),
-      });
+      const mockJsonPromise = Promise.resolve(mockResponse);
+      const mockFetchResponse = {
+        json: () => mockJsonPromise,
+        clone: () => ({ json: () => Promise.resolve(mockResponse) })
+      };
+      fetch.mockResolvedValue(mockFetchResponse);
 
       await expect(makeApiRequest('/api/test', 'GET')).rejects.toThrow('Request failed');
       expect(checkTokenExpiration).toHaveBeenCalledWith(expect.any(Object));
@@ -71,19 +80,33 @@ describe('Helper Functions', () => {
 
     it('throws default error on unsuccessful response without message', async () => {
       const mockResponse = { success: false };
-      fetch.mockResolvedValue({
-        json: vi.fn().mockResolvedValue(mockResponse),
-      });
+      const mockJsonPromise = Promise.resolve(mockResponse);
+      const mockFetchResponse = {
+        json: () => mockJsonPromise,
+        clone: () => ({ json: () => Promise.resolve(mockResponse) })
+      };
+      fetch.mockResolvedValue(mockFetchResponse);
 
       await expect(makeApiRequest('/api/test', 'POST')).rejects.toThrow('Failed to post /api/test');
       expect(checkTokenExpiration).toHaveBeenCalledWith(expect.any(Object));
     });
 
     it('handles fetch errors', async () => {
+      // Make sure the mock is cleared before this specific test
+      checkTokenExpiration.mockClear();
+      
       fetch.mockRejectedValue(new Error('Network error'));
-      await expect(makeApiRequest('/api/test', 'GET')).rejects.toThrow('Network error');
-      // Remove this line since checkTokenExpiration isn't called on fetch rejection
-      // expect(checkTokenExpiration).toHaveBeenCalledWith(expect.any(Object));
+      
+      // Use try/catch to ensure we can verify mock calls after the error
+      try {
+        await makeApiRequest('/api/test', 'GET');
+        // If we reach here, the test should fail because an error wasn't thrown
+        expect(true).toBe(false); // Force test failure
+      } catch (error) {
+        expect(error.message).toBe('Network error');
+        // Verify checkTokenExpiration wasn't called using mock call count
+        expect(checkTokenExpiration).not.toHaveBeenCalled();
+      }
     });
   });
 
