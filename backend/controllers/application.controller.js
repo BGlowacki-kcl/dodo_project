@@ -63,22 +63,19 @@ export const applicationController = {
      */
     async updateApplicationStatus(req, res) {
         try {
-            const { id } = req.params;
-            const { status } = req.body;
+            const { id } = req.query;
+            
 
             if (!isValidStatus(status)) {
                 return res.status(400).json(createResponse(false, "Invalid application status"));
             }
 
             const application = await Application.findById(id).populate("job");
+            
             if (!application) {
                 return res.status(404).json(createResponse(false, "Application not found"));
             }
-
-            const isOwner = await verifyJobOwnership(application.job._id, req.uid);
-            if (!isOwner) {
-                return res.status(403).json(createResponse(false, "Unauthorized to update application status"));
-            }
+            
 
             application.status = status;
             await application.save();
