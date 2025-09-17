@@ -263,7 +263,7 @@ Both interfaces are designed to provide intuitive, role-appropriate experiences 
 - Tianzhi Hou
 - Saad Abdeen
 - Jay TODO
-- Muhammad Sharif
+- Abdulahi Sharif
 - Muhammad Chikhun
 
 ---
